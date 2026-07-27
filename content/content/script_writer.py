@@ -1,21 +1,36 @@
-# content/script_writer.py
+from openai import OpenAI
+from config import OPENAI_API_KEY, BRAND_NAME
+
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 def generate_script(topic):
-    """
-    Generates a simple TikTok script.
-    Later, this will use the OpenAI API to create high-quality scripts.
-    """
 
-    script = f"""
-🎬 HOOK:
-Did you know? {topic}
+    prompt = f"""
+You are a professional TikTok script writer.
 
-📖 BODY:
-Here's why this matters and how it can help you.
-Learn practical AI tips, save time, and improve your work with the right prompts.
+Write one viral 30-second TikTok script.
 
-📢 CALL TO ACTION:
-Visit our website for premium AI prompts, eBooks, and templates.
+Topic:
+{topic}
+
+Requirements:
+- Strong hook in first sentence
+- Educational
+- Exciting
+- Easy English
+- Mention the website naturally
+- End with a strong call to action
+- Do NOT use emojis
 """
 
-    return script
+    response = client.chat.completions.create(
+        model="gpt-4.1-mini",
+        messages=[
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ]
+    )
+
+    return response.choices[0].message.content
