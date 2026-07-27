@@ -1,50 +1,40 @@
 from content.trend_finder import get_trending_topic
-from content.website_reader import get_website_content
 from content.script_writer import generate_script
 from content.caption_writer import generate_caption
 from content.hashtag_generator import generate_hashtags
+from video.voice_generator import generate_voice
+from video.video_generator import create_video
+from social.tiktok_uploader import upload_to_tiktok
 
 
 def main():
 
     print("=" * 50)
-    print(" AI CONTENT FACTORY ")
+    print("AI CONTENT FACTORY")
     print("=" * 50)
 
-    print("Reading website...")
-    website = get_website_content()
-
-    print("Finding topic...")
+    # Step 1
     topic = get_trending_topic()
 
-    print("Writing script...")
+    # Step 2
     script = generate_script(topic)
 
-    print("Generating caption...")
+    # Step 3
     caption = generate_caption(topic)
 
-    print("Generating hashtags...")
+    # Step 4
     hashtags = generate_hashtags()
 
-    print("\n====================")
-    print("TOPIC")
-    print("====================")
-    print(topic)
+    # Step 5
+    audio = generate_voice(script)
 
-    print("\n====================")
-    print("SCRIPT")
-    print("====================")
-    print(script)
+    # Step 6
+    video = create_video()
 
-    print("\n====================")
-    print("CAPTION")
-    print("====================")
-    print(caption)
+    # Step 7
+    upload_to_tiktok(video)
 
-    print("\n====================")
-    print("HASHTAGS")
-    print("====================")
-    print(hashtags)
+    print("Completed Successfully")
 
 
 if __name__ == "__main__":
