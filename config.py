@@ -1,21 +1,24 @@
-# ==========================
-# AI Content Factory Config
-# ==========================
+from dotenv import load_dotenv
+import os
 
-# OpenAI API Key
-OPENAI_API_KEY = ""
+# Load environment variables
+load_dotenv()
 
-# Website URL
-WEBSITE_URL = "https://nyonggodspower726-wq.github.io/promptprohub/"
+# OpenAI
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-# Brand Name
-BRAND_NAME = "Your Brand"
+# Website
+WEBSITE_URL = os.getenv("WEBSITE_URL")
 
-# TikTok Username
-TIKTOK_USERNAME = ""
+# Brand
+BRAND_NAME = os.getenv("BRAND_NAME")
 
-# Posting Schedule
+# Social Media
+TIKTOK_USERNAME = os.getenv("TIKTOK_USERNAME")
+FACEBOOK_PAGE_ID = os.getenv("FACEBOOK_PAGE_ID")
+INSTAGRAM_USERNAME = os.getenv("INSTAGRAM_USERNAME")
+YOUTUBE_CHANNEL_ID = os.getenv("YOUTUBE_CHANNEL_ID")
+
+# Settings
 VIDEOS_PER_DAY = 2
-
-# Video Length (seconds)
 VIDEO_LENGTH = 30
