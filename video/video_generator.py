@@ -1,20 +1,32 @@
-from openai import OpenAI
-from config import OPENAI_API_KEY
+from moviepy.editor import *
 
-client = OpenAI(api_key=OPENAI_API_KEY)
+def create_video():
 
+    print("Creating TikTok video...")
 
-def generate_voice(script):
-
-    print("Generating AI voice...")
-
-    response = client.audio.speech.create(
-        model="gpt-4o-mini-tts",
-        voice="alloy",
-        input=script,
+    background = ColorClip(
+        size=(1080, 1920),
+        color=(20, 20, 20),
+        duration=30
     )
 
-    with open("output.mp3", "wb") as f:
-        f.write(response.read())
+    title = TextClip(
+        "AI CONTENT FACTORY",
+        fontsize=80,
+        color="white"
+    ).set_duration(30)
 
-    return "output.mp3"
+    title = title.set_position("center")
+
+    audio = AudioFileClip("output.mp3")
+
+    final_video = CompositeVideoClip(
+        [background, title]
+    ).set_audio(audio)
+
+    final_video.write_videofile(
+        "video.mp4",
+        fps=30
+    )
+
+    return "video.mp4"
