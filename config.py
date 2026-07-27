@@ -6,7 +6,7 @@
 OPENAI_API_KEY = ""
 
 # Website URL
-WEBSITE_URL = ""
+WEBSITE_URL = "https://nyonggodspower726-wq.github.io/promptprohub/"
 
 # Brand Name
 BRAND_NAME = "Your Brand"
