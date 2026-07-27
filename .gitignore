@@ -1,1 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
+# Virtual Environment
+venv/
+.env
+
+# API Keys
+config_local.py
+
+# Generated Files
+output.mp3
+video.mp4
+
+# Operating System
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
