@@ -1,9 +1,7 @@
-import google.generativeai as genai
-from config import GEMINI_API_KEY, BRAND_NAME
+from groq import Groq
+from config import GROQ_API_KEY, BRAND_NAME
 
-genai.configure(api_key=GEMINI_API_KEY)
-
-model = genai.GenerativeModel("gemini-1.5-flash")
+client = Groq(api_key=GROQ_API_KEY)
 
 def generate_script(topic):
 
@@ -16,15 +14,23 @@ Topic:
 {topic}
 
 Requirements:
-- Strong hook in first sentence
+- Strong hook in the first sentence
 - Educational
 - Exciting
 - Easy English
-- Mention the website naturally
+- Mention {BRAND_NAME} naturally if appropriate
 - End with a strong call to action
 - Do NOT use emojis
 """
 
-    response = model.generate_content(prompt)
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ]
+    )
 
-    return response.text
+    return response.choices[0].message.content
