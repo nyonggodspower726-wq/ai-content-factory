@@ -1,4 +1,4 @@
-from brain.ai import ask_ai
+from ai import ask_ai
 from config import BRAND_NAME
 
 
