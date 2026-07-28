@@ -14,6 +14,8 @@ from logger import log
 
 def main():
 
+    print("TEST RUN STARTED")
+
     log("=" * 50)
     log("AI CONTENT FACTORY")
     log("=" * 50)
@@ -41,7 +43,7 @@ def main():
     log("Hashtags generated.")
 
     # Step 6
-    generate_voice(script)
+    voice = generate_voice(script)
 
     # Step 7
     video = create_video(script)
