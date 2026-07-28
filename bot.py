@@ -25,14 +25,21 @@ def main():
     # Step 4
     hashtags = generate_hashtags()
 
+    print(script)
+    print(caption)
+    print(hashtags)
+
     # Step 5
-    audio = generate_voice(script)
+    generate_voice(script)
 
     # Step 6
     video = create_video()
 
     # Step 7
-    upload_to_tiktok(video)
+    if video:
+        upload_to_tiktok(video)
+    else:
+        print("Video upload skipped.")
 
     print("Completed Successfully")
 
