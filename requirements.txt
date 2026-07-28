@@ -1,5 +1,4 @@
-openai>=1.0.0
-google-generativeai
+groq
 requests
 beautifulsoup4
 moviepy==1.0.3
