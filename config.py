@@ -5,7 +5,7 @@ import os
 load_dotenv()
 
 # Gemini
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 # Website
 WEBSITE_URL = os.getenv("WEBSITE_URL")
