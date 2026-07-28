@@ -1,7 +1,9 @@
-from openai import OpenAI
-from config import OPENAI_API_KEY, BRAND_NAME
+import google.generativeai as genai
+from config import GEMINI_API_KEY, BRAND_NAME
 
-client = OpenAI(api_key=OPENAI_API_KEY)
+genai.configure(api_key=GEMINI_API_KEY)
+
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 def generate_script(topic):
 
@@ -23,14 +25,6 @@ Requirements:
 - Do NOT use emojis
 """
 
-    response = client.chat.completions.create(
-        model="gpt-4.1-mini",
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
-    )
+    response = model.generate_content(prompt)
 
-    return response.choices[0].message.content
+    return response.text
