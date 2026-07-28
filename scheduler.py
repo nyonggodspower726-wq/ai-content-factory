@@ -19,9 +19,10 @@ def start_scheduler():
 
     while True:
 
-        # Nigeria time (WAT UTC+1)
         nigeria_time = datetime.now(timezone(timedelta(hours=1)))
         current_time = nigeria_time.strftime("%H:%M")
+
+        print(f"Scheduler running | Nigeria time: {current_time}")
 
         if current_time in POSTING_TIMES and current_time not in completed:
 
@@ -36,11 +37,10 @@ def start_scheduler():
 
             completed.append(current_time)
 
-        # Reset daily
         if current_time == "00:00":
             completed.clear()
 
-        time.sleep(30)
+        time.sleep(60)
 
 
 if __name__ == "__main__":
