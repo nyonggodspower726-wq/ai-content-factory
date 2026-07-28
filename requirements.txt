@@ -1,6 +1,6 @@
 openai>=1.0.0
 requests
 beautifulsoup4
-moviepy
+moviepy==1.0.3
 python-dotenv
 schedule
