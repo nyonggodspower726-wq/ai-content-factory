@@ -46,7 +46,7 @@ def main():
     voice = generate_voice(script)
 
     # Step 7
-    video = create_video(script)
+    video = create_video(script, voice)
 
     # Step 8
     if video:
