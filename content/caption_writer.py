@@ -1,16 +1,25 @@
-# content/caption_writer.py
+from groq import Groq
+from config import GROQ_API_KEY
+
+client = Groq(api_key=GROQ_API_KEY)
 
 def generate_caption(topic):
-    """
-    Generates a TikTok caption.
-    """
 
-    caption = f"""
-🚀 {topic}
+    prompt = f"""
+Write one engaging TikTok caption for:
 
-Learn more AI tips and download premium prompts from our website.
+{topic}
 
-#AI #ChatGPT #Business #Productivity #DigitalProducts
+Requirements:
+- Short
+- Catchy
+- Encourage engagement
+- No emojis
 """
 
-    return caption
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    return response.choices[0].message.content
