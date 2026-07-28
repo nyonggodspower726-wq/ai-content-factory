@@ -1,9 +1,16 @@
 import os
 import requests
+import PIL.Image
+
+# Fix MoviePy + Pillow compatibility
+if not hasattr(PIL.Image, "ANTIALIAS"):
+    PIL.Image.ANTIALIAS = PIL.Image.LANCZOS
+
 
 from moviepy.editor import VideoFileClip, AudioFileClip
 
 from config import PEXELS_API_KEY
+
 
 
 def search_pexels_video(query):
@@ -77,7 +84,7 @@ def create_video(script, voice_file):
         audio = AudioFileClip(voice_file)
 
 
-        # Make video vertical
+        # Make video vertical (TikTok/Reels/Shorts)
         video = video.resize(height=1920)
 
         video = video.crop(
@@ -88,8 +95,9 @@ def create_video(script, voice_file):
         )
 
 
-        # Match duration
+        # Match video length with voice
         video = video.set_duration(audio.duration)
+
 
         final = video.set_audio(audio)
 
