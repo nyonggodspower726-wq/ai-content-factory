@@ -1,11 +1,28 @@
+import os
+from gtts import gTTS
+
+
 def generate_voice(script):
-    """
-    Temporary voice generator.
 
-    This skips AI voice generation until we add
-    a free Text-to-Speech service.
-    """
+    print("Generating AI voice...")
 
-    print("Skipping voice generation...")
+    os.makedirs("output", exist_ok=True)
 
-    return None
+    voice_file = "output/voice.mp3"
+
+    try:
+        tts = gTTS(
+            text=script,
+            lang="en",
+            slow=False
+        )
+
+        tts.save(voice_file)
+
+        print("Voice generated successfully.")
+
+        return voice_file
+
+    except Exception as e:
+        print(f"Voice generation failed: {e}")
+        return None
