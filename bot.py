@@ -33,7 +33,7 @@ def main():
     generate_voice(script)
 
     # Step 6
-    video = create_video()
+    video = create_video(script)
 
     # Step 7
     if video:
