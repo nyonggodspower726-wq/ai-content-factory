@@ -1,15 +1,14 @@
-from video.background_video import download_background
-from video.text_image import create_title_image
+import os
 
 def create_video(script):
 
     print("Creating AI video...")
 
-    background = download_background()
+    os.makedirs("output", exist_ok=True)
 
-    image = create_title_image(script[:180])
+    with open("output/video_script.txt", "w", encoding="utf-8") as f:
+        f.write(script)
 
-    print("Background:", background)
-    print("Title:", image)
+    print("Video assets prepared.")
 
-    return background
+    return "output/video_script.txt"
