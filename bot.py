@@ -5,6 +5,7 @@ from content.hashtag_generator import generate_hashtags
 from video.voice_generator import generate_voice
 from video.video_generator import create_video
 from social.tiktok_uploader import upload_to_tiktok
+from utils.file_manager import save_text
 
 
 def main():
@@ -25,17 +26,22 @@ def main():
     # Step 4
     hashtags = generate_hashtags()
 
+    # Step 5 - Save everything
+    save_text("script.txt", script)
+    save_text("caption.txt", caption)
+    save_text("hashtags.txt", hashtags)
+
     print(script)
     print(caption)
     print(hashtags)
 
-    # Step 5
+    # Step 6
     generate_voice(script)
 
-    # Step 6
+    # Step 7
     video = create_video(script)
 
-    # Step 7
+    # Step 8
     if video:
         upload_to_tiktok(video)
     else:
