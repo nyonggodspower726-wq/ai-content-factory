@@ -1,5 +1,11 @@
+from video.background_video import download_background
+
 def create_video():
 
-    print("Skipping video generation...")
+    print("Creating AI video...")
 
-    return None
+    background = download_background()
+
+    print(f"Background video downloaded: {background}")
+
+    return background
