@@ -1,25 +1,39 @@
 import os
-from gtts import gTTS
+import asyncio
+import edge_tts
+
+
+VOICE = "en-US-GuyNeural"
+
+
+async def create_voice(text, output_file):
+
+    communicate = edge_tts.Communicate(
+        text,
+        VOICE
+    )
+
+    await communicate.save(output_file)
+
 
 
 def generate_voice(script):
 
-    print("Generating AI voice...")
+    print("Generating professional AI voice...")
 
     os.makedirs("output", exist_ok=True)
 
     voice_file = "output/voice.mp3"
 
     try:
-        tts = gTTS(
-            text=script,
-            lang="en",
-            slow=False
+        asyncio.run(
+            create_voice(
+                script,
+                voice_file
+            )
         )
 
-        tts.save(voice_file)
-
-        print("Voice generated successfully.")
+        print("AI voice generated successfully.")
 
         return voice_file
 
