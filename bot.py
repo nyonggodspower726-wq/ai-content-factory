@@ -2,11 +2,14 @@ from content.trend_finder import get_trending_topic
 from content.script_writer import generate_script
 from content.caption_writer import generate_caption
 from content.hashtag_generator import generate_hashtags
+
 from video.voice_generator import generate_voice
 from video.video_generator import create_video
+
 from social.tiktok_uploader import upload_to_tiktok
-from utils.file_manager import save_text
-from utils.logger import log
+
+from file_manager import save_text
+from logger import log
 
 
 def main():
