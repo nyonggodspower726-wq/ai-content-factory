@@ -1,13 +1,15 @@
 import os
-
-OUTPUT_DIR = "output"
-
-os.makedirs(OUTPUT_DIR, exist_ok=True)
-
+from datetime import datetime
 
 def save_text(filename, content):
 
-    path = os.path.join(OUTPUT_DIR, filename)
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    folder = os.path.join("output", today)
+
+    os.makedirs(folder, exist_ok=True)
+
+    path = os.path.join(folder, filename)
 
     with open(path, "w", encoding="utf-8") as f:
         f.write(content)
