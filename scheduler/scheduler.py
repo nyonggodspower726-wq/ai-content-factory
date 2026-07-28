@@ -1,19 +1,42 @@
-import schedule
 import time
+from datetime import datetime
+
 from bot import main
 
-def run_bot():
-    print("Starting AI Content Factory...")
-    main()
 
-# First video
-schedule.every().day.at("09:00").do(run_bot)
+POSTING_TIMES = [
+    "08:00",
+    "14:00",
+    "20:00"
+]
 
-# Second video
-schedule.every().day.at("18:00").do(run_bot)
 
-print("Scheduler is running...")
+def start_scheduler():
 
-while True:
-    schedule.run_pending()
-    time.sleep(30)
+    print("AI CONTENT FACTORY SCHEDULER STARTED")
+
+    completed = []
+
+    while True:
+
+        current_time = datetime.now().strftime("%H:%M")
+
+        if current_time in POSTING_TIMES and current_time not in completed:
+
+            print(f"Running content generation: {current_time}")
+
+            main()
+
+            completed.append(current_time)
+
+            print("Video task completed.")
+
+        # Reset daily
+        if current_time == "00:00":
+            completed.clear()
+
+        time.sleep(30)
+
+
+if __name__ == "__main__":
+    start_scheduler()
