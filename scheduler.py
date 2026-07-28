@@ -1,5 +1,5 @@
 import time
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 from bot import main
 
@@ -19,7 +19,9 @@ def start_scheduler():
 
     while True:
 
-        current_time = datetime.now().strftime("%H:%M")
+        # Nigeria time (WAT UTC+1)
+        nigeria_time = datetime.now(timezone(timedelta(hours=1)))
+        current_time = nigeria_time.strftime("%H:%M")
 
         if current_time in POSTING_TIMES and current_time not in completed:
 
@@ -34,7 +36,7 @@ def start_scheduler():
 
             completed.append(current_time)
 
-        # Reset after midnight
+        # Reset daily
         if current_time == "00:00":
             completed.clear()
 
