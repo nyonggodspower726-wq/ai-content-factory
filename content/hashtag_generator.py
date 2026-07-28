@@ -1,7 +1,5 @@
-from groq import Groq
-from config import GROQ_API_KEY
+from brain.ai import ask_ai
 
-client = Groq(api_key=GROQ_API_KEY)
 
 def generate_hashtags():
 
@@ -12,9 +10,4 @@ digital products, freelancing and online income.
 Return only hashtags.
 """
 
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[{"role": "user", "content": prompt}]
-    )
-
-    return response.choices[0].message.content
+    return ask_ai(prompt)
