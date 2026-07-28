@@ -6,16 +6,18 @@ from video.voice_generator import generate_voice
 from video.video_generator import create_video
 from social.tiktok_uploader import upload_to_tiktok
 from utils.file_manager import save_text
+from utils.logger import log
 
 
 def main():
 
-    print("=" * 50)
-    print("AI CONTENT FACTORY")
-    print("=" * 50)
+    log("=" * 50)
+    log("AI CONTENT FACTORY")
+    log("=" * 50)
 
     # Step 1
     topic = get_trending_topic()
+    log(f"Topic: {topic}")
 
     # Step 2
     script = generate_script(topic)
@@ -26,14 +28,14 @@ def main():
     # Step 4
     hashtags = generate_hashtags()
 
-    # Step 5 - Save everything
+    # Step 5
     save_text("script.txt", script)
     save_text("caption.txt", caption)
     save_text("hashtags.txt", hashtags)
 
-    print(script)
-    print(caption)
-    print(hashtags)
+    log("Script generated.")
+    log("Caption generated.")
+    log("Hashtags generated.")
 
     # Step 6
     generate_voice(script)
@@ -45,9 +47,9 @@ def main():
     if video:
         upload_to_tiktok(video)
     else:
-        print("Video upload skipped.")
+        log("Video upload skipped.")
 
-    print("Completed Successfully")
+    log("AI Content Factory completed successfully.")
 
 
 if __name__ == "__main__":
