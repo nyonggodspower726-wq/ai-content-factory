@@ -4,8 +4,8 @@ import os
 # Load environment variables
 load_dotenv()
 
-# OpenAI
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+# Gemini
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # Website
 WEBSITE_URL = os.getenv("WEBSITE_URL")
