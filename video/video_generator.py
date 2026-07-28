@@ -65,6 +65,7 @@ def create_video(script, voice_file):
 
     print(f"Searching Pexels: {search_term}")
 
+
     video_url = search_pexels_video(search_term)
 
     if not video_url:
@@ -84,18 +85,18 @@ def create_video(script, voice_file):
         audio = AudioFileClip(voice_file)
 
 
-        # Make video vertical (TikTok/Reels/Shorts)
-        video = video.resize(height=1920)
+        # Reduce rendering load for Railway
+        video = video.resize(height=1280)
 
         video = video.crop(
             x_center=video.w / 2,
             y_center=video.h / 2,
-            width=1080,
-            height=1920
+            width=720,
+            height=1280
         )
 
 
-        # Match video length with voice
+        # Match voice duration
         video = video.set_duration(audio.duration)
 
 
@@ -107,9 +108,13 @@ def create_video(script, voice_file):
 
         final.write_videofile(
             output,
-            fps=30,
+            fps=24,
             codec="libx264",
-            audio_codec="aac"
+            audio_codec="aac",
+            preset="ultrafast",
+            threads=1,
+            temp_audiofile="output/temp-audio.m4a",
+            remove_temp=True
         )
 
 
