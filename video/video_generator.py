@@ -248,8 +248,17 @@ def create_video(script, voice_file):
 
 
         final = background.set_audio(
-            audio
-        )
+    audio
+)
+
+
+music_file = "assets/music/background.mp3"
+
+
+final = add_background_music(
+    final,
+    music_file
+)
         # ==========================================
         # EXPORT VIDEO
         # ==========================================
