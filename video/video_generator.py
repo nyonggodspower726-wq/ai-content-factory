@@ -18,7 +18,8 @@ from moviepy.editor import (
 
 from config import PEXELS_API_KEY
 from video.effects import add_hook
-
+from video.transitions import apply_zoom
+from video.background_music import add_background_music
 
 # ==========================================
 # SEARCH MULTIPLE PEXELS VIDEOS
