@@ -297,7 +297,7 @@ def create_video(script, voice_file):
 
         print("Professional video completed.")
 
-        return hooked_video
+        return watermarked_video
 
 
     except Exception as e:
