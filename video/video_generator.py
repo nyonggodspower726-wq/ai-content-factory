@@ -285,7 +285,9 @@ def create_video(script, voice_file):
                 hook_text
             )
 
-
+            watermarked_video = add_watermark(
+    hooked_video
+)
         except Exception as e:
 
             print(f"Hook failed: {e}")
