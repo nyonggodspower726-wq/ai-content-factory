@@ -2,31 +2,118 @@ import os
 import requests
 import PIL.Image
 
-if not hasattr(PIL.Image,"ANTIALIAS"):
+# Pillow compatibility
+if not hasattr(PIL.Image, "ANTIALIAS"):
     try:
-        PIL.Image.ANTIALIAS=PIL.Image.Resampling.LANCZOS
+        PIL.Image.ANTIALIAS = PIL.Image.Resampling.LANCZOS
     except AttributeError:
-        PIL.Image.ANTIALIAS=PIL.Image.LANCZOS
+        PIL.Image.ANTIALIAS = PIL.Image.LANCZOS
 
-from moviepy.editor import VideoFileClip,AudioFileClip,concatenate_videoclips
-from moviepy.video.fx import all as vfx
+
+from moviepy.editor import (
+    VideoFileClip,
+    AudioFileClip,
+    concatenate_videoclips,
+)
+
 from config import PEXELS_API_KEY
 from video.effects import add_hook
-from video.watermark import add_watermark
-from video.background_music import add_background_music
 
-# (keep your search_pexels_videos and download_videos functions unchanged)
 
-def build_background_video(video_paths,duration):
-    clips=[]
-    if not video_paths:
-        return None
-    seconds_per_clip=max(2,duration/len(video_paths))
-    for path in video_paths:
-        clip=VideoFileClip(path).resize(height=1280).crop(x_center=VideoFileClip(path).w/2,y_center=VideoFileClip(path).h/2,width=720,height=1280).subclip(0,min(seconds_per_clip,VideoFileClip(path).duration))
-        clips.append(clip)
-    for i,clip in enumerate(clips):
-        clips[i]=clip.fx(vfx.fadein,0.3).fx(vfx.fadeout,0.3)
-    final_background=concatenate_videoclips(clips,method="compose")
-    final_background=final_background.set_duration(duration)
-    return final_background
+# ==========================================
+# SEARCH MULTIPLE PEXELS VIDEOS
+# ==========================================
+
+def search_pexels_videos(query):
+
+    print(f"Searching Pexels: {query}")
+
+    url = "https://api.pexels.com/videos/search"
+
+    headers = {
+        "Authorization": PEXELS_API_KEY
+    }
+
+    params = {
+        "query": query,
+        "per_page": 5
+    }
+
+    videos = []
+
+    try:
+
+        response = requests.get(
+            url,
+            headers=headers,
+            params=params,
+            timeout=30
+        )
+
+        response.raise_for_status()
+
+        data = response.json()
+
+        if "videos" in data:
+
+            for video in data["videos"]:
+
+                for file in video["video_files"]:
+
+                    if (
+                        file.get("link", "").endswith(".mp4")
+                        and file.get("width", 0) >= 720
+                    ):
+
+                        videos.append(file["link"])
+                        break
+
+    except Exception as e:
+
+        print(f"Pexels search failed: {e}")
+
+    return videos
+
+
+
+# ==========================================
+# DOWNLOAD MULTIPLE CLIPS
+# ==========================================
+
+def download_videos(video_urls):
+
+    os.makedirs("output/clips", exist_ok=True)
+
+    downloaded = []
+
+    headers = {
+        "User-Agent": "Mozilla/5.0"
+    }
+
+    for i, url in enumerate(video_urls):
+
+        filename = f"output/clips/clip_{i}.mp4"
+
+        response = requests.get(
+            url,
+            headers=headers,
+            stream=True,
+            timeout=60
+        )
+
+        response.raise_for_status()
+
+        with open(filename, "wb") as f:
+
+            for chunk in response.iter_content(
+                chunk_size=1024 * 1024
+            ):
+
+                if chunk:
+                    f.write(chunk)
+
+        print(f"Downloaded clip {i + 1}")
+
+        downloaded.append(filename)
+
+    return downloaded
