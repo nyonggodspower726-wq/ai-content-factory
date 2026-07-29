@@ -1,20 +1,39 @@
 import subprocess
+import os
 
 
 def add_hook(video_file, text):
 
-    print("Adding hook text with FFmpeg...")
+    print("Adding professional hook...")
+
+    os.makedirs("output", exist_ok=True)
 
     output = "output/hook_video.mp4"
 
     # Clean text for FFmpeg
     safe_text = (
-        text
+        text[:80]
+        .replace("\\", "\\\\")
         .replace(":", "\\:")
         .replace("'", "\\'")
+        .replace("%", "\\%")
         .replace("\n", " ")
     )
 
+    drawtext = (
+        f"drawtext="
+        f"text='{safe_text}':"
+        f"fontsize=58:"
+        f"fontcolor=white:"
+        f"borderw=3:"
+        f"bordercolor=black:"
+        f"box=1:"
+        f"boxcolor=black@0.45:"
+        f"boxborderw=15:"
+        f"x=(w-text_w)/2:"
+        f"y=80:"
+        f"enable='between(t,0,3)'"
+    )
 
     command = [
         "ffmpeg",
@@ -22,12 +41,19 @@ def add_hook(video_file, text):
         "-i",
         video_file,
         "-vf",
-        f"drawtext=text='{safe_text}':fontsize=60:fontcolor=white:x=(w-text_w)/2:y=80:enable='between(t,0,3)'",
+        drawtext,
+        "-c:v",
+        "libx264",
+        "-preset",
+        "ultrafast",
+        "-crf",
+        "28",
+        "-threads",
+        "1",
         "-c:a",
         "copy",
         output
     ]
-
 
     try:
 
@@ -36,10 +62,9 @@ def add_hook(video_file, text):
             check=True
         )
 
-        print("Hook text added successfully.")
+        print("Hook added successfully.")
 
         return output
-
 
     except Exception as e:
 
