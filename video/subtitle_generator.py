@@ -1,38 +1,45 @@
-import os
+from moviepy.editor import TextClip, CompositeVideoClip
 
 
-def create_subtitles(script):
+def create_subtitles(video, script):
 
-    print("Generating subtitles...")
-
-    os.makedirs("output", exist_ok=True)
-
-    subtitle_path = "output/subtitles.srt"
+    print("Creating captions...")
 
     words = script.split()
 
-    subtitle_duration = 2
+    subtitles = []
 
-    with open(subtitle_path, "w", encoding="utf-8") as f:
+    duration = video.duration
 
-        counter = 1
-        start = 0
+    chunk_size = 8
 
-        for i in range(0, len(words), 8):
+    total_chunks = max(1, (len(words) + chunk_size - 1) // chunk_size)
 
-            end = start + subtitle_duration
+    chunk_duration = duration / total_chunks
 
-            text = " ".join(words[i:i + 8])
+    for i in range(total_chunks):
 
-            f.write(f"{counter}\n")
-            f.write(
-                f"00:00:{start:02d},000 --> 00:00:{end:02d},000\n"
+        text = " ".join(
+            words[i * chunk_size:(i + 1) * chunk_size]
+        )
+
+        caption = (
+            TextClip(
+                text,
+                fontsize=55,
+                color="white",
+                stroke_color="black",
+                stroke_width=2,
+                method="caption",
+                size=(650, None)
             )
-            f.write(text + "\n\n")
+            .set_start(i * chunk_duration)
+            .set_duration(chunk_duration)
+            .set_position(("center", 1050))
+        )
 
-            counter += 1
-            start = end
+        subtitles.append(caption)
 
-    print("Subtitle file created.")
-
-    return subtitle_path
+    return CompositeVideoClip(
+        [video] + subtitles
+    )
