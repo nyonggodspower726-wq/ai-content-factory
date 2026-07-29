@@ -1,5 +1,6 @@
 import os
 import requests
+import subprocess
 import PIL.Image
 
 # Fix MoviePy + Pillow compatibility
@@ -94,6 +95,46 @@ def download_video(url):
 
 
 
+def burn_subtitles(video_file, subtitle_file):
+
+    print("Burning captions into video...")
+
+    output = "output/final_caption_video.mp4"
+
+
+    command = [
+        "ffmpeg",
+        "-y",
+        "-i",
+        video_file,
+        "-vf",
+        f"subtitles={subtitle_file}",
+        "-c:a",
+        "copy",
+        output
+    ]
+
+
+    try:
+
+        subprocess.run(
+            command,
+            check=True
+        )
+
+        print("Captions burned successfully.")
+
+        return output
+
+
+    except Exception as e:
+
+        print(f"Caption burn failed: {e}")
+
+        return video_file
+
+
+
 def create_video(script, voice_file):
 
     print("Creating professional AI video...")
@@ -104,6 +145,7 @@ def create_video(script, voice_file):
         for word in script.split()
         if len(word) > 4
     ]
+
 
     search_term = " ".join(keywords[:4])
 
@@ -125,15 +167,21 @@ def create_video(script, voice_file):
     background = download_video(video_url)
 
 
+
     try:
+
 
         video = VideoFileClip(background)
 
         audio = AudioFileClip(voice_file)
 
 
-        # Vertical format for TikTok/Reels/Shorts
-        video = video.resize(height=1280)
+
+        # TikTok/Reels/Shorts format
+
+        video = video.resize(
+            height=1280
+        )
 
 
         video = video.crop(
@@ -144,43 +192,71 @@ def create_video(script, voice_file):
         )
 
 
-        # Match video length with voice
+
+        # Match video with voice length
+
         video = video.set_duration(
             audio.duration
         )
 
 
-        # Create subtitle file (.srt)
-        create_subtitles(script)
+
+        # Create subtitles
+
+        subtitle_file = create_subtitles(script)
 
 
-        # Keep final video clip
+
+        # Add voice
+
         final = video.set_audio(audio)
+
 
 
         output = "output/final_video.mp4"
 
 
+
         final.write_videofile(
+
             output,
+
             codec="libx264",
+
             audio_codec="aac",
+
             fps=24,
+
             preset="ultrafast",
+
             threads=1,
-            logger=None
+
+            logger="bar"
+
         )
+
 
 
         print("Professional video created.")
 
 
-        return output
+
+        # Burn captions into final video
+
+        final_video = burn_subtitles(
+            output,
+            subtitle_file
+        )
+
+
+        return final_video
 
 
 
     except Exception as e:
 
+
         print(f"Video creation failed: {e}")
+
 
         return None
