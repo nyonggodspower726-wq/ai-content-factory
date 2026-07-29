@@ -72,3 +72,58 @@ def search_pexels_videos(query):
         print(f"Pexels search failed: {e}")
 
     return videos
+# ==========================================
+# DOWNLOAD MULTIPLE CLIPS
+# ==========================================
+
+def download_videos(video_urls):
+
+    os.makedirs("output/clips", exist_ok=True)
+
+    downloaded = []
+
+    headers = {
+        "User-Agent": "Mozilla/5.0"
+    }
+
+    for i, url in enumerate(video_urls):
+
+        filename = f"output/clips/clip_{i}.mp4"
+
+        try:
+
+            response = requests.get(
+                url,
+                headers=headers,
+                stream=True,
+                timeout=60
+            )
+
+            response.raise_for_status()
+
+            print("Downloading video...")
+
+            with open(filename, "wb") as f:
+
+                for chunk in response.iter_content(
+                    chunk_size=1024 * 1024
+                ):
+
+                    if chunk:
+                        f.write(chunk)
+
+            print(f"Downloaded clip {i + 1}")
+            print(f"Downloaded file size: {os.path.getsize(filename)} bytes")
+
+            # Verify the downloaded video
+            test_clip = VideoFileClip(filename)
+            test_clip.close()
+
+            downloaded.append(filename)
+
+        except Exception as e:
+
+            print(f"Skipping corrupted video: {filename}")
+            print(e)
+
+    return downloaded
