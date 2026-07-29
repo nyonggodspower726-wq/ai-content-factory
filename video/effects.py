@@ -50,3 +50,31 @@ def add_hook(video_file, text):
         "x=(w-text_w)/2:"
         "y=h-60"
     )
+    command = [
+        "ffmpeg",
+        "-y",
+        "-i",
+        video_file,
+        "-filter_complex",
+        filter_complex,
+        "-c:v",
+        "libx264",
+        "-preset",
+        "ultrafast",
+        "-crf",
+        "28",
+        "-threads",
+        "1",
+        "-c:a",
+        "copy",
+        output
+    ]
+
+    try:
+
+        subprocess.run(
+            command,
+            check=True,
+            capture_output=True,
+            text=True
+        )
