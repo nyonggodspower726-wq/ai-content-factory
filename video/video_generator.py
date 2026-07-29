@@ -73,3 +73,117 @@ def search_pexels_videos(query):
         print(f"Pexels search failed: {e}")
 
     return videos
+# ==========================================
+# DOWNLOAD MULTIPLE CLIPS
+# ==========================================
+
+def download_videos(video_urls):
+
+    os.makedirs("output/clips", exist_ok=True)
+
+    downloaded = []
+
+    headers = {
+        "User-Agent": "Mozilla/5.0"
+    }
+
+    for i, url in enumerate(video_urls):
+
+        filename = f"output/clips/clip_{i}.mp4"
+
+        try:
+
+            response = requests.get(
+                url,
+                headers=headers,
+                stream=True,
+                timeout=60
+            )
+
+            response.raise_for_status()
+
+            print("Downloading video...")
+
+            with open(filename, "wb") as f:
+
+                for chunk in response.iter_content(
+                    chunk_size=1024 * 1024
+                ):
+
+                    if chunk:
+                        f.write(chunk)
+
+            print(f"Downloaded clip {i + 1}")
+            print(f"Downloaded file size: {os.path.getsize(filename)} bytes")
+
+            # Verify the downloaded video
+            test_clip = VideoFileClip(filename)
+            test_clip.close()
+
+            downloaded.append(filename)
+
+        except Exception as e:
+
+            print(f"Skipping corrupted video: {filename}")
+            print(e)
+
+    return downloaded
+
+
+# ==========================================
+# BUILD BACKGROUND VIDEO
+# ==========================================
+
+def build_background_video(video_paths, duration):
+
+    clips = []
+
+    if len(video_paths) == 0:
+        return None
+
+    seconds_per_clip = max(
+        2,
+        duration / len(video_paths)
+    )
+
+    for path in video_paths:
+
+        try:
+
+            clip = VideoFileClip(path)
+
+            clip = clip.resize(
+                height=1280
+            )
+
+            clip = clip.crop(
+                x_center=clip.w / 2,
+                y_center=clip.h / 2,
+                width=720,
+                height=1280
+            )
+
+            clip = clip.subclip(
+                0,
+                min(seconds_per_clip, clip.duration)
+            )
+
+            clips.append(clip)
+
+        except Exception as e:
+
+            print(f"Failed to load clip {path}: {e}")
+
+    if len(clips) == 0:
+        return None
+
+    final_background = concatenate_videoclips(
+        clips,
+        method="compose"
+    )
+
+    final_background = final_background.set_duration(
+        duration
+    )
+
+    return final_background
