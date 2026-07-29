@@ -17,7 +17,7 @@ from moviepy.editor import (
 
 from config import PEXELS_API_KEY
 from video.effects import add_hook
-
+from video.subtitles import add_subtitles
 
 # ==========================================
 # SEARCH MULTIPLE PEXELS VIDEOS
