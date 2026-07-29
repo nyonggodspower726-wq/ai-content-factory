@@ -162,9 +162,7 @@ def build_background_video(video_paths, duration):
         clips.append(clip)
 
 
-    from moviepy.video.fx import all as vfx
-
-for i, clip in enumerate(clips):
+    for i, clip in enumerate(clips):
     clips[i] = clip.fx(
         vfx.fadein,
         0.3
@@ -174,7 +172,7 @@ for i, clip in enumerate(clips):
     )
 
 
-final_background = concatenate_videoclips(
+    final_background = concatenate_videoclips(
     clips,
     method="compose"
 )
@@ -247,18 +245,17 @@ def create_video(script, voice_file):
             return None
 
 
-        final = background.set_audio(
-    audio
-)
+                final = background.set_audio(
+            audio
+        )
+
+        music_file = "assets/music/background.mp3"
 
 
-music_file = "assets/music/background.mp3"
-
-
-final = add_background_music(
+        final = add_background_music(
     final,
     music_file
-)
+        )
         # ==========================================
         # EXPORT VIDEO
         # ==========================================
@@ -294,9 +291,9 @@ final = add_background_music(
                 hook_text
             )
 
-            watermarked_video = add_watermark(
-    hooked_video
-)
+                        watermarked_video = add_watermark(
+                hooked_video
+            )
         except Exception as e:
 
             print(f"Hook failed: {e}")
