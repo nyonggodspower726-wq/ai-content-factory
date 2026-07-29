@@ -15,6 +15,7 @@ from moviepy.editor import (
     AudioFileClip,
     concatenate_videoclips,
 )
+from moviepy.video.fx import all as vfx
 
 from config import PEXELS_API_KEY
 from video.effects import add_hook
