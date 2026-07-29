@@ -4,7 +4,7 @@ import os
 
 def add_hook(video_file, text):
 
-    print("Adding professional hook...")
+    print("Adding professional branding...")
 
     os.makedirs("output", exist_ok=True)
 
@@ -19,7 +19,9 @@ def add_hook(video_file, text):
         .replace("\n", " ")
     )
 
-    drawtext = (
+    filter_complex = (
+        "movie=assets/logo.png[logo];"
+        "[0:v][logo]overlay=W-w-20:20,"
         f"drawtext=text='{safe_text}':"
         "fontsize=60:"
         "fontcolor=white:"
@@ -42,8 +44,8 @@ def add_hook(video_file, text):
         "-y",
         "-i",
         video_file,
-        "-vf",
-        drawtext,
+        "-filter_complex",
+        filter_complex,
         "-c:v",
         "libx264",
         "-preset",
@@ -58,10 +60,18 @@ def add_hook(video_file, text):
     ]
 
     try:
-        subprocess.run(command, check=True)
-        print("Hook added successfully.")
+
+        subprocess.run(
+            command,
+            check=True
+        )
+
+        print("Professional branding added successfully.")
+
         return output
 
     except Exception as e:
+
         print(f"Hook failed: {e}")
+
         return video_file
