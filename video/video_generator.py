@@ -273,3 +273,8 @@ print("Professional video created.")
 print("Professional video completed.")
 
 return output
+    except Exception as e:
+
+        print(f"Video creation failed: {e}")
+
+        return None
