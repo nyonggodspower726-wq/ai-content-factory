@@ -13,7 +13,7 @@ if not hasattr(PIL.Image, "ANTIALIAS"):
 from moviepy.editor import (
     VideoFileClip,
     AudioFileClip,
-    concatenate_videoclips,
+    concatenate_videoclips
 )
 
 from config import PEXELS_API_KEY
@@ -21,9 +21,9 @@ from video.subtitle_generator import create_subtitles
 from video.effects import add_hook
 
 
-# -------------------------------------------------
+# ============================================
 # SEARCH MULTIPLE PEXELS VIDEOS
-# -------------------------------------------------
+# ============================================
 
 def search_pexels_videos(query):
 
@@ -38,7 +38,7 @@ def search_pexels_videos(query):
         "per_page": 5
     }
 
-    video_links = []
+    videos = []
 
     try:
 
@@ -57,40 +57,38 @@ def search_pexels_videos(query):
 
                 for file in video["video_files"]:
 
-                    link = file.get("link", "")
-
                     if (
-                        link.endswith(".mp4")
+                        file.get("link", "").endswith(".mp4")
                         and file.get("width", 0) >= 720
                     ):
 
-                        video_links.append(link)
+                        videos.append(file["link"])
                         break
 
     except Exception as e:
 
         print(f"Pexels search failed: {e}")
 
-    return video_links
+    return videos
 
 
-# -------------------------------------------------
-# DOWNLOAD ALL CLIPS
-# -------------------------------------------------
+# ============================================
+# DOWNLOAD MULTIPLE VIDEOS
+# ============================================
 
-def download_videos(urls):
+def download_videos(video_urls):
 
     os.makedirs("output/clips", exist_ok=True)
 
-    downloaded = []
+    clips = []
 
     headers = {
         "User-Agent": "Mozilla/5.0"
     }
 
-    for i, url in enumerate(urls):
+    for index, url in enumerate(video_urls):
 
-        path = f"output/clips/clip_{i}.mp4"
+        path = f"output/clips/clip_{index}.mp4"
 
         response = requests.get(
             url,
@@ -110,97 +108,8 @@ def download_videos(urls):
                 if chunk:
                     f.write(chunk)
 
-        print(f"Downloaded clip {i+1}")
+        print(f"Downloaded clip {index + 1}")
 
-        downloaded.append(path)
+        clips.append(path)
 
-    return downloaded
-# -------------------------------------------------
-# BURN SUBTITLES INTO VIDEO
-# -------------------------------------------------
-
-def burn_subtitles(video_file, subtitle_file):
-
-    print("Burning captions into video...")
-
-    output = "output/final_caption_video.mp4"
-
-    command = [
-        "ffmpeg",
-        "-y",
-        "-i",
-        video_file,
-        "-vf",
-        f"subtitles={subtitle_file}",
-        "-c:v",
-        "libx264",
-        "-c:a",
-        "copy",
-        output
-    ]
-
-    try:
-
-        subprocess.run(
-            command,
-            check=True
-        )
-
-        print("Captions burned successfully.")
-
-        return output
-
-    except Exception as e:
-
-        print(f"Caption burn failed: {e}")
-
-        return video_file
-
-
-# -------------------------------------------------
-# BUILD MULTI-CLIP VIDEO
-# -------------------------------------------------
-
-def build_background_video(video_paths, duration):
-
-    clips = []
-
-    if len(video_paths) == 0:
-        return None
-
-    seconds_per_clip = max(
-        2,
-        duration / len(video_paths)
-    )
-
-    for path in video_paths:
-
-        clip = VideoFileClip(path)
-
-        clip = clip.resize(height=1280)
-
-        clip = clip.crop(
-            x_center=clip.w / 2,
-            y_center=clip.h / 2,
-            width=720,
-            height=1280
-        )
-
-        clip = clip.subclip(
-            0,
-            min(
-                seconds_per_clip,
-                clip.duration
-            )
-        )
-
-        clips.append(clip)
-
-    background = concatenate_videoclips(
-        clips,
-        method="compose"
-    )
-
-    background = background.set_duration(duration)
-
-    return background
+    return clips
