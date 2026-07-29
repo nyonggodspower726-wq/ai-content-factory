@@ -20,7 +20,23 @@ def add_hook(video_file, text):
         .replace("\n", " ")
     )
 
-    f"drawtext=text='{safe_text}':fontsize=60:fontcolor=white:borderw=3:bordercolor=black:x=(w-text_w)/2:y=80:enable='between(t,0,3)',drawtext=text='Get AI Prompts\\: nyonggodspower726-wq.github.io/promptprohub':fontsize=28:fontcolor=yellow:borderw=2:bordercolor=black:x=(w-text_w)/2:y=h-60"
+     drawtext = (
+    f"drawtext=text='{safe_text}':"
+    "fontsize=60:"
+    "fontcolor=white:"
+    "borderw=3:"
+    "bordercolor=black:"
+    "x=(w-text_w)/2:"
+    "y=80:"
+    "enable='between(t,0,3)',"
+
+    "drawtext=text='Get AI Prompts\\: nyonggodspower726-wq.github.io/promptprohub':"
+    "fontsize=28:"
+    "fontcolor=yellow:"
+    "borderw=2:"
+    "bordercolor=black:"
+    "x=(w-text_w)/2:"
+    "y=h-60"
     )
 
     command = [
