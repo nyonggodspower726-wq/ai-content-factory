@@ -10,63 +10,57 @@ def add_hook(video_file, text):
 
     output = "output/hook_video.mp4"
 
-    # Make the hook safe for FFmpeg drawtext
     safe_text = (
         text[:80]
         .replace("\\", "\\\\")
-        .replace(":", r"\:")
-        .replace("'", r"\'")
-        .replace(",", r"\,")
-        .replace("[", r"\[")
-        .replace("]", r"\]")
-        .replace("%", r"\%")
+        .replace(":", "\\:")
+        .replace("'", "\\'")
+        .replace(",", "\\,")
+        .replace("%", "\\%")
         .replace("\n", " ")
     )
-    # Escape the website text separately
-    website_text = (
-        "Get AI Prompts: nyonggodspower726-wq.github.io/promptprohub"
+
+    website = (
+        "Get AI Prompts"
         .replace("\\", "\\\\")
-        .replace(":", r"\:")
-        .replace("'", r"\'")
-        .replace(",", r"\,")
+        .replace(":", "\\:")
+        .replace("'", "\\'")
+        .replace(",", "\\,")
     )
 
-    filter_complex = (
-        "movie=assets/logo.png[logo];"
-        "[0:v][logo]overlay=W-w-20:20,"
-        f"drawtext=text='{safe_text}':"
-        "fontsize=60:"
-        "fontcolor=white:"
-        "borderw=3:"
-        "bordercolor=black:"
-        "x=(w-text_w)/2:"
-        "y=80:"
-        "enable=between(t\\,0\\,3),"
-        f"drawtext=text='{website_text}':"
-        "fontsize=28:"
-        "fontcolor=yellow:"
-        "borderw=2:"
-        "bordercolor=black:"
-        "x=(w-text_w)/2:"
-        "y=h-60"
-    )
     command = [
         "ffmpeg",
         "-y",
-        "-i",
-        video_file,
+        "-i", video_file,
+        "-i", "assets/logo.png",
         "-filter_complex",
-        filter_complex,
-        "-c:v",
-        "libx264",
-        "-preset",
-        "ultrafast",
-        "-crf",
-        "28",
-        "-threads",
-        "1",
-        "-c:a",
-        "copy",
+        (
+            "[0:v][1:v]overlay=W-w-20:20[tmp1];"
+            "[tmp1]"
+            f"drawtext=text='{safe_text}':"
+            "fontsize=60:"
+            "fontcolor=white:"
+            "borderw=3:"
+            "bordercolor=black:"
+            "x=(w-text_w)/2:"
+            "y=80:"
+            "enable='between(t,0,3)'"
+            "[tmp2];"
+            "[tmp2]"
+            f"drawtext=text='{website}':"
+            "fontsize=28:"
+            "fontcolor=yellow:"
+            "borderw=2:"
+            "bordercolor=black:"
+            "x=(w-text_w)/2:"
+            "y=h-60"
+        ),
+        "-map", "[tmp2]",
+        "-map", "0:a?",
+        "-c:v", "libx264",
+        "-preset", "ultrafast",
+        "-crf", "28",
+        "-c:a", "copy",
         output
     ]
 
@@ -78,6 +72,7 @@ def add_hook(video_file, text):
             capture_output=True,
             text=True
         )
+
         print("Professional branding added successfully.")
 
         return output
