@@ -212,7 +212,11 @@ def create_video(script, voice_file):
     video_paths = download_videos(
         video_urls
     )
+    if len(video_paths) == 0:
 
+    print("No valid videos downloaded.")
+
+    return None
 
     try:
 
