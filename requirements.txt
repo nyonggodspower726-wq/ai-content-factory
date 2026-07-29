@@ -7,3 +7,4 @@ schedule
 Pillow
 imageio-ffmpeg
 edge-tts
+ffmpeg-python
