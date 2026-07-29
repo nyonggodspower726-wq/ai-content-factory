@@ -114,7 +114,15 @@ def download_videos(video_urls):
 
         print(f"Downloaded clip {i + 1}")
         print(f"Downloaded file size: {os.path.getsize(filename)} bytes")
-        downloaded.append(filename)
+        try:
+    test_clip = VideoFileClip(filename)
+    test_clip.close()
+
+    downloaded.append(filename)
+
+except Exception:
+
+    print(f"Skipping corrupted video: {filename}")
 
     return downloaded
 # ==========================================
