@@ -114,9 +114,9 @@ def download_videos(video_urls):
 
         print(f"Downloaded clip {i + 1}")
         print(f"Downloaded file size: {os.path.getsize(filename)} bytes")
-        try:
-    test_clip = VideoFileClip(filename)
-    test_clip.close()
+try:
+        test_clip = VideoFileClip(filename)
+        test_clip.close()
 
     downloaded.append(filename)
 
