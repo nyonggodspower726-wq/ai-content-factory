@@ -156,3 +156,8 @@ def create_video(script, voice_file):
         print("Professional video completed.")
 
         return hooked_video
+    except Exception as e:
+
+        print(f"Video creation failed: {e}")
+
+        return None
