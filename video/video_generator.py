@@ -161,10 +161,22 @@ def build_background_video(video_paths, duration):
         clips.append(clip)
 
 
-    final_background = concatenate_videoclips(
-        clips,
-        method="compose"
+    from moviepy.video.fx import all as vfx
+
+for i, clip in enumerate(clips):
+    clips[i] = clip.fx(
+        vfx.fadein,
+        0.3
+    ).fx(
+        vfx.fadeout,
+        0.3
     )
+
+
+final_background = concatenate_videoclips(
+    clips,
+    method="compose"
+)
 
 
     final_background = final_background.set_duration(
