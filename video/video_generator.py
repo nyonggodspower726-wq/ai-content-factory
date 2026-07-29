@@ -12,6 +12,7 @@ from moviepy.editor import VideoFileClip, AudioFileClip
 
 from config import PEXELS_API_KEY
 from video.subtitle_generator import create_subtitles
+from video.effects import add_hook
 
 
 
@@ -170,14 +171,13 @@ def create_video(script, voice_file):
 
     try:
 
-
         video = VideoFileClip(background)
 
         audio = AudioFileClip(voice_file)
 
 
 
-        # TikTok/Reels/Shorts format
+        # Vertical format for Shorts/Reels/TikTok
 
         video = video.resize(
             height=1280
@@ -193,7 +193,7 @@ def create_video(script, voice_file):
 
 
 
-        # Match video with voice length
+        # Match video length with voice
 
         video = video.set_duration(
             audio.duration
@@ -201,7 +201,19 @@ def create_video(script, voice_file):
 
 
 
-        # Create subtitles
+        # Add hook text at beginning
+
+        hook_text = script.split("\n")[0]
+
+
+        video = add_hook(
+            video,
+            hook_text
+        )
+
+
+
+        # Create subtitle file
 
         subtitle_file = create_subtitles(script)
 
@@ -241,7 +253,7 @@ def create_video(script, voice_file):
 
 
 
-        # Burn captions into final video
+        # Burn captions
 
         final_video = burn_subtitles(
             output,
@@ -255,8 +267,6 @@ def create_video(script, voice_file):
 
     except Exception as e:
 
-
         print(f"Video creation failed: {e}")
-
 
         return None
