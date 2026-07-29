@@ -97,3 +97,32 @@ def add_subtitles(video_file, script):
         "copy",
         output
     ]
+    try:
+
+        print("Adding subtitles with FFmpeg...")
+
+        subprocess.run(
+            command,
+            check=True,
+            capture_output=True,
+            text=True
+        )
+
+        print("Subtitles added successfully.")
+
+        return output
+
+    except subprocess.CalledProcessError as e:
+
+        print("FFmpeg subtitle error!")
+
+        if e.stderr:
+            print(e.stderr)
+
+        return video_file
+
+    except Exception as e:
+
+        print(f"Subtitle error: {e}")
+
+        return video_file
