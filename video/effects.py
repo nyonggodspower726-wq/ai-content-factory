@@ -1,43 +1,48 @@
-from moviepy.editor import TextClip, CompositeVideoClip
+import subprocess
 
 
-def add_hook(video, text):
+def add_hook(video_file, text):
 
-    print("Adding hook text...")
+    print("Adding hook text with FFmpeg...")
+
+    output = "output/hook_video.mp4"
+
+    # Clean text for FFmpeg
+    safe_text = (
+        text
+        .replace(":", "\\:")
+        .replace("'", "\\'")
+        .replace("\n", " ")
+    )
+
+
+    command = [
+        "ffmpeg",
+        "-y",
+        "-i",
+        video_file,
+        "-vf",
+        f"drawtext=text='{safe_text}':fontsize=60:fontcolor=white:x=(w-text_w)/2:y=80:enable='between(t,0,3)'",
+        "-c:a",
+        "copy",
+        output
+    ]
+
 
     try:
 
-        hook = TextClip(
-            text,
-            fontsize=70,
-            color="white",
-            font="Arial-Bold",
-            method="caption",
-            size=(700, None)
+        subprocess.run(
+            command,
+            check=True
         )
 
+        print("Hook text added successfully.")
 
-        hook = hook.set_duration(3)
-
-
-        hook = hook.set_position(
-            ("center", "top")
-        )
-
-
-        final = CompositeVideoClip(
-            [
-                video,
-                hook
-            ]
-        )
-
-
-        return final
+        return output
 
 
     except Exception as e:
 
-        print(f"Hook text failed: {e}")
+        print(f"Hook failed: {e}")
 
-        return video
+        return video_file
