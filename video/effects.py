@@ -78,3 +78,21 @@ def add_hook(video_file, text):
             capture_output=True,
             text=True
         )
+        print("Professional branding added successfully.")
+
+        return output
+
+    except subprocess.CalledProcessError as e:
+
+        print("FFmpeg failed!")
+
+        if e.stderr:
+            print(e.stderr)
+
+        return video_file
+
+    except Exception as e:
+
+        print(f"Hook failed: {e}")
+
+        return video_file
