@@ -12,36 +12,26 @@ def add_hook(video_file, text):
 
     safe_text = (
         text[:80]
-        .replace("\\", "\\\\")
-        .replace(":", "\\:")
-        .replace("'", "\\'")
-        .replace(",", "\\,")
-        .replace("%", "\\%")
+        .replace("\\", "")
+        .replace(":", "")
+        .replace("'", "")
+        .replace(",", "")
+        .replace("%", "")
         .replace("\n", " ")
     )
 
-    website_text = (
-        "Get AI Prompts: nyonggodspower726-wq.github.io/promptprohub"
-        .replace("\\", "\\\\")
-        .replace(":", "\\:")
-        .replace("'", "\\'")
-        .replace(",", "\\,")
-    )
-
     filter_complex = (
-        "[0:v][1:v]overlay=W-w-20:20[tmp1];"
-        "[tmp1]"
+        "movie=assets/logo.png[logo];"
+        "[0:v][logo]overlay=W-w-20:20,"
         f"drawtext=text='{safe_text}':"
         "fontsize=60:"
         "fontcolor=white:"
         "borderw=3:"
         "bordercolor=black:"
         "x=(w-text_w)/2:"
-        "y=80"
-        "[tmp2];"
-        "[tmp2]"
-        f"drawtext=text='{website_text}':"
-        "fontsize=28:"
+        "y=80,"
+        "drawtext=text='Get AI Prompts':"
+        "fontsize=30:"
         "fontcolor=yellow:"
         "borderw=2:"
         "bordercolor=black:"
@@ -54,14 +44,8 @@ def add_hook(video_file, text):
         "-y",
         "-i",
         video_file,
-        "-i",
-        "assets/logo.png",
         "-filter_complex",
         filter_complex,
-        "-map",
-        "[tmp2]",
-        "-map",
-        "0:a?",
         "-c:v",
         "libx264",
         "-preset",
@@ -76,29 +60,10 @@ def add_hook(video_file, text):
     ]
 
     try:
-
-        subprocess.run(
-            command,
-            check=True,
-            capture_output=True,
-            text=True
-        )
-
+        subprocess.run(command, check=True)
         print("Professional branding added successfully.")
-
         return output
 
-    except subprocess.CalledProcessError as e:
-
-        print("FFmpeg failed!")
-
-        if e.stderr:
-            print(e.stderr)
-
-        return video_file
-
     except Exception as e:
-
-        print(f"Hook failed: {e}")
-
+        print("Hook failed:", e)
         return video_file
