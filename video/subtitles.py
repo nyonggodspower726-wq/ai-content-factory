@@ -126,3 +126,6 @@ def add_subtitles(video_file, script):
         print(f"Subtitle error: {e}")
 
         return video_file
+# ==========================================
+# END OF FILE
+# ==========================================
