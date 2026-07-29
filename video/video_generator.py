@@ -1,27 +1,18 @@
 import os
 import requests
-import PIL.Image
 
-# Fix MoviePy + Pillow compatibility
-if not hasattr(PIL.Image, "ANTIALIAS"):
-    PIL.Image.ANTIALIAS = PIL.Image.LANCZOS
-
-
-from moviepy.editor import VideoFileClip, AudioFileClip
+from moviepy.editor import VideoFileClip, AudioFileClip, CompositeVideoClip
 
 from config import PEXELS_API_KEY
-
+from video.subtitle_generator import create_subtitles
 
 
 def search_pexels_video(query):
 
-    print(f"Searching Pexels: {query}")
-
     url = "https://api.pexels.com/videos/search"
 
     headers = {
-        "Authorization": PEXELS_API_KEY,
-        "User-Agent": "Mozilla/5.0"
+        "Authorization": PEXELS_API_KEY
     }
 
     params = {
@@ -46,23 +37,15 @@ def search_pexels_video(query):
 
                 for file in video["video_files"]:
 
-                    link = file.get("link")
+                    link = file.get("link", "")
 
-                    width = file.get("width", 0)
-
-                    if link and width >= 720:
+                    if link.endswith(".mp4") and file.get("width", 0) >= 720:
                         return link
 
-        return None
-
-
     except Exception as e:
+        print(f"Pexels search failed: {e}")
 
-        print(f"Pexels search error: {e}")
-
-        return None
-
-
+    return None
 
 
 def download_video(url):
@@ -71,100 +54,59 @@ def download_video(url):
 
     path = "output/background.mp4"
 
+    headers = {
+        "User-Agent": "Mozilla/5.0"
+    }
 
-    try:
+    response = requests.get(
+        url,
+        headers=headers,
+        stream=True,
+        timeout=60
+    )
 
-        headers = {
-            "User-Agent": "Mozilla/5.0"
-        }
+    response.raise_for_status()
 
+    with open(path, "wb") as f:
 
-        response = requests.get(
-            url,
-            headers=headers,
-            stream=True,
-            timeout=60
-        )
+        for chunk in response.iter_content(1024 * 1024):
 
+            if chunk:
+                f.write(chunk)
 
-        with open(path, "wb") as file:
+    print("Video file downloaded.")
 
-            for chunk in response.iter_content(
-                chunk_size=1024 * 1024
-            ):
-
-                if chunk:
-                    file.write(chunk)
-
-
-        print("Video file downloaded.")
-
-        return path
-
-
-    except Exception as e:
-
-        print(f"Download error: {e}")
-
-        return None
-
-
-
+    return path
 
 
 def create_video(script, voice_file):
 
     print("Creating professional AI video...")
 
-
-    # Better search words
-    words = [
+    keywords = [
         word for word in script.split()
-        if len(word) > 5
+        if len(word) > 4
     ]
 
+    search_term = " ".join(keywords[:4])
 
-    search_term = " ".join(words[:4])
-
+    print(f"Searching Pexels: {search_term}")
 
     video_url = search_pexels_video(search_term)
 
-
     if not video_url:
-
-        print("No Pexels video found.")
-
+        print("No background video found.")
         return None
-
-
 
     background = download_video(video_url)
 
-
-    if not background:
-
-        return None
-
-
-
-    print("Background downloaded.")
-
-
-
     try:
-
 
         video = VideoFileClip(background)
 
-
         audio = AudioFileClip(voice_file)
 
-
-
-        # TikTok / Shorts vertical format
-
         video = video.resize(height=1280)
-
 
         video = video.crop(
             x_center=video.w / 2,
@@ -173,50 +115,36 @@ def create_video(script, voice_file):
             height=1280
         )
 
+        video = video.set_duration(audio.duration)
 
+        subtitle = create_subtitles(script)
 
-        # Match voice duration
+        clips = [video]
 
-        video = video.set_duration(
-            audio.duration
-        )
+        if subtitle is not None:
+            clips.append(subtitle)
 
+        final = CompositeVideoClip(clips)
 
-
-        final = video.set_audio(audio)
-
-
+        final = final.set_audio(audio)
 
         output = "output/final_video.mp4"
 
-
-
         final.write_videofile(
-
             output,
-
-            fps=24,
-
             codec="libx264",
-
             audio_codec="aac",
-
+            fps=24,
             preset="ultrafast",
-
-            threads=1
-
+            threads=1,
+            logger=None
         )
-
-
 
         print("Professional video created.")
 
         return output
 
-
-
     except Exception as e:
-
 
         print(f"Video creation failed: {e}")
 
