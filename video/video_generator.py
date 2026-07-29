@@ -7,7 +7,7 @@ if not hasattr(PIL.Image, "ANTIALIAS"):
     PIL.Image.ANTIALIAS = PIL.Image.Resampling.LANCZOS
 
 
-from moviepy.editor import VideoFileClip, AudioFileClip, CompositeVideoClip
+from moviepy.editor import VideoFileClip, AudioFileClip
 
 from config import PEXELS_API_KEY
 from video.subtitle_generator import create_subtitles
@@ -144,32 +144,21 @@ def create_video(script, voice_file):
         )
 
 
+        # Match video length with voice
         video = video.set_duration(
             audio.duration
         )
 
 
-        # Subtitle system (currently safe)
-        subtitle = create_subtitles(script)
+        # Create subtitle file (.srt)
+        create_subtitles(script)
 
 
-        clips = [video]
-
-
-        if subtitle is not None:
-
-            clips.append(subtitle)
-
-
-
-        final = CompositeVideoClip(clips)
-
-
-        final = final.set_audio(audio)
+        # Keep final video clip
+        final = video.set_audio(audio)
 
 
         output = "output/final_video.mp4"
-
 
 
         final.write_videofile(
