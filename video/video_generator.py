@@ -237,3 +237,56 @@ def create_video(script, voice_file):
         final = background.set_audio(
             audio
         )
+        # ==========================================
+        # EXPORT VIDEO
+        # ==========================================
+
+        output = "output/final_video.mp4"
+
+
+        final.write_videofile(
+            output,
+            codec="libx264",
+            audio_codec="aac",
+            fps=24,
+            preset="ultrafast",
+            threads=1,
+            logger="bar"
+        )
+
+
+        print("Professional video created.")
+
+
+        # ==========================================
+        # ADD HOOK
+        # ==========================================
+
+        hook_text = script.split(".")[0]
+
+
+        try:
+
+            hooked_video = add_hook(
+                output,
+                hook_text
+            )
+
+
+        except Exception as e:
+
+            print(f"Hook failed: {e}")
+
+            hooked_video = output
+
+
+        print("Professional video completed.")
+
+        return hooked_video
+
+
+    except Exception as e:
+
+        print(f"Video creation failed: {e}")
+
+        return None
