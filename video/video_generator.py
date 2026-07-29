@@ -291,5 +291,6 @@ final_video = create_subtitles(
     script
 )
 
-print("Professional captions added.")
+print("Professional video completed.")
 
+return output
