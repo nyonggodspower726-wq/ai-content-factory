@@ -5,18 +5,27 @@ import PIL.Image
 
 # Fix MoviePy + Pillow compatibility
 if not hasattr(PIL.Image, "ANTIALIAS"):
-    PIL.Image.ANTIALIAS = PIL.Image.Resampling.LANCZOS
+    try:
+        PIL.Image.ANTIALIAS = PIL.Image.Resampling.LANCZOS
+    except AttributeError:
+        PIL.Image.ANTIALIAS = PIL.Image.LANCZOS
 
-
-from moviepy.editor import VideoFileClip, AudioFileClip
+from moviepy.editor import (
+    VideoFileClip,
+    AudioFileClip,
+    concatenate_videoclips,
+)
 
 from config import PEXELS_API_KEY
 from video.subtitle_generator import create_subtitles
 from video.effects import add_hook
 
 
+# -------------------------------------------------
+# SEARCH MULTIPLE PEXELS VIDEOS
+# -------------------------------------------------
 
-def search_pexels_video(query):
+def search_pexels_videos(query):
 
     url = "https://api.pexels.com/videos/search"
 
@@ -26,8 +35,10 @@ def search_pexels_video(query):
 
     params = {
         "query": query,
-        "per_page": 10
+        "per_page": 5
     }
+
+    video_links = []
 
     try:
 
@@ -52,223 +63,55 @@ def search_pexels_video(query):
                         link.endswith(".mp4")
                         and file.get("width", 0) >= 720
                     ):
-                        return link
+
+                        video_links.append(link)
+                        break
 
     except Exception as e:
 
         print(f"Pexels search failed: {e}")
 
-    return None
+    return video_links
 
 
+# -------------------------------------------------
+# DOWNLOAD ALL CLIPS
+# -------------------------------------------------
 
-def download_video(url):
+def download_videos(urls):
 
-    os.makedirs("output", exist_ok=True)
+    os.makedirs("output/clips", exist_ok=True)
 
-    path = "output/background.mp4"
+    downloaded = []
 
     headers = {
         "User-Agent": "Mozilla/5.0"
     }
 
-    response = requests.get(
-        url,
-        headers=headers,
-        stream=True,
-        timeout=60
-    )
+    for i, url in enumerate(urls):
 
-    response.raise_for_status()
+        path = f"output/clips/clip_{i}.mp4"
 
-    with open(path, "wb") as f:
-
-        for chunk in response.iter_content(
-            chunk_size=1024 * 1024
-        ):
-
-            if chunk:
-                f.write(chunk)
-
-    print("Video file downloaded.")
-
-    return path
-
-
-
-def burn_subtitles(video_file, subtitle_file):
-
-    print("Burning captions into video...")
-
-    output = "output/final_caption_video.mp4"
-
-
-    command = [
-        "ffmpeg",
-        "-y",
-        "-i",
-        video_file,
-        "-vf",
-        f"subtitles={subtitle_file}",
-        "-c:a",
-        "copy",
-        output
-    ]
-
-
-    try:
-
-        subprocess.run(
-            command,
-            check=True
+        response = requests.get(
+            url,
+            headers=headers,
+            stream=True,
+            timeout=60
         )
 
-        print("Captions burned successfully.")
+        response.raise_for_status()
 
-        return output
+        with open(path, "wb") as f:
 
+            for chunk in response.iter_content(
+                chunk_size=1024 * 1024
+            ):
 
-    except Exception as e:
+                if chunk:
+                    f.write(chunk)
 
-        print(f"Caption burn failed: {e}")
+        print(f"Downloaded clip {i+1}")
 
-        return video_file
+        downloaded.append(path)
 
-
-
-def create_video(script, voice_file):
-
-    print("Creating professional AI video...")
-
-
-    keywords = [
-        word
-        for word in script.split()
-        if len(word) > 4
-    ]
-
-
-    search_term = " ".join(keywords[:4])
-
-
-    print(f"Searching Pexels: {search_term}")
-
-
-    video_url = search_pexels_video(search_term)
-
-
-    if not video_url:
-
-        print("No background video found.")
-
-        return None
-
-
-
-    background = download_video(video_url)
-
-
-
-    try:
-
-        video = VideoFileClip(background)
-
-        audio = AudioFileClip(voice_file)
-
-
-
-        # Vertical format for Shorts/Reels/TikTok
-
-        video = video.resize(
-            height=1280
-        )
-
-
-        video = video.crop(
-            x_center=video.w / 2,
-            y_center=video.h / 2,
-            width=720,
-            height=1280
-        )
-
-
-
-        # Match video duration with voice
-
-        video = video.set_duration(
-            audio.duration
-        )
-
-
-
-        # Add voice
-
-        final = video.set_audio(audio)
-
-
-
-        output = "output/final_video.mp4"
-
-
-
-        final.write_videofile(
-
-            output,
-
-            codec="libx264",
-
-            audio_codec="aac",
-
-            fps=24,
-
-            preset="ultrafast",
-
-            threads=1,
-
-            logger="bar"
-
-        )
-
-
-
-        print("Professional video created.")
-
-
-
-        # Add hook text using FFmpeg
-
-        hook_text = script.split("\n")[0]
-
-
-        hooked_video = add_hook(
-            output,
-            hook_text
-        )
-
-
-
-        # Create subtitle file
-
-        subtitle_file = create_subtitles(script)
-
-
-
-        # Burn captions into final video
-
-        final_video = burn_subtitles(
-            hooked_video,
-            subtitle_file
-        )
-
-
-        return final_video
-
-
-
-    except Exception as e:
-
-
-        print(f"Video creation failed: {e}")
-
-
-        return None
+    return downloaded
