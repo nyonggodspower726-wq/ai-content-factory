@@ -206,3 +206,105 @@ def burn_subtitles(video_file, subtitle_file):
         print(f"Caption burn failed: {e}")
 
         return video_file
+# ============================================
+# CREATE FINAL PROFESSIONAL VIDEO
+# ============================================
+
+def create_video(script, voice_file):
+
+    print("Creating professional AI video...")
+
+    keywords = [
+        word
+        for word in script.split()
+        if len(word) > 4
+    ]
+
+    search_term = " ".join(keywords[:4])
+
+    print(f"Searching Pexels: {search_term}")
+
+    video_urls = search_pexels_videos(search_term)
+
+    if len(video_urls) == 0:
+
+        print("No background videos found.")
+
+        return None
+
+    video_paths = download_videos(video_urls)
+
+    try:
+
+        audio = AudioFileClip(voice_file)
+
+        background = build_background_video(
+            video_paths,
+            audio.duration
+        )
+
+        if background is None:
+
+            print("Background creation failed.")
+
+            return None
+
+        final = background.set_audio(audio)
+
+        output = "output/final_video.mp4"
+
+        final.write_videofile(
+            output,
+            codec="libx264",
+            audio_codec="aac",
+            fps=24,
+            preset="ultrafast",
+            threads=1,
+            logger="bar"
+        )
+
+        print("Professional video created.")
+
+        # ----------------------------------------
+        # Add Hook
+        # ----------------------------------------
+
+        hook_text = script.split(".")[0]
+
+        try:
+
+            hooked_video = add_hook(
+                output,
+                hook_text
+            )
+
+        except Exception as e:
+
+            print(f"Hook failed: {e}")
+
+            hooked_video = output
+
+        # ----------------------------------------
+        # Generate subtitles
+        # ----------------------------------------
+
+        subtitle_file = create_subtitles(script)
+
+        # ----------------------------------------
+        # Burn subtitles
+        # ----------------------------------------
+
+        final_video = burn_subtitles(
+            hooked_video,
+            subtitle_file
+        )
+
+        print("Final professional video ready.")
+
+        return final_video
+
+    except Exception as e:
+
+        print(f"Video creation failed: {e}")
+
+        return None
