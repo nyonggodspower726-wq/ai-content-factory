@@ -43,3 +43,57 @@ def create_srt(script):
             start = end
 
     return srt_file
+# ==========================================
+# FORMAT TIME
+# ==========================================
+
+def format_time(seconds):
+
+    hours = int(seconds // 3600)
+
+    minutes = int((seconds % 3600) // 60)
+
+    secs = int(seconds % 60)
+
+    millis = int((seconds - int(seconds)) * 1000)
+
+    return (
+        f"{hours:02}:{minutes:02}:{secs:02},{millis:03}"
+    )
+
+
+# ==========================================
+# ADD SUBTITLES USING FFMPEG
+# ==========================================
+
+def add_subtitles(video_file, script):
+
+    srt_file = create_srt(script)
+
+    if srt_file is None:
+        return video_file
+
+    output = "output/subtitled_video.mp4"
+
+    command = [
+        "ffmpeg",
+        "-y",
+        "-i",
+        video_file,
+        "-vf",
+        (
+            f"subtitles={srt_file}:"
+            "force_style="
+            "'Fontsize=20,"
+            "PrimaryColour=&HFFFFFF&,"
+            "OutlineColour=&H000000&,"
+            "BorderStyle=1,"
+            "Outline=2,"
+            "Shadow=0,"
+            "Alignment=2,"
+            "MarginV=80'"
+        ),
+        "-c:a",
+        "copy",
+        output
+    ]
