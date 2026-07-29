@@ -113,7 +113,7 @@ def download_videos(video_urls):
                     f.write(chunk)
 
         print(f"Downloaded clip {i + 1}")
-
+        print(f"Downloaded file size: {os.path.getsize(filename)} bytes")
         downloaded.append(filename)
 
     return downloaded
