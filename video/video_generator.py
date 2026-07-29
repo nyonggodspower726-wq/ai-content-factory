@@ -258,3 +258,18 @@ def create_video(script, voice_file):
         print(f"Video creation failed: {e}")
 
         return None
+final.write_videofile(
+    output,
+    codec="libx264",
+    audio_codec="aac",
+    fps=24,
+    preset="ultrafast",
+    threads=1,
+    logger="bar"
+)
+
+print("Professional video created.")
+
+print("Professional video completed.")
+
+return output
