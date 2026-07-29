@@ -19,7 +19,7 @@ from moviepy.video.fx import all as vfx
 
 from config import PEXELS_API_KEY
 from video.effects import add_hook
-
+from video.watermark import add_watermark
 
 # ==========================================
 # SEARCH MULTIPLE PEXELS VIDEOS
