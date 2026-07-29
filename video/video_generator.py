@@ -102,7 +102,7 @@ def download_videos(video_urls):
         )
 
         response.raise_for_status()
-
+        print("Downloading video...")
         with open(filename, "wb") as f:
 
             for chunk in response.iter_content(
