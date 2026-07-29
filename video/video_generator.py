@@ -279,3 +279,51 @@ def create_video(script, voice_file):
             threads=1,
             logger="bar"
             )
+        # Clean up MoviePy resources
+        try:
+            audio.close()
+        except Exception:
+            pass
+
+        try:
+            background.close()
+        except Exception:
+            pass
+
+        try:
+            final.close()
+        except Exception:
+            pass
+
+        print("Professional video created.")
+
+        # ==========================================
+        # ADD PROFESSIONAL BRANDING
+        # ==========================================
+
+        hook_text = script.split(".")[0]
+
+        try:
+
+            hooked_video = add_hook(
+                output,
+                hook_text
+            )
+
+            print("Professional branding added.")
+
+        except Exception as e:
+
+            print(f"Hook failed: {e}")
+
+            hooked_video = output
+
+        print("Professional video completed.")
+
+        return hooked_video
+
+    except Exception as e:
+
+        print(f"Video creation failed: {e}")
+
+        return None
