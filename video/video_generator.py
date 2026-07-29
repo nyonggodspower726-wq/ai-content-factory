@@ -293,4 +293,3 @@ final_video = create_subtitles(
 
 print("Professional captions added.")
 
-return final_video
