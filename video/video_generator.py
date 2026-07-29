@@ -193,9 +193,11 @@ def burn_subtitles(video_file, subtitle_file):
     try:
 
         subprocess.run(
-            command,
-            check=True
-        )
+    command,
+    check=True,
+    stdout=subprocess.DEVNULL,
+    stderr=subprocess.DEVNULL
+)
 
         print("Captions burned successfully.")
 
