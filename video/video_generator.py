@@ -1,163 +1,119 @@
-    return downloaded
+import os
+import requests
+import PIL.Image
+
+# Pillow compatibility
+if not hasattr(PIL.Image, "ANTIALIAS"):
+    try:
+        PIL.Image.ANTIALIAS = PIL.Image.Resampling.LANCZOS
+    except AttributeError:
+        PIL.Image.ANTIALIAS = PIL.Image.LANCZOS
+
+
+from moviepy.editor import (
+    VideoFileClip,
+    AudioFileClip,
+    concatenate_videoclips,
+)
+
+from config import PEXELS_API_KEY
+from video.effects import add_hook
 
 
 # ==========================================
-# BUILD BACKGROUND VIDEO
+# SEARCH MULTIPLE PEXELS VIDEOS
 # ==========================================
 
-def build_background_video(video_paths, duration):
+def search_pexels_videos(query):
 
-    clips = []
+    print(f"Searching Pexels: {query}")
 
-    if len(video_paths) == 0:
-        return None
+    url = "https://api.pexels.com/videos/search"
 
-    seconds_per_clip = max(
-        2,
-        duration / len(video_paths)
-    )
+    headers = {
+        "Authorization": PEXELS_API_KEY
+    }
 
-    for path in video_paths:
+    params = {
+        "query": query,
+        "per_page": 5
+    }
 
-        try:
-            clip = VideoFileClip(path)
-        except Exception:
-            print(f"Skipping bad video: {path}")
-            continue
-
-        clip = clip.resize(
-            height=1280
-        )
-
-        clip = clip.crop(
-            x_center=clip.w / 2,
-            y_center=clip.h / 2,
-            width=720,
-            height=1280
-        )
-
-        clip = clip.subclip(
-            0,
-            min(seconds_per_clip, clip.duration)
-        )
-
-        clips.append(clip)
-
-    final_background = concatenate_videoclips(
-        clips,
-        method="compose"
-    )
-
-    final_background = apply_zoom(
-        final_background
-    )
-
-    final_background = final_background.set_duration(
-        duration
-    )
-
-    return final_background
-# ==========================================
-# CREATE FINAL VIDEO
-# ==========================================
-
-def create_video(script, voice_file):
-
-    print("Creating professional AI video...")
-
-    keywords = [
-        word
-        for word in script.split()
-        if len(word) > 4
-    ]
-
-    search_term = " ".join(
-        keywords[:4]
-    )
-
-    video_urls = search_pexels_videos(
-        search_term
-    )
-
-    if len(video_urls) == 0:
-
-        print("No background videos found.")
-
-        return None
-
-    video_paths = download_videos(
-        video_urls
-    )
+    videos = []
 
     try:
 
-        audio = AudioFileClip(
-            voice_file
+        response = requests.get(
+            url,
+            headers=headers,
+            params=params,
+            timeout=30
         )
 
-        background = build_background_video(
-            video_paths,
-            audio.duration
-        )
+        response.raise_for_status()
 
-        if background is None:
+        data = response.json()
 
-            print("Background creation failed.")
+        if "videos" in data:
 
-            return None
+            for video in data["videos"]:
 
-        final = background.set_audio(
-            audio
-        )
+                for file in video["video_files"]:
 
-        music_file = "assets/music/background.mp3"
+                    if (
+                        file.get("link", "").endswith(".mp4")
+                        and file.get("width", 0) >= 720
+                    ):
 
-        final = add_background_music(
-            final,
-            music_file
-        )
+                        videos.append(file["link"])
+                        break
 
-        # ==========================================
-        # EXPORT VIDEO
-        # ==========================================
-
-        output = "output/final_video.mp4"
-        final.write_videofile(
-            output,
-            codec="libx264",
-            audio_codec="aac",
-            fps=24,
-            preset="ultrafast",
-            threads=1,
-            logger="bar"
-        )
-
-        print("Professional video created.")
-
-        # ==========================================
-        # ADD HOOK
-        # ==========================================
-
-        hook_text = script.split(".")[0]
-
-        try:
-
-            hooked_video = add_hook(
-                output,
-                hook_text
-            )
-
-        except Exception as e:
-
-            print(f"Hook failed: {e}")
-
-            hooked_video = output
-
-        print("Professional video completed.")
-
-        return hooked_video
     except Exception as e:
 
-        print(f"Video creation failed: {e}")
+        print(f"Pexels search failed: {e}")
 
-        return None
+    return videos
+
+
+
+# ==========================================
+# DOWNLOAD MULTIPLE CLIPS
+# ==========================================
+
+def download_videos(video_urls):
+
+    os.makedirs("output/clips", exist_ok=True)
+
+    downloaded = []
+
+    headers = {
+        "User-Agent": "Mozilla/5.0"
+    }
+
+    for i, url in enumerate(video_urls):
+
+        filename = f"output/clips/clip_{i}.mp4"
+
+        response = requests.get(
+            url,
+            headers=headers,
+            stream=True,
+            timeout=60
+        )
+
+        response.raise_for_status()
+
+        with open(filename, "wb") as f:
+
+            for chunk in response.iter_content(
+                chunk_size=1024 * 1024
+            ):
+
+                if chunk:
+                    f.write(chunk)
+
+        print(f"Downloaded clip {i + 1}")
+
+        downloaded.append(filename)
+
+    return downloaded
