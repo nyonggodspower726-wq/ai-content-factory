@@ -1,10 +1,17 @@
 import os
 import requests
+import PIL.Image
+
+# Fix MoviePy + Pillow compatibility
+if not hasattr(PIL.Image, "ANTIALIAS"):
+    PIL.Image.ANTIALIAS = PIL.Image.Resampling.LANCZOS
+
 
 from moviepy.editor import VideoFileClip, AudioFileClip, CompositeVideoClip
 
 from config import PEXELS_API_KEY
 from video.subtitle_generator import create_subtitles
+
 
 
 def search_pexels_video(query):
@@ -39,13 +46,18 @@ def search_pexels_video(query):
 
                     link = file.get("link", "")
 
-                    if link.endswith(".mp4") and file.get("width", 0) >= 720:
+                    if (
+                        link.endswith(".mp4")
+                        and file.get("width", 0) >= 720
+                    ):
                         return link
 
     except Exception as e:
+
         print(f"Pexels search failed: {e}")
 
     return None
+
 
 
 def download_video(url):
@@ -69,7 +81,9 @@ def download_video(url):
 
     with open(path, "wb") as f:
 
-        for chunk in response.iter_content(1024 * 1024):
+        for chunk in response.iter_content(
+            chunk_size=1024 * 1024
+        ):
 
             if chunk:
                 f.write(chunk)
@@ -79,26 +93,37 @@ def download_video(url):
     return path
 
 
+
 def create_video(script, voice_file):
 
     print("Creating professional AI video...")
 
+
     keywords = [
-        word for word in script.split()
+        word
+        for word in script.split()
         if len(word) > 4
     ]
 
     search_term = " ".join(keywords[:4])
 
+
     print(f"Searching Pexels: {search_term}")
+
 
     video_url = search_pexels_video(search_term)
 
+
     if not video_url:
+
         print("No background video found.")
+
         return None
 
+
+
     background = download_video(video_url)
+
 
     try:
 
@@ -106,7 +131,10 @@ def create_video(script, voice_file):
 
         audio = AudioFileClip(voice_file)
 
+
+        # Vertical format for TikTok/Reels/Shorts
         video = video.resize(height=1280)
+
 
         video = video.crop(
             x_center=video.w / 2,
@@ -115,20 +143,34 @@ def create_video(script, voice_file):
             height=1280
         )
 
-        video = video.set_duration(audio.duration)
 
+        video = video.set_duration(
+            audio.duration
+        )
+
+
+        # Subtitle system (currently safe)
         subtitle = create_subtitles(script)
+
 
         clips = [video]
 
+
         if subtitle is not None:
+
             clips.append(subtitle)
+
+
 
         final = CompositeVideoClip(clips)
 
+
         final = final.set_audio(audio)
 
+
         output = "output/final_video.mp4"
+
+
 
         final.write_videofile(
             output,
@@ -140,9 +182,13 @@ def create_video(script, voice_file):
             logger=None
         )
 
+
         print("Professional video created.")
 
+
         return output
+
+
 
     except Exception as e:
 
