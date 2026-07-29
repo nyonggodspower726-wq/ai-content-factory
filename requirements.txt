@@ -4,5 +4,5 @@ beautifulsoup4
 moviepy==1.0.3
 python-dotenv
 schedule
-Pillow>=10.0.0
-edge-tts
+Pillow
+imageio-ffmpeg
