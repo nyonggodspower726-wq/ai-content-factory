@@ -138,7 +138,11 @@ def build_background_video(video_paths, duration):
 
     for path in video_paths:
 
-        clip = VideoFileClip(path)
+        try:
+    clip = VideoFileClip(path)
+except Exception:
+    print(f"Skipping bad video: {path}")
+    continue
 
         clip = clip.resize(
             height=1280
