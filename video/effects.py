@@ -5,22 +5,39 @@ def add_hook(video, text):
 
     print("Adding hook text...")
 
-    hook = TextClip(
-        text,
-        fontsize=70,
-        color="white",
-        method="caption",
-        size=(700, None)
-    )
+    try:
 
-    hook = hook.set_duration(3)
+        hook = TextClip(
+            text,
+            fontsize=70,
+            color="white",
+            font="Arial-Bold",
+            method="caption",
+            size=(700, None)
+        )
 
-    hook = hook.set_position(
-        ("center", "top")
-    )
 
-    final = CompositeVideoClip(
-        [video, hook]
-    )
+        hook = hook.set_duration(3)
 
-    return final
+
+        hook = hook.set_position(
+            ("center", "top")
+        )
+
+
+        final = CompositeVideoClip(
+            [
+                video,
+                hook
+            ]
+        )
+
+
+        return final
+
+
+    except Exception as e:
+
+        print(f"Hook text failed: {e}")
+
+        return video
