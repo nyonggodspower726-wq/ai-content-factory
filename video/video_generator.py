@@ -1,4 +1,4 @@
-import os
+except os
 import requests
 import PIL.Image
 
@@ -120,7 +120,7 @@ try:
 
     downloaded.append(filename)
 
-except Exception:
+    except Exception:
 
     print(f"Skipping corrupted video: {filename}")
 
