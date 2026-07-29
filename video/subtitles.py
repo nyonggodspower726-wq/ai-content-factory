@@ -1,48 +1,45 @@
-from moviepy.editor import TextClip, CompositeVideoClip
+import os
+import subprocess
 
 
-def add_subtitles(video, script):
-    """
-    Adds simple TikTok-style captions to a MoviePy video.
-    """
+# ==========================================
+# CREATE SRT FILE
+# ==========================================
+
+def create_srt(script):
+
+    os.makedirs("output", exist_ok=True)
+
+    srt_file = "output/subtitles.srt"
 
     words = script.split()
 
     if not words:
-        return video
+        return None
 
-    words_per_caption = 5
-    duration_per_caption = video.duration / max(
-        1,
-        (len(words) + words_per_caption - 1) // words_per_caption
-    )
+    chunk_size = 6
 
-    clips = []
+    duration_per_chunk = 2.5
 
-    start = 0
+    with open(srt_file, "w", encoding="utf-8") as f:
 
-    for i in range(0, len(words), words_per_caption):
+        index = 1
 
-        caption = " ".join(words[i:i + words_per_caption])
+        start = 0.0
 
-        txt = (
-            TextClip(
-                caption,
-                fontsize=60,
-                color="white",
-                stroke_color="black",
-                stroke_width=3,
-                method="caption",
-                size=(650, None),
-                align="center"
+        for i in range(0, len(words), chunk_size):
+
+            text = " ".join(words[i:i + chunk_size])
+
+            end = start + duration_per_chunk
+
+            f.write(f"{index}\n")
+            f.write(
+                f"{format_time(start)} --> {format_time(end)}\n"
             )
-            .set_position(("center", "bottom"))
-            .set_start(start)
-            .set_duration(duration_per_caption)
-        )
+            f.write(text + "\n\n")
 
-        clips.append(txt)
+            index += 1
+            start = end
 
-        start += duration_per_caption
-
-    return CompositeVideoClip([video] + clips)
+    return srt_file
