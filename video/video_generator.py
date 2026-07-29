@@ -1,20 +1,12 @@
 import os
 import requests
-import PIL.Image
-
-# Fix MoviePy + Pillow compatibility
-if not hasattr(PIL.Image, "ANTIALIAS"):
-    PIL.Image.ANTIALIAS = PIL.Image.LANCZOS
-
 
 from moviepy.editor import (
     VideoFileClip,
-    AudioFileClip,
-    TextClip,
-    CompositeVideoClip
+    AudioFileClip
 )
 
-from config import PEXELS_API_KEY, BRAND_NAME
+from config import PEXELS_API_KEY
 
 
 
@@ -41,7 +33,6 @@ def search_pexels_video(query):
 
     if "videos" in data and data["videos"]:
 
-        # Try to find HD video
         for video in data["videos"]:
             for file in video["video_files"]:
                 if file.get("width", 0) >= 720:
@@ -71,7 +62,6 @@ def create_video(script, voice_file):
     print("Creating professional AI video...")
 
 
-    # Better search keywords
     keywords = [
         word for word in script.split()
         if len(word) > 4
@@ -115,48 +105,7 @@ def create_video(script, voice_file):
         video = video.set_duration(audio.duration)
 
 
-        # Hook text
-        hook = TextClip(
-            script[:80],
-            fontsize=55,
-            color="white",
-            font="Arial-Bold",
-            method="caption",
-            size=(650, None)
-        )
-
-        hook = hook.set_duration(3)
-        hook = hook.set_position(
-            ("center", "center")
-        )
-
-
-        # Brand watermark
-        watermark = TextClip(
-            BRAND_NAME,
-            fontsize=35,
-            color="white"
-        )
-
-        watermark = watermark.set_duration(
-            audio.duration
-        )
-
-        watermark = watermark.set_position(
-            ("center", "bottom")
-        )
-
-
-        final = CompositeVideoClip(
-            [
-                video,
-                hook,
-                watermark
-            ]
-        )
-
-
-        final = final.set_audio(audio)
+        final = video.set_audio(audio)
 
 
         output = "output/final_video.mp4"
