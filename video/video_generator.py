@@ -193,29 +193,11 @@ def create_video(script, voice_file):
 
 
 
-        # Match video length with voice
+        # Match video duration with voice
 
         video = video.set_duration(
             audio.duration
         )
-
-
-
-        # Add hook text at beginning
-
-        hook_text = script.split("\n")[0]
-
-
-        video = add_hook(
-            video,
-            hook_text
-        )
-
-
-
-        # Create subtitle file
-
-        subtitle_file = create_subtitles(script)
 
 
 
@@ -253,10 +235,28 @@ def create_video(script, voice_file):
 
 
 
-        # Burn captions
+        # Add hook text using FFmpeg
+
+        hook_text = script.split("\n")[0]
+
+
+        hooked_video = add_hook(
+            output,
+            hook_text
+        )
+
+
+
+        # Create subtitle file
+
+        subtitle_file = create_subtitles(script)
+
+
+
+        # Burn captions into final video
 
         final_video = burn_subtitles(
-            output,
+            hooked_video,
             subtitle_file
         )
 
@@ -267,6 +267,8 @@ def create_video(script, voice_file):
 
     except Exception as e:
 
+
         print(f"Video creation failed: {e}")
+
 
         return None
