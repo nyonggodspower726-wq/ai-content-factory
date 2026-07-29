@@ -166,7 +166,7 @@ def build_background_video(video_paths, duration):
         clips,
         method="compose"
     )
-
+    final_background = apply_zoom(final_background)
 
     final_background = final_background.set_duration(
         duration
