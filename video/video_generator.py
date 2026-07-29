@@ -115,3 +115,92 @@ def download_videos(urls):
         downloaded.append(path)
 
     return downloaded
+# -------------------------------------------------
+# BURN SUBTITLES INTO VIDEO
+# -------------------------------------------------
+
+def burn_subtitles(video_file, subtitle_file):
+
+    print("Burning captions into video...")
+
+    output = "output/final_caption_video.mp4"
+
+    command = [
+        "ffmpeg",
+        "-y",
+        "-i",
+        video_file,
+        "-vf",
+        f"subtitles={subtitle_file}",
+        "-c:v",
+        "libx264",
+        "-c:a",
+        "copy",
+        output
+    ]
+
+    try:
+
+        subprocess.run(
+            command,
+            check=True
+        )
+
+        print("Captions burned successfully.")
+
+        return output
+
+    except Exception as e:
+
+        print(f"Caption burn failed: {e}")
+
+        return video_file
+
+
+# -------------------------------------------------
+# BUILD MULTI-CLIP VIDEO
+# -------------------------------------------------
+
+def build_background_video(video_paths, duration):
+
+    clips = []
+
+    if len(video_paths) == 0:
+        return None
+
+    seconds_per_clip = max(
+        2,
+        duration / len(video_paths)
+    )
+
+    for path in video_paths:
+
+        clip = VideoFileClip(path)
+
+        clip = clip.resize(height=1280)
+
+        clip = clip.crop(
+            x_center=clip.w / 2,
+            y_center=clip.h / 2,
+            width=720,
+            height=1280
+        )
+
+        clip = clip.subclip(
+            0,
+            min(
+                seconds_per_clip,
+                clip.duration
+            )
+        )
+
+        clips.append(clip)
+
+    background = concatenate_videoclips(
+        clips,
+        method="compose"
+    )
+
+    background = background.set_duration(duration)
+
+    return background
