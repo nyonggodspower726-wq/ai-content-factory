@@ -3,7 +3,7 @@ import subprocess
 
 def add_watermark(video_file):
 
-    print("Adding watermark...")
+    print("Adding Prompt Hub watermark...")
 
     output = "output/watermarked_video.mp4"
 
@@ -13,7 +13,7 @@ def add_watermark(video_file):
         "-i",
         video_file,
         "-vf",
-        "drawtext=text='AI CONTENT FACTORY':fontsize=35:fontcolor=white:x=w-text_w-30:y=h-text_h-30",
+        "drawtext=text='PROMPT HUB':fontsize=35:fontcolor=white:x=w-text_w-30:y=h-text_h-30",
         "-c:v",
         "libx264",
         "-preset",
@@ -32,7 +32,7 @@ def add_watermark(video_file):
             check=True
         )
 
-        print("Watermark added successfully.")
+        print("Prompt Hub watermark added successfully.")
 
         return output
 
