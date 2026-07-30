@@ -306,3 +306,50 @@ def create_video(script, voice_file):
 
 
         print("Professional video created.")
+        # ==========================================
+        # ADD PROFESSIONAL BRANDING
+        # ==========================================
+
+        hook_text = script.split(".")[0]
+
+        try:
+
+            print("Adding branding...")
+
+            output = add_hook(
+                output,
+                hook_text
+            )
+
+            print("Professional branding added.")
+
+        except Exception as e:
+
+            print(f"Branding failed: {e}")
+
+
+        print("Professional video completed.")
+
+        return output
+
+
+    except Exception as e:
+
+        print(f"Video creation failed: {e}")
+
+        try:
+            audio.close()
+        except Exception:
+            pass
+
+        try:
+            background.close()
+        except Exception:
+            pass
+
+        try:
+            final.close()
+        except Exception:
+            pass
+
+        return None
