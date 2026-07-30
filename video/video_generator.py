@@ -248,3 +248,65 @@ def create_video(script, voice_file):
         )
 
         output = "output/final_video.mp4"
+        # ==========================================
+        # EXPORT VIDEO
+        # ==========================================
+
+        final.write_videofile(
+            output,
+            codec="libx264",
+            audio_codec="aac",
+            fps=24,
+            preset="ultrafast",
+            threads=1,
+            logger="bar"
+        )
+
+        print("Video exported successfully.")
+
+
+        # ==========================================
+        # ADD SUBTITLES
+        # ==========================================
+
+        try:
+
+            print("Adding subtitles...")
+
+            output = add_subtitles(
+                output,
+                script
+            )
+
+            print("Subtitles added successfully.")
+
+        except Exception as e:
+
+            print(f"Subtitle generation failed: {e}")
+
+            # Continue even if subtitles fail
+
+
+        # ==========================================
+        # CLEAN UP MOVIEPY RESOURCES
+        # ==========================================
+
+        try:
+            if audio:
+                audio.close()
+        except Exception:
+            pass
+
+        try:
+            if background:
+                background.close()
+        except Exception:
+            pass
+
+        try:
+            if final:
+                final.close()
+        except Exception:
+            pass
+
+        print("Professional video created.")
