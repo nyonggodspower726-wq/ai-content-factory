@@ -7,6 +7,7 @@ from video.voice_generator import generate_voice
 from video.video_generator import create_video
 
 from social.tiktok_uploader import upload_to_tiktok
+from social.youtube_shorts import upload_to_youtube
 
 from file_manager import save_text
 from logger import log
@@ -50,7 +51,17 @@ def main():
 
     # Step 8
     if video:
+
+        log("Uploading to TikTok...")
         upload_to_tiktok(video)
+
+        log("Uploading to YouTube Shorts...")
+        upload_to_youtube(
+            video,
+            caption,
+            hashtags
+        )
+
     else:
         log("Video upload skipped.")
 
