@@ -8,3 +8,7 @@ Pillow
 imageio-ffmpeg
 edge-tts
 ffmpeg-python
+google-api-python-client
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
