@@ -10,50 +10,71 @@ def add_hook(video_file, text):
 
     output = "output/hook_video.mp4"
 
+    try:
+        duration = subprocess.check_output(
+            [
+                "ffprobe",
+                "-v",
+                "error",
+                "-show_entries",
+                "format=duration",
+                "-of",
+                "default=noprint_wrappers=1:nokey=1",
+                video_file,
+            ]
+        ).decode().strip()
+
+        duration = float(duration)
+
+    except Exception:
+
+        duration = 30
+
+    start_time = max(duration - 4, 0)
+
+    filter_complex = (
+        f"[0:v][1:v]overlay=(W-w)/2:(H-h)/2:"
+        f"enable='gte(t,{start_time})',"
+        f"drawtext=text='www.promptprohub.com':"
+        f"fontsize=42:"
+        f"fontcolor=white:"
+        f"borderw=3:"
+        f"bordercolor=black:"
+        f"x=(w-text_w)/2:"
+        f"y=H-180:"
+        f"enable='gte(t,{start_time})',"
+        f"drawtext=text='Get Premium AI Prompts':"
+        f"fontsize=55:"
+        f"fontcolor=yellow:"
+        f"borderw=3:"
+        f"bordercolor=black:"
+        f"x=(w-text_w)/2:"
+        f"y=H-110:"
+        f"enable='gte(t,{start_time})'"
+    )
+
     command = [
         "ffmpeg",
         "-y",
-        "-i", video_file,
-        "-i", "assets/logo.png",
-
+        "-i",
+        video_file,
+        "-i",
+        "assets/logo.png",
         "-filter_complex",
-
-        # Show logo ONLY during last 4 seconds
-        "[0:v][1:v]overlay="
-        "(W-w)/2:(H-h)/2:"
-        "enable='gte(t,duration-4)',"
-
-        # Website
-        "drawtext="
-        "text='www.promptprohub.com':"
-        "fontsize=42:"
-        "fontcolor=white:"
-        "borderw=3:"
-        "bordercolor=black:"
-        "x=(w-text_w)/2:"
-        "y=H-180:"
-        "enable='gte(t,duration-4)',"
-
-        # Call to action
-        "drawtext="
-        "text='Get Premium AI Prompts':"
-        "fontsize=55:"
-        "fontcolor=yellow:"
-        "borderw=3:"
-        "bordercolor=black:"
-        "x=(w-text_w)/2:"
-        "y=H-110:"
-        "enable='gte(t,duration-4)'",
-
-        "-c:v", "libx264",
-        "-preset", "medium",
-        "-crf", "20",
-        "-c:a", "copy",
-
+        filter_complex,
+        "-c:v",
+        "libx264",
+        "-preset",
+        "medium",
+        "-crf",
+        "20",
+        "-c:a",
+        "copy",
         output,
     ]
 
     try:
+
         subprocess.run(command, check=True)
 
         print("Ending branding added successfully.")
