@@ -285,3 +285,140 @@ def create_video(script, voice_file):
     audio = None
     background = None
     final = None
+    try:
+
+        audio = AudioFileClip(
+            voice_file
+        )
+
+        background = build_background_video(
+            video_paths,
+            audio.duration
+        )
+
+        if background is None:
+
+            print("Background creation failed.")
+
+            return None
+
+        # Add AI voice
+        final = background.set_audio(
+            audio
+        )
+
+        # Add background music
+        final = add_background_music(
+            final,
+            "assets/background_music.mp3"
+        )
+
+        output = "output/final_video.mp4"
+
+        # ==========================================
+        # EXPORT HIGH QUALITY VIDEO
+        # ==========================================
+
+        final.write_videofile(
+            output,
+            codec="libx264",
+            audio_codec="aac",
+            fps=30,
+            bitrate="6000k",
+            audio_bitrate="192k",
+            preset="medium",
+            threads=2,
+            logger="bar"
+        )
+
+        print("Video exported successfully.")
+
+        # ==========================================
+        # ADD SUBTITLES
+        # ==========================================
+
+        try:
+
+            print("Adding subtitles...")
+
+            output = add_subtitles(
+                output,
+                script
+            )
+
+            print("Subtitles added successfully.")
+
+        except Exception as e:
+
+            print(f"Subtitle generation failed: {e}")
+
+        # ==========================================
+        # CLEANUP
+        # ==========================================
+
+        try:
+            if audio:
+                audio.close()
+        except Exception:
+            pass
+
+        try:
+            if background:
+                background.close()
+        except Exception:
+            pass
+
+        try:
+            if final:
+                final.close()
+        except Exception:
+            pass
+
+        # ==========================================
+        # ADD BRANDING
+        # ==========================================
+
+        hook_text = script.split(".")[0]
+
+        try:
+
+            print("Adding branding...")
+
+            output = add_hook(
+                output,
+                hook_text
+            )
+
+            print("Professional branding added.")
+
+        except Exception as e:
+
+            print(f"Branding failed: {e}")
+
+        print("Professional video completed.")
+
+        return output
+
+    except Exception as e:
+
+        print(f"Video creation failed: {e}")
+
+        try:
+            if audio:
+                audio.close()
+        except Exception:
+            pass
+
+        try:
+            if background:
+                background.close()
+        except Exception:
+            pass
+
+        try:
+            if final:
+                final.close()
+        except Exception:
+            pass
+
+        return None
