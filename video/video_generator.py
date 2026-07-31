@@ -345,3 +345,141 @@ def create_video(script, voice_file):
 
 
         output = "output/final_video.mp4"
+        # ==========================================
+        # EXPORT VIDEO
+        # ==========================================
+
+        final.write_videofile(
+            output,
+            codec="libx264",
+            audio_codec="aac",
+            fps=30,
+            bitrate="3500k",
+            audio_bitrate="128k",
+            preset="veryfast",
+            threads=2,
+            logger="bar"
+        )
+
+        print("Video exported successfully.")
+
+
+        # ==========================================
+        # ADD SUBTITLES
+        # ==========================================
+
+        try:
+
+            print("Adding subtitles...")
+
+            output = add_subtitles(
+                output,
+                script
+            )
+
+            print("Subtitles added successfully.")
+
+
+        except Exception as e:
+
+            print(f"Subtitle generation failed: {e}")
+
+
+
+        # ==========================================
+        # CLEANUP
+        # ==========================================
+
+        try:
+            if audio:
+                audio.close()
+
+        except Exception:
+            pass
+
+
+        try:
+            if background:
+                background.close()
+
+        except Exception:
+            pass
+
+
+        try:
+            if final:
+                final.close()
+
+        except Exception:
+            pass
+
+
+
+        # ==========================================
+        # ADD BRANDING
+        # ==========================================
+
+        hook_text = script.split(".")[0]
+
+
+        try:
+
+            print("Adding branding...")
+
+
+            output = add_hook(
+                output,
+                hook_text
+            )
+
+
+            print("Professional branding added.")
+
+
+        except Exception as e:
+
+            print(f"Branding failed: {e}")
+
+
+        print("Professional video completed.")
+
+
+        return output
+
+
+
+    except Exception as e:
+
+
+        print("=" * 60)
+        print("VIDEO CREATION FAILED")
+        print(type(e).__name__)
+        print(str(e))
+        print("=" * 60)
+
+
+        try:
+            if audio:
+                audio.close()
+
+        except Exception:
+            pass
+
+
+        try:
+            if background:
+                background.close()
+
+        except Exception:
+            pass
+
+
+        try:
+            if final:
+                final.close()
+
+        except Exception:
+            pass
+
+
+        return None
