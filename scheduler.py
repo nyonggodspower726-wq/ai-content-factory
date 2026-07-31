@@ -41,17 +41,22 @@ def start_scheduler():
 
                 main()
 
-                print("Video task completed successfully.")
+                print("=" * 50)
+                print("VIDEO TASK COMPLETED SUCCESSFULLY")
+                print("=" * 50)
 
             except Exception as e:
 
-                print(f"Video task failed: {e}")
+                print("=" * 50)
+                print("VIDEO TASK FAILED")
+                print(type(e).__name__)
+                print(str(e))
+                print("=" * 50)
 
             completed.add(current_time)
 
         # Reset every midnight
         if current_time == "00:00":
-
             completed.clear()
 
         # Check every 10 seconds
