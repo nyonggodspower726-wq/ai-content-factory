@@ -11,6 +11,7 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 # Media / Video Creation
 PEXELS_API_KEY = os.getenv("PEXELS_API_KEY")
+PIXABAY_API_KEY = os.getenv("PIXABAY_API_KEY")
 
 
 # Website
