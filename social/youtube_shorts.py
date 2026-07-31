@@ -1,3 +1,20 @@
+import os
+
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
+from google.oauth2.credentials import Credentials
+
+from config import (
+    YOUTUBE_CLIENT_ID,
+    YOUTUBE_CLIENT_SECRET,
+    YOUTUBE_REFRESH_TOKEN,
+)
+
+SCOPES = [
+    "https://www.googleapis.com/auth/youtube.upload"
+]
+
+
 def upload_to_youtube(video_path, title, description):
 
     print("===== YOUTUBE DEBUG =====")
@@ -19,45 +36,63 @@ def upload_to_youtube(video_path, title, description):
         scopes=SCOPES,
     )
 
-    youtube = build(
-        "youtube",
-        "v3",
-        credentials=credentials,
-    )
+    try:
 
-    body = {
-        "snippet": {
-            "title": title,
-            "description": description,
-            "categoryId": "22",
-        },
-        "status": {
-            "privacyStatus": "public",
-            "selfDeclaredMadeForKids": False,
-        },
-    }
+        youtube = build(
+            "youtube",
+            "v3",
+            credentials=credentials,
+        )
 
-    media = MediaFileUpload(
-        video_path,
-        chunksize=-1,
-        resumable=True,
-    )
+        body = {
+            "snippet": {
+                "title": title,
+                "description": description,
+                "categoryId": "22",
+            },
+            "status": {
+                "privacyStatus": "public",
+                "selfDeclaredMadeForKids": False,
+            },
+        }
 
-    request = youtube.videos().insert(
-        part="snippet,status",
-        body=body,
-        media_body=media,
-    )
+        media = MediaFileUpload(
+            video_path,
+            mimetype="video/*",
+            chunksize=-1,
+            resumable=True,
+        )
 
-    response = None
+        request = youtube.videos().insert(
+            part="snippet,status",
+            body=body,
+            media_body=media,
+        )
 
-    while response is None:
-        status, response = request.next_chunk()
+        response = None
 
-        if status:
-            print(f"Uploading... {int(status.progress() * 100)}%")
+        while response is None:
 
-    print("YouTube Upload Successful!")
-    print(f"https://youtu.be/{response['id']}")
+            status, response = request.next_chunk()
 
-    return response["id"]
+            if status:
+                print(
+                    f"Uploading... {int(status.progress() * 100)}%"
+                )
+
+        print("===================================")
+        print("YouTube Upload Successful!")
+        print(f"https://youtu.be/{response['id']}")
+        print("===================================")
+
+        return response["id"]
+
+    except Exception as e:
+
+        print("===================================")
+        print("YOUTUBE ERROR")
+        print(type(e).__name__)
+        print(str(e))
+        print("===================================")
+
+        raise
