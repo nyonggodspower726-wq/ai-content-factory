@@ -1,22 +1,10 @@
-import os
-
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
-from google.oauth2.credentials import Credentials
-
-from config import (
-    YOUTUBE_CLIENT_ID,
-    YOUTUBE_CLIENT_SECRET,
-    YOUTUBE_REFRESH_TOKEN,
-)
-
-
-SCOPES = [
-    "https://www.googleapis.com/auth/youtube.upload"
-]
-
-
 def upload_to_youtube(video_path, title, description):
+
+    print("===== YOUTUBE DEBUG =====")
+    print("CLIENT ID:", YOUTUBE_CLIENT_ID)
+    print("CLIENT SECRET EXISTS:", bool(YOUTUBE_CLIENT_SECRET))
+    print("REFRESH TOKEN EXISTS:", bool(YOUTUBE_REFRESH_TOKEN))
+    print("=========================")
 
     if not os.path.exists(video_path):
         print("Video not found.")
@@ -67,16 +55,9 @@ def upload_to_youtube(video_path, title, description):
         status, response = request.next_chunk()
 
         if status:
-            print(
-                f"Uploading... {int(status.progress() * 100)}%"
-            )
+            print(f"Uploading... {int(status.progress() * 100)}%")
 
-    print(
-        "YouTube Upload Successful!"
-    )
-
-    print(
-        f"https://youtu.be/{response['id']}"
-    )
+    print("YouTube Upload Successful!")
+    print(f"https://youtu.be/{response['id']}")
 
     return response["id"]
