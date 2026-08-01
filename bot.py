@@ -1,9 +1,10 @@
-from content.trend_finder import get_trending_topic
-from content.script_writer import generate_script
-from content.caption_writer import generate_caption
-from content.hashtag_generator import generate_hashtags
+from brain.production_manager import production
 
-from video.voice_generator import generate_voice
+from brain.script_engine import generate_script
+from brain.voice_engine import generate_voice
+from brain.seo_engine import generate_seo
+
+from video.ai_video_worker import generate_scenes
 from video.video_generator import create_video
 
 from social.tiktok_uploader import upload_to_tiktok
@@ -15,57 +16,63 @@ from logger import log
 
 def main():
 
-    print("TEST RUN STARTED")
+    print("=" * 60)
+    print("PROMPTPROHUB AI OPERATING SYSTEM")
+    print("=" * 60)
 
-    log("=" * 50)
-    log("AI CONTENT FACTORY")
-    log("=" * 50)
+    topic = input("Enter campaign topic: ")
 
-    # Step 1
-    topic = get_trending_topic()
-    log(f"Topic: {topic}")
+    log("Starting AI Production...")
 
-    # Step 2
-    script = generate_script(topic)
+    production_plan = production.produce(topic)
 
-    # Step 3
-    caption = generate_caption(topic)
+    project = production_plan["project"]
 
-    # Step 4
-    hashtags = generate_hashtags()
+    log("Generating script...")
+    script = generate_script(project)
 
-    # Step 5
-    save_text("script.txt", script)
-    save_text("caption.txt", caption)
-    save_text("hashtags.txt", hashtags)
+    save_text("script.json", script)
 
-    log("Script generated.")
-    log("Caption generated.")
-    log("Hashtags generated.")
+    log("Generating voice...")
+    voice = generate_voice(project)
 
-    # Step 6
-    voice = generate_voice(script)
+    save_text("voice.json", voice)
 
-    # Step 7
-    video = create_video(script, voice)
+    log("Generating SEO...")
+    seo = generate_seo(topic)
 
-    # Step 8
+    save_text("seo.json", seo)
+
+    log("Generating AI scenes...")
+
+    scenes = generate_scenes(
+        project["scene_prompts"]
+    )
+
+    log("Rendering final video...")
+
+    video = create_video(
+        script,
+        voice
+    )
+
     if video:
 
         log("Uploading to TikTok...")
         upload_to_tiktok(video)
 
-        log("Uploading to YouTube Shorts...")
+        log("Uploading to YouTube...")
         upload_to_youtube(
             video,
-            caption,
-            hashtags
+            seo,
+            topic
         )
 
-    else:
-        log("Video upload skipped.")
+        log("Production Complete.")
 
-    log("AI Content Factory completed successfully.")
+    else:
+
+        log("Video generation failed.")
 
 
 if __name__ == "__main__":
