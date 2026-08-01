@@ -270,3 +270,139 @@ def create_video(
             )
 
             return None
+        print(
+            "Building final scene sequence..."
+        )
+
+
+        video = build_scene_video(
+            scene_files
+        )
+
+
+        if video is None:
+
+            print(
+                "Video assembly failed"
+            )
+
+            return None
+
+
+
+        print(
+            "Adding AI voice..."
+        )
+
+
+        if voice_file and os.path.exists(voice_file):
+
+            voice = AudioFileClip(
+                voice_file
+            )
+
+
+            video = video.set_duration(
+                voice.duration
+            )
+
+
+            video = video.set_audio(
+                voice
+            )
+
+
+        else:
+
+            print(
+                "Voice file not found"
+            )
+
+
+
+        print(
+            "Adding background music..."
+        )
+
+
+        music_file = get_music()
+
+
+        if music_file:
+
+            video = add_background_music(
+                video,
+                music_file
+            )
+
+
+
+        output = (
+            "output/ai_sales_video.mp4"
+        )
+
+
+        os.makedirs(
+            "output",
+            exist_ok=True
+        )
+
+
+        print(
+            "Exporting final video..."
+        )
+
+
+        video.write_videofile(
+
+            output,
+
+            codec="libx264",
+
+            audio_codec="aac",
+
+            fps=30,
+
+            bitrate="3500k",
+
+            audio_bitrate="128k",
+
+            preset="veryfast",
+
+            threads=2
+
+        )
+
+
+        print(
+            "Video exported"
+        )
+
+
+
+        try:
+
+            print(
+                "Adding subtitles..."
+            )
+
+
+            output = add_subtitles(
+
+                output,
+
+                script
+
+            )
+
+
+            print(
+                "Subtitles added"
+            )
+
+
+        except Exception as e:
+
+            print(
+                f"Subtitle error: {e}"
+            )
