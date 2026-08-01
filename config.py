@@ -1,44 +1,46 @@
 from dotenv import load_dotenv
 import os
 
-# Load environment variables
 load_dotenv()
 
-
+# =====================================
 # AI
+# =====================================
+
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
+HF_API_TOKEN = os.getenv("HF_API_TOKEN")
 
-# Media / Video Creation
-PEXELS_API_KEY = os.getenv("PEXELS_API_KEY")
-PIXABAY_API_KEY = os.getenv("PIXABAY_API_KEY")
+AI_VIDEO_API_URL = os.getenv("AI_VIDEO_API_URL")
+
+AI_VIDEO_API_KEY = os.getenv("AI_VIDEO_API_KEY")
 
 
-# Website
+# =====================================
+# BRAND
+# =====================================
+
+BRAND_NAME = os.getenv("BRAND_NAME", "PromptProHub")
+
 WEBSITE_URL = os.getenv("WEBSITE_URL")
 
 
-# Brand
-BRAND_NAME = os.getenv("BRAND_NAME", "PromptProHub")
-
-
-# Social Media
+# =====================================
+# SOCIAL MEDIA
+# =====================================
 
 # TikTok
 TIKTOK_USERNAME = os.getenv("TIKTOK_USERNAME")
 TIKTOK_ACCESS_TOKEN = os.getenv("TIKTOK_ACCESS_TOKEN")
 
-
 # Facebook
 FACEBOOK_PAGE_ID = os.getenv("FACEBOOK_PAGE_ID")
 FACEBOOK_ACCESS_TOKEN = os.getenv("FACEBOOK_ACCESS_TOKEN")
-
 
 # Instagram
 INSTAGRAM_USERNAME = os.getenv("INSTAGRAM_USERNAME")
 INSTAGRAM_ACCOUNT_ID = os.getenv("INSTAGRAM_ACCOUNT_ID")
 INSTAGRAM_ACCESS_TOKEN = os.getenv("INSTAGRAM_ACCESS_TOKEN")
-
 
 # YouTube
 YOUTUBE_CHANNEL_ID = os.getenv("YOUTUBE_CHANNEL_ID")
@@ -47,7 +49,10 @@ YOUTUBE_CLIENT_SECRET = os.getenv("YOUTUBE_CLIENT_SECRET")
 YOUTUBE_REFRESH_TOKEN = os.getenv("YOUTUBE_REFRESH_TOKEN")
 
 
-# Content Schedule
+# =====================================
+# CONTENT SETTINGS
+# =====================================
+
 VIDEOS_PER_DAY = 3
 
 POSTING_TIMES = [
@@ -56,6 +61,38 @@ POSTING_TIMES = [
     "evening"
 ]
 
+VIDEO_LENGTH = 30
 
-# Video Settings
-VIDEO_LENGTH = 30  # seconds
+
+# =====================================
+# OUTPUT
+# =====================================
+
+OUTPUT_FOLDER = "output"
+
+VIDEO_FOLDER = "output/videos"
+
+AUDIO_FOLDER = "output/audio"
+
+IMAGE_FOLDER = "output/images"
+
+
+# =====================================
+# AI STUDIO
+# =====================================
+
+DEFAULT_ASPECT_RATIO = "9:16"
+
+DEFAULT_VIDEO_QUALITY = "cinematic"
+
+DEFAULT_VIDEO_DURATION = 5
+
+
+# =====================================
+# PROMPTPROHUB
+# =====================================
+
+MISSION = (
+    "Help freelancers, creators, marketers and business owners "
+    "save time, grow faster and earn more using AI."
+)
