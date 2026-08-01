@@ -406,3 +406,74 @@ def create_video(
             print(
                 f"Subtitle error: {e}"
             )
+        print(
+            "Adding branding..."
+        )
+
+
+        try:
+
+            hook_text = (
+                script.split(".")[0]
+            )
+
+
+            output = add_hook(
+                output,
+                hook_text
+            )
+
+
+            print(
+                "Branding added successfully"
+            )
+
+
+        except Exception as e:
+
+            print(
+                f"Branding error: {e}"
+            )
+
+
+
+        try:
+
+            video.close()
+
+        except Exception:
+
+            pass
+
+
+
+        print(
+            "AI Sales Video Completed"
+        )
+
+
+        return output
+
+
+
+    except Exception as e:
+
+
+        print("=" * 50)
+
+        print(
+            "AI VIDEO PRODUCTION FAILED"
+        )
+
+        print(
+            type(e).__name__
+        )
+
+        print(
+            str(e)
+        )
+
+        print("=" * 50)
+
+
+        return None
