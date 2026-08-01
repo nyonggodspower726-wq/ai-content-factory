@@ -134,3 +134,139 @@ def build_scene_video(scene_files):
     if len(clips) == 0:
 
         return None
+    final_video = concatenate_videoclips(
+        clips,
+        method="compose"
+    )
+
+
+    return final_video
+
+
+
+# ==========================================
+# ADD BACKGROUND MUSIC
+# ==========================================
+
+def add_background_music(video, music_file):
+
+    if not music_file:
+
+        return video
+
+
+    if not os.path.exists(music_file):
+
+        print(
+            "Music file not found"
+        )
+
+        return video
+
+
+    try:
+
+        voice = video.audio
+
+
+        music = AudioFileClip(
+            music_file
+        )
+
+
+        music = music.volumex(
+            0.12
+        )
+
+
+        music = music.set_duration(
+            video.duration
+        )
+
+
+        final_audio = CompositeAudioClip(
+            [
+                music,
+                voice
+            ]
+        )
+
+
+        video = video.set_audio(
+            final_audio
+        )
+
+
+        print(
+            "Background music added"
+        )
+
+
+        return video
+
+
+    except Exception as e:
+
+        print(
+            f"Music error: {e}"
+        )
+
+
+        return video
+
+
+
+# ==========================================
+# CREATE AI GENERATED VIDEO
+# ==========================================
+
+def create_video(
+    prompts,
+    script,
+    voice_file
+):
+
+    print(
+        "Starting AI Video Production..."
+    )
+
+
+    try:
+
+        print(
+            "Generating AI scenes..."
+        )
+
+
+        ai_scenes = generate_all_scenes(
+            prompts
+        )
+
+
+        if len(ai_scenes) == 0:
+
+            print(
+                "No AI scenes generated"
+            )
+
+            return None
+
+
+
+        print(
+            "Downloading AI scenes..."
+        )
+
+
+        scene_files = download_ai_videos(
+            ai_scenes
+        )
+
+
+        if len(scene_files) == 0:
+
+            print(
+                "No valid scenes found"
+            )
+
+            return None
