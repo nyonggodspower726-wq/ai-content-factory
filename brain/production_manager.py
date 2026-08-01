@@ -1,6 +1,7 @@
 from brain.pipeline import pipeline
-from brain.seo_engine import generate_seo
-from brain.memory_engine import memory
+from brain.script_engine import generate_script
+from brain.voice_engine import generate_voice
+from video.generator import create_video
 
 
 class ProductionManager:
@@ -16,52 +17,33 @@ class ProductionManager:
         print("PROMPTPROHUB AI STUDIO")
         print("=" * 60)
 
+        project = pipeline.execute(topic)
 
-        print("Running AI Brain...")
+        print("Generating Script...")
 
-        project = pipeline.execute(
-            topic
-        )
+        script = generate_script(project)
 
+        print("Generating Voice Profile...")
 
-        print("Generating SEO...")
+        voice = generate_voice(project)
 
-        seo = generate_seo(
-            topic
-        )
-
-
-        project["seo"] = seo
-
-
-        print("Preparing Production Package...")
-
+        print("Preparing Video Production...")
 
         production = {
 
             "topic": topic,
 
-            "status": "READY",
+            "project": project,
 
-            "project": project
+            "script": script,
+
+            "voice": voice,
+
+            "status": "READY FOR VIDEO"
 
         }
 
-
-        print("Saving Final Production Memory...")
-
-
-        memory.save(
-            topic,
-            production
-        )
-
-
-        print("Production Package Ready")
-
-
         return production
-
 
 
 production = ProductionManager()
