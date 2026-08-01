@@ -1,98 +1,33 @@
-import os
-import requests
-import time
+from video.provider_manager import provider_manager
 
 
-VIDEO_MODEL_URL = os.getenv(
-    "VIDEO_MODEL_URL"
-)
+def generate_scene(prompt):
 
+    print("=" * 50)
+    print("Generating AI Scene")
+    print("=" * 50)
 
-def generate_video_scene(prompt, duration=5):
-
-    print("AI Video Worker Started")
-    print(prompt)
-
-
-    if not VIDEO_MODEL_URL:
-
-        print(
-            "No video model worker connected."
-        )
-
-        return None
-
-
-    payload = {
-
-        "prompt": prompt,
-
-        "duration": duration,
-
-        "aspect_ratio": "9:16",
-
-        "quality": "high"
-
-    }
-
-
-    try:
-
-        response = requests.post(
-
-            VIDEO_MODEL_URL,
-
-            json=payload,
-
-            timeout=300
-
-        )
-
-
-        response.raise_for_status()
-
-
-        data = response.json()
-
-
-        return data.get(
-            "video_url"
-        )
-
-
-    except Exception as e:
-
-        print(
-            f"Worker error: {e}"
-        )
-
-        return None
-
+    return provider_manager.generate(prompt)
 
 
 def generate_all_scenes(prompts):
 
-    videos = []
-
+    scenes = []
 
     for index, prompt in enumerate(prompts):
 
-        print(
-            f"Generating scene {index+1}"
-        )
+        print(f"Scene {index + 1}")
 
+        scene = generate_scene(prompt)
 
-        video = generate_video_scene(
-            prompt
-        )
+        if scene:
 
+            scenes.append(scene)
 
-        if video:
+        else:
 
-            videos.append(video)
+            print(
+                f"Scene {index + 1} failed."
+            )
 
-
-        time.sleep(2)
-
-
-    return videos
+    return scenes
