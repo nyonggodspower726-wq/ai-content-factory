@@ -1,106 +1,38 @@
 import os
-import requests
-import random
-
-from config import PIXABAY_API_KEY
 
 
 def get_music():
 
-    print("Searching Pixabay music...")
+    """
+    PromptProHub AI Music Loader
+
+    For now this function simply checks whether
+    an AI-generated background music file already
+    exists inside output/music/.
+
+    Later this can be connected to an AI music
+    generation engine without changing the rest
+    of the system.
+    """
 
     os.makedirs(
         "output/music",
         exist_ok=True
     )
 
-    url = "https://pixabay.com/api/"
+    music_file = "output/music/background_music.mp3"
 
-    params = {
-        "key": PIXABAY_API_KEY,
-        "q": "motivational cinematic background",
-        "media_type": "music",
-        "per_page": 20,
-    }
-
-    try:
-
-        response = requests.get(
-            url,
-            params=params,
-            timeout=30
-        )
-
-        response.raise_for_status()
-
-        data = response.json()
-
-        if "hits" not in data or len(data["hits"]) == 0:
-
-            print("No music found.")
-
-            return None
-
-
-        music = random.choice(
-            data["hits"]
-        )
-
-
-        music_url = music.get(
-            "audio"
-        )
-
-
-        if not music_url:
-
-            print("No audio URL found.")
-
-            return None
-
-
-        file_path = (
-            "output/music/"
-            "background_music.mp3"
-        )
-
-
-        print("Downloading music...")
-
-
-        audio = requests.get(
-            music_url,
-            timeout=60
-        )
-
-
-        audio.raise_for_status()
-
-
-        with open(
-            file_path,
-            "wb"
-        ) as f:
-
-            f.write(
-                audio.content
-            )
-
+    if os.path.exists(music_file):
 
         print(
-            "Background music downloaded:",
-            file_path
+            "Background music found:",
+            music_file
         )
 
+        return music_file
 
-        return file_path
+    print(
+        "No background music available."
+    )
 
-
-    except Exception as e:
-
-        print(
-            "Music download failed:",
-            e
-        )
-
-        return None
+    return None
