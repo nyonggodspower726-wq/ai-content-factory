@@ -1,37 +1,50 @@
-import requests
-from config import HUGGINGFACE_TOKEN
+from gradio_client import Client
+import tempfile
+import shutil
+import os
 
-# We will update this to the exact Wan Video model later
-MODEL_URL = "https://api-inference.huggingface.co/models"
-
-HEADERS = {
-    "Authorization": f"Bearer {HUGGINGFACE_TOKEN}"
-}
+SPACE_NAME = "Wan-AI/Wan-2.2-I2V"
 
 
 def generate_wan_video(prompt):
 
-    print("Generating AI video with Wan...")
-
-    payload = {
-        "inputs": prompt
-    }
+    print("Connecting to Hugging Face Wan...")
 
     try:
 
-        response = requests.post(
-            MODEL_URL,
-            headers=HEADERS,
-            json=payload,
-            timeout=600
+        client = Client(SPACE_NAME)
+
+        result = client.predict(
+
+            prompt=prompt,
+
+            api_name="/predict"
+
         )
 
-        print(response.status_code)
+        if isinstance(result, str):
 
-        return response
+            return result
+
+        return None
 
     except Exception as e:
 
         print(e)
 
         return None
+
+
+def generate_all_scenes(prompts):
+
+    videos = []
+
+    for prompt in prompts:
+
+        video = generate_wan_video(prompt)
+
+        if video:
+
+            videos.append(video)
+
+    return videos
