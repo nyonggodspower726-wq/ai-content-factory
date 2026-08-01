@@ -1,20 +1,29 @@
 from brain.brand_engine import brand
-from brain.director import create_director_plan
-from brain.marketing_engine import marketing_plan
-from brain.psychology import psychology_plan
-from brain.storyboard import create_storyboard
-from brain.prompt_engine import generate_scene_prompts
+from brain.audience_engine import analyse_audience
 from brain.trend_engine import discover_trends
 from brain.product_engine import recommend_product
+from brain.offer_engine import create_offer
+from brain.marketing_engine import marketing_plan
+from brain.psychology import psychology_plan
+from brain.director import create_director_plan
+from brain.script_engine import generate_script
+from brain.storyboard import create_storyboard
+from brain.prompt_engine import generate_scene_prompts
+from brain.camera_engine import apply_camera
+from brain.consistency_engine import ConsistencyEngine
 from brain.viral_engine import evaluate_video
 from brain.decision_engine import final_decision
+from brain.voice_engine import generate_voice
+from brain.memory_engine import memory
 
 
 class Pipeline:
 
     def __init__(self):
 
-        print("PromptProHub AI Studio Pipeline Ready")
+        print("PromptProHub AI Sales Brain Ready")
+
+        self.consistency = ConsistencyEngine()
 
 
     def execute(self, topic):
@@ -23,65 +32,157 @@ class Pipeline:
 
         brand_data = brand.get_brand()
 
+
+        print("Analysing Audience...")
+
+        audience = analyse_audience(topic)
+
+
         print("Finding Trends...")
 
         trends = discover_trends(topic)
+
 
         print("Selecting Product...")
 
         product = recommend_product(topic)
 
-        print("Director Planning...")
 
-        director = create_director_plan(topic)
+        print("Creating Offer...")
 
-        print("Marketing Planning...")
+        offer = create_offer(topic)
+
+
+        print("Creating Marketing Strategy...")
 
         marketing = marketing_plan(topic)
 
-        print("Psychology Planning...")
 
-        psychology = psychology_plan(marketing)
+        print("Analysing Psychology...")
 
-        print("Creating Storyboard...")
+        psychology = psychology_plan(
+            marketing
+        )
 
-        storyboard = create_storyboard(director)
 
-        print("Generating Scene Prompts...")
+        print("Creating Director Plan...")
 
-        prompts = generate_scene_prompts(storyboard)
+        director = create_director_plan(topic)
 
-        print("Evaluating Virality...")
-
-        viral = evaluate_video(storyboard)
 
         project = {
 
             "brand": brand_data,
 
+            "audience": audience,
+
             "trend": trends,
 
             "product": product,
 
-            "director": director,
+            "offer": offer,
 
             "marketing": marketing,
 
             "psychology": psychology,
 
-            "storyboard": storyboard,
-
-            "prompts": prompts,
-
-            "viral": viral
+            "director": director
 
         }
 
-        decision = final_decision(project)
+
+        print("Writing Sales Script...")
+
+        script = generate_script(
+            project
+        )
+
+
+        project["script"] = script
+
+
+        print("Creating Storyboard...")
+
+        storyboard = create_storyboard(
+            project
+        )
+
+
+        project["storyboard"] = storyboard
+
+
+        print("Generating Scene Prompts...")
+
+        prompts = generate_scene_prompts(
+            storyboard
+        )
+
+
+        print("Applying Cinematic Camera...")
+
+        cinematic_prompts = []
+
+        for prompt in [prompts]:
+
+            camera_prompt = apply_camera(
+                str(prompt)
+            )
+
+            consistent_prompt = self.consistency.apply(
+                camera_prompt
+            )
+
+            cinematic_prompts.append(
+                consistent_prompt
+            )
+
+
+        project["prompts"] = cinematic_prompts
+
+
+        print("Checking Viral Potential...")
+
+        viral = evaluate_video(
+            project
+        )
+
+
+        project["viral"] = viral
+
+
+        print("Making Final Decision...")
+
+        decision = final_decision(
+            project
+        )
+
 
         project["decision"] = decision
 
+
+        print("Creating Voice Plan...")
+
+        voice = generate_voice(
+            project
+        )
+
+
+        project["voice"] = voice
+
+
+        print("Saving Memory...")
+
+        memory.save(
+            topic,
+            project
+        )
+
+
+        print("AI Brain Completed Successfully")
+
+
         return project
+
 
 
 pipeline = Pipeline()
