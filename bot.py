@@ -4,7 +4,7 @@ from brain.script_engine import generate_script
 from brain.voice_engine import generate_voice
 from brain.seo_engine import generate_seo
 
-from video.ai_video_worker import generate_scenes
+from video.ai_video_worker import generate_all_scenes
 from video.video_generator import create_video
 
 from social.tiktok_uploader import upload_to_tiktok
