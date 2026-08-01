@@ -1,14 +1,4 @@
 import os
-import requests
-import PIL.Image
-
-# Pillow compatibility
-if not hasattr(PIL.Image, "ANTIALIAS"):
-    try:
-        PIL.Image.ANTIALIAS = PIL.Image.Resampling.LANCZOS
-    except AttributeError:
-        PIL.Image.ANTIALIAS = PIL.Image.LANCZOS
-
 
 from moviepy.editor import (
     VideoFileClip,
@@ -17,469 +7,130 @@ from moviepy.editor import (
     concatenate_videoclips,
 )
 
-from config import PEXELS_API_KEY
+from video.ai_video_worker import generate_all_scenes
 from video.effects import add_hook
 from video.subtitles import add_subtitles
 from audio.music import get_music
 
 
 # ==========================================
-# SEARCH PEXELS VIDEOS
+# DOWNLOAD AI GENERATED SCENES
 # ==========================================
 
-def search_pexels_videos(query):
+def download_ai_videos(video_urls):
 
-    print(f"Searching Pexels: {query}")
-
-    url = "https://api.pexels.com/videos/search"
-
-    headers = {
-        "Authorization": PEXELS_API_KEY
-    }
-
-    params = {
-        "query": query,
-        "per_page": 6
-    }
-
-    videos = []
-
-    try:
-
-        response = requests.get(
-            url,
-            headers=headers,
-            params=params,
-            timeout=30
-        )
-
-        response.raise_for_status()
-
-        data = response.json()
-
-        if "videos" in data:
-
-            for video in data["videos"]:
-
-                files = sorted(
-                    video["video_files"],
-                    key=lambda x: x.get("width", 0),
-                    reverse=True,
-                )
-
-                for file in files:
-
-                    if (
-                        file.get("link", "").endswith(".mp4")
-                        and file.get("width", 0) >= 720
-                    ):
-
-                        videos.append(file["link"])
-                        break
-
-    except Exception as e:
-
-        print(f"Pexels search failed: {e}")
-
-    return videos
-# ==========================================
-# DOWNLOAD VIDEOS
-# ==========================================
-
-def download_videos(video_urls):
-
-    os.makedirs("output/clips", exist_ok=True)
+    os.makedirs(
+        "output/scenes",
+        exist_ok=True
+    )
 
     downloaded = []
 
-    headers = {
-        "User-Agent": "Mozilla/5.0"
-    }
 
-    for i, url in enumerate(video_urls):
+    for index, url in enumerate(video_urls):
 
-        filename = f"output/clips/clip_{i}.mp4"
+        filename = (
+            f"output/scenes/scene_{index}.mp4"
+        )
+
 
         try:
 
+            import requests
+
+
             response = requests.get(
                 url,
-                headers=headers,
                 stream=True,
-                timeout=60
+                timeout=120
             )
+
 
             response.raise_for_status()
 
-            print(f"Downloading clip {i+1}...")
 
-            with open(filename, "wb") as f:
+            with open(filename, "wb") as file:
 
                 for chunk in response.iter_content(
                     chunk_size=1024 * 1024
                 ):
 
                     if chunk:
-                        f.write(chunk)
+                        file.write(chunk)
 
-            clip = VideoFileClip(filename)
+
+            # Validate video
+
+            clip = VideoFileClip(
+                filename
+            )
 
             clip.get_frame(0)
 
             clip.close()
 
-            downloaded.append(filename)
 
-            print(f"Downloaded valid clip {i+1}")
-
-        except Exception as e:
-
-            print(f"Removing corrupted clip: {filename}")
-            print(e)
-
-            if os.path.exists(filename):
-                os.remove(filename)
-
-    return downloaded
-
-
-# ==========================================
-# BACKGROUND MUSIC MIXER
-# ==========================================
-
-def add_background_music(video, music_file):
-
-    if not os.path.exists(music_file):
-
-        print("No background music found.")
-
-        return video
-
-    try:
-
-        voice = video.audio
-
-        music = AudioFileClip(
-            music_file
-        )
-
-        music = music.volumex(0.12)
-
-        music = music.set_duration(
-            video.duration
-        )
-
-        final_audio = CompositeAudioClip(
-            [
-                music,
-                voice
-            ]
-        )
-
-        video = video.set_audio(
-            final_audio
-        )
-
-        print("Background music added.")
-
-        return video
-
-    except Exception as e:
-
-        print(f"Background music failed: {e}")
-
-        return video
-# ==========================================
-# BUILD BACKGROUND VIDEO
-# ==========================================
-
-def build_background_video(video_paths, duration):
-
-    clips = []
-
-    if len(video_paths) == 0:
-        return None
-
-    seconds_per_clip = max(
-        2,
-        duration / len(video_paths)
-    )
-
-    for path in video_paths:
-
-        try:
-
-            clip = VideoFileClip(path)
-
-            # Faster HD rendering
-            clip = clip.resize(height=1280)
-
-            clip = clip.crop(
-                x_center=clip.w / 2,
-                y_center=clip.h / 2,
-                width=720,
-                height=1280
+            downloaded.append(
+                filename
             )
 
-            clip = clip.subclip(
-                0,
-                min(
-                    seconds_per_clip,
-                    clip.duration
-                )
+
+            print(
+                f"AI scene {index + 1} downloaded"
             )
 
-            clips.append(clip)
 
         except Exception as e:
 
             print(
-                f"Failed to load clip {path}: {e}"
+                f"Scene download failed: {e}"
             )
+
+
+            if os.path.exists(filename):
+
+                os.remove(filename)
+
+
+    return downloaded
+
+
+
+# ==========================================
+# BUILD AI SCENE VIDEO
+# ==========================================
+
+def build_scene_video(scene_files):
+
+    clips = []
+
+
+    for file in scene_files:
+
+        try:
+
+            clip = VideoFileClip(
+                file
+            )
+
+
+            clip = clip.resize(
+                height=1280
+            )
+
+
+            clips.append(
+                clip
+            )
+
+
+        except Exception as e:
+
+            print(
+                f"Scene loading error: {e}"
+            )
+
 
     if len(clips) == 0:
-
-        return None
-
-
-    final_background = concatenate_videoclips(
-        clips,
-        method="compose"
-    )
-
-
-    final_background = final_background.set_duration(
-        duration
-    )
-
-
-    return final_background
-
-
-
-# ==========================================
-# CREATE FINAL VIDEO
-# ==========================================
-
-def create_video(script, voice_file):
-
-    print("Creating professional AI video...")
-
-
-    keywords = [
-        word
-        for word in script.split()
-        if len(word) > 4
-    ]
-
-
-    search_term = " ".join(
-        keywords[:4]
-    )
-
-
-    video_urls = search_pexels_videos(
-        search_term
-    )
-
-
-    if len(video_urls) == 0:
-
-        print("No background videos found.")
-
-        return None
-
-
-    video_paths = download_videos(
-        video_urls
-    )
-
-
-    if len(video_paths) == 0:
-
-        print("No valid videos downloaded.")
-
-        return None
-
-
-    audio = None
-    background = None
-    final = None
-
-
-    try:
-
-        audio = AudioFileClip(
-            voice_file
-        )
-
-
-        background = build_background_video(
-            video_paths,
-            audio.duration
-        )
-
-
-        if background is None:
-
-            print("Background creation failed.")
-
-            return None
-
-
-        # Add AI voice
-        final = background.set_audio(
-            audio
-        )
-
-
-        # Download and add Pixabay music
-        music_file = get_music()
-
-        if music_file:
-
-            final = add_background_music(
-                final,
-                music_file
-            )
-
-
-        output = "output/final_video.mp4"
-        # ==========================================
-        # EXPORT VIDEO
-        # ==========================================
-
-        final.write_videofile(
-            output,
-            codec="libx264",
-            audio_codec="aac",
-            fps=30,
-            bitrate="3500k",
-            audio_bitrate="128k",
-            preset="veryfast",
-            threads=2,
-            logger="bar"
-        )
-
-        print("Video exported successfully.")
-
-
-        # ==========================================
-        # ADD SUBTITLES
-        # ==========================================
-
-        try:
-
-            print("Adding subtitles...")
-
-            output = add_subtitles(
-                output,
-                script
-            )
-
-            print("Subtitles added successfully.")
-
-
-        except Exception as e:
-
-            print(f"Subtitle generation failed: {e}")
-
-
-
-        # ==========================================
-        # CLEANUP
-        # ==========================================
-
-        try:
-            if audio:
-                audio.close()
-
-        except Exception:
-            pass
-
-
-        try:
-            if background:
-                background.close()
-
-        except Exception:
-            pass
-
-
-        try:
-            if final:
-                final.close()
-
-        except Exception:
-            pass
-
-
-
-        # ==========================================
-        # ADD BRANDING
-        # ==========================================
-
-        hook_text = script.split(".")[0]
-
-
-        try:
-
-            print("Adding branding...")
-
-
-            output = add_hook(
-                output,
-                hook_text
-            )
-
-
-            print("Professional branding added.")
-
-
-        except Exception as e:
-
-            print(f"Branding failed: {e}")
-
-
-        print("Professional video completed.")
-
-
-        return output
-
-
-
-    except Exception as e:
-
-
-        print("=" * 60)
-        print("VIDEO CREATION FAILED")
-        print(type(e).__name__)
-        print(str(e))
-        print("=" * 60)
-
-
-        try:
-            if audio:
-                audio.close()
-
-        except Exception:
-            pass
-
-
-        try:
-            if background:
-                background.close()
-
-        except Exception:
-            pass
-
-
-        try:
-            if final:
-                final.close()
-
-        except Exception:
-            pass
-
 
         return None
