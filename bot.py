@@ -14,14 +14,19 @@ from file_manager import save_text
 from logger import log
 
 
-def main():
+
+def main(topic=None):
 
     print("=" * 60)
     print("PROMPTPROHUB AI OPERATING SYSTEM")
     print("=" * 60)
 
 
-    topic = input("Enter campaign topic: ")
+    if topic is None:
+
+        topic = input(
+            "Enter campaign topic: "
+        )
 
 
     log("Starting AI Production...")
@@ -33,7 +38,8 @@ def main():
     project = production_plan["project"]
 
 
-    log("Generating Script...")
+
+    log("Generating script...")
 
     script = generate_script(project)
 
@@ -43,7 +49,8 @@ def main():
     )
 
 
-    log("Generating Voice...")
+
+    log("Generating voice...")
 
     voice = generate_voice(project)
 
@@ -51,6 +58,7 @@ def main():
         "voice.json",
         voice
     )
+
 
 
     log("Generating SEO...")
@@ -63,7 +71,8 @@ def main():
     )
 
 
-    log("Generating AI Scenes...")
+
+    log("Generating AI scenes...")
 
 
     scenes = generate_all_scenes(
@@ -71,56 +80,55 @@ def main():
     )
 
 
-    save_text(
-        "scenes.json",
-        scenes
-    )
-
-
     if not scenes:
 
-        log("No AI scenes generated.")
-
-        log("Video generation stopped.")
+        log(
+            "No AI scenes generated. Video stopped."
+        )
 
         return
 
 
 
-    log("Rendering Final Video...")
+    log("Rendering final video...")
 
 
     video = create_video(
         script,
-        voice
-    )
-
-
-    if not video:
-
-        log("Video rendering failed.")
-
-        return
-
-
-
-    log("Uploading to TikTok...")
-
-    upload_to_tiktok(video)
-
-
-
-    log("Uploading to YouTube Shorts...")
-
-    upload_to_youtube(
-        video,
-        seo,
-        topic
+        voice,
+        scenes
     )
 
 
 
-    log("Production Complete Successfully.")
+    if video:
+
+
+        log("Uploading to TikTok...")
+
+        upload_to_tiktok(video)
+
+
+
+        log("Uploading to YouTube...")
+
+        upload_to_youtube(
+            video,
+            seo,
+            topic
+        )
+
+
+        log(
+            "Production Complete."
+        )
+
+
+    else:
+
+        log(
+            "Video generation failed."
+        )
 
 
 
