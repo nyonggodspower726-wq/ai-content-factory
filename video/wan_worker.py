@@ -1,5 +1,6 @@
 from gradio_client import Client
 import os
+import time
 
 
 SPACE_NAME = "Wan-AI/Wan-2.2-I2V"
@@ -15,8 +16,11 @@ def generate_wan_video(prompt):
 
 
         if not hf_token:
-            print("HF token missing")
+            print("HF TOKEN NOT FOUND")
             return None
+
+
+        print("HF TOKEN FOUND")
 
 
         client = Client(
@@ -43,13 +47,15 @@ def generate_wan_video(prompt):
                     return item
 
 
+        print("Wan returned no video")
+
         return None
 
 
     except Exception as e:
 
         print(
-            f"Wan generation error: {e}"
+            f"WAN ERROR: {e}"
         )
 
         return None
@@ -61,30 +67,60 @@ def generate_all_scenes(prompts):
     videos = []
 
 
-    # limit to avoid Railway overload
-
+    # Keep maximum 6 scenes
     prompts = prompts[:6]
 
 
     for index, prompt in enumerate(prompts):
 
-        print("=" * 50)
-        print(f"Generating Scene {index + 1}")
-        print("=" * 50)
+        print("=" * 60)
+        print(f"GENERATING SCENE {index + 1}")
+        print("=" * 60)
 
 
-        video = generate_wan_video(prompt)
+        # Retry failed scene twice
+
+        attempts = 0
+        video = None
+
+
+        while attempts < 3 and not video:
+
+            attempts += 1
+
+            print(
+                f"Scene {index + 1} attempt {attempts}"
+            )
+
+
+            video = generate_wan_video(prompt)
+
+
+            if not video:
+
+                print(
+                    "Retrying..."
+                )
+
+                time.sleep(5)
+
 
 
         if video:
 
+            print(
+                f"Scene {index + 1} completed"
+            )
+
             videos.append(video)
+
 
         else:
 
             print(
-                f"Scene {index + 1} failed"
+                f"Scene {index + 1} failed after retries"
             )
+
 
 
     return videos
