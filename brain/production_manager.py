@@ -1,4 +1,5 @@
 from brain.pipeline import pipeline
+
 from brain.script_engine import generate_script
 from brain.voice_engine import generate_voice
 
@@ -6,18 +7,21 @@ from brain.voice_engine import generate_voice
 class ProductionManager:
 
     def __init__(self):
+
         print("PromptProHub AI Studio Brain Online")
 
 
-    def produce(self):
+    def produce(self, topic):
 
         print("=" * 60)
         print("PROMPTPROHUB AI STUDIO")
         print("=" * 60)
 
-        print("AI Brain generating campaign...")
 
-        project = pipeline.execute()
+        print(f"Campaign Topic: {topic}")
+
+
+        project = pipeline.execute(topic)
 
 
         print("Generating Script...")
@@ -32,7 +36,7 @@ class ProductionManager:
 
         production = {
 
-            "topic": project.get("topic"),
+            "topic": topic,
 
             "project": project,
 
@@ -46,6 +50,7 @@ class ProductionManager:
 
 
         return production
+
 
 
 production = ProductionManager()
