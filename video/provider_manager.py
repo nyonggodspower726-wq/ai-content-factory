@@ -18,11 +18,13 @@ class VideoProviderManager:
 
             try:
 
-                print(
-                    f"Trying {provider.__name__}"
-                )
+                print("=" * 50)
+                print(f"Trying {provider.__name__}")
+                print("=" * 50)
+
 
                 result = provider(prompt)
+
 
                 if result:
 
@@ -32,15 +34,25 @@ class VideoProviderManager:
 
                     return result
 
+
             except Exception as e:
 
-                print(e)
+                print(
+                    f"{provider.__name__} failed:"
+                )
 
-        print(
-            "All providers failed."
-        )
+                print(
+                    str(e)
+                )
+
+
+        print("=" * 50)
+        print("All video providers failed.")
+        print("=" * 50)
+
 
         return None
+
 
 
 provider_manager = VideoProviderManager()
