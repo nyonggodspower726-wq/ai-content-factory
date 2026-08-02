@@ -1,67 +1,101 @@
+from gradio_client import Client
+import os
 import time
-from datetime import datetime, timezone, timedelta
-
-from bot import main
 
 
-POSTING_TIMES = [
-    "14:27",
-]
+SPACE_NAME = "Upsampler/wan-2-2-5b-video"
 
 
-def start_scheduler():
+def generate_wan_video(prompt):
 
-    print("=" * 50)
-    print("AI CONTENT FACTORY v1.0")
-    print("=" * 50)
-    print("AI CONTENT FACTORY SCHEDULER STARTED")
+    print("Connecting to Hugging Face Wan...")
 
-    completed = set()
+    try:
 
-    while True:
+        hf_token = os.getenv("HF_API_TOKEN")
 
-        nigeria_time = datetime.now(
-            timezone(timedelta(hours=1))
+        if not hf_token:
+            print("HF TOKEN NOT FOUND")
+            return None
+
+
+        print("HF TOKEN FOUND")
+
+
+        client = Client(
+            SPACE_NAME,
+            token=hf_token
         )
 
-        current_time = nigeria_time.strftime("%H:%M")
 
-        print(f"Scheduler running | Nigeria time: {current_time}")
-
-        if (
-            current_time in POSTING_TIMES
-            and current_time not in completed
-        ):
-
-            print("=" * 50)
-            print(f"Starting video generation: {current_time}")
-            print("=" * 50)
-
-            try:
-
-                main()
-
-                print("=" * 50)
-                print("VIDEO TASK COMPLETED SUCCESSFULLY")
-                print("=" * 50)
-
-            except Exception as e:
-
-                print("=" * 50)
-                print("VIDEO TASK FAILED")
-                print(type(e).__name__)
-                print(str(e))
-                print("=" * 50)
-
-            completed.add(current_time)
-
-        # Reset every midnight
-        if current_time == "00:00":
-            completed.clear()
-
-        # Check every 10 seconds
-        time.sleep(10)
+        print("Getting available API...")
 
 
-if __name__ == "__main__":
-    start_scheduler()
+        result = client.predict(
+            prompt,
+            2,
+            api_name="/generate"
+        )
+
+
+        if isinstance(result, str):
+            return result
+
+
+        if isinstance(result, (list, tuple)):
+
+            for item in result:
+                if isinstance(item, str):
+                    return item
+
+
+        print("No video returned")
+
+        return None
+
+
+    except Exception as e:
+
+        print(f"WAN ERROR: {e}")
+
+        return None
+
+
+
+def generate_all_scenes(prompts):
+
+    videos = []
+
+    prompts = prompts[:6]
+
+
+    for index, prompt in enumerate(prompts):
+
+        print("="*50)
+        print(f"GENERATING SCENE {index+1}")
+        print("="*50)
+
+
+        attempts = 0
+        video = None
+
+
+        while attempts < 3 and not video:
+
+            attempts += 1
+
+            video = generate_wan_video(prompt)
+
+
+            if not video:
+                time.sleep(5)
+
+
+        if video:
+            videos.append(video)
+
+        else:
+            print(f"Scene {index+1} failed")
+
+
+    return videos
