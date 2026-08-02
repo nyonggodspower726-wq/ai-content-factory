@@ -18,7 +18,11 @@ from logger import log
 def main(topic="Top 10 AI prompts for freelancers"):
 
     print("=" * 60)
-    print("PROMPTPROHUB AI OPERATING SYSTEM")
+    print("PromptProHub AI Studio Brain Online")
+    print("=" * 60)
+
+    print("=" * 60)
+    print("AI CONTENT FACTORY v1.0")
     print("=" * 60)
 
 
@@ -33,7 +37,9 @@ def main(topic="Top 10 AI prompts for freelancers"):
 
     log("Generating script...")
 
+
     script = generate_script(project)
+
 
     save_text(
         "script.json",
@@ -43,7 +49,9 @@ def main(topic="Top 10 AI prompts for freelancers"):
 
     log("Generating voice...")
 
+
     voice = generate_voice(project)
+
 
     save_text(
         "voice.json",
@@ -53,7 +61,9 @@ def main(topic="Top 10 AI prompts for freelancers"):
 
     log("Generating SEO...")
 
+
     seo = generate_seo(topic)
+
 
     save_text(
         "seo.json",
@@ -92,11 +102,13 @@ def main(topic="Top 10 AI prompts for freelancers"):
 
         log("Uploading TikTok...")
 
+
         upload_to_tiktok(video)
 
 
 
         log("Uploading YouTube...")
+
 
         upload_to_youtube(
             video,
@@ -106,6 +118,7 @@ def main(topic="Top 10 AI prompts for freelancers"):
 
 
         log("Production Complete.")
+
 
 
     else:
