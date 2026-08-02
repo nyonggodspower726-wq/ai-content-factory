@@ -2,8 +2,9 @@ import os
 import asyncio
 import edge_tts
 
+from voice.emotion_engine import build_emotional_script
 
-VOICE = "en-US-GuyNeural"
+VOICE = "en-US-BrianMultilingualNeural"
 
 
 async def create_voice(text, output_file):
@@ -16,9 +17,18 @@ async def create_voice(text, output_file):
     await communicate.save(output_file)
 
 
-def generate_voice(script):
+def generate_voice(script, voice_profile):
 
-    print("Generating professional AI voice...")
+    print("=" * 60)
+    print("AI VOICE DIRECTOR")
+    print("=" * 60)
+
+    print("Applying emotions...")
+
+    emotional_script = build_emotional_script(
+        script,
+        voice_profile
+    )
 
     os.makedirs("output", exist_ok=True)
 
@@ -27,9 +37,10 @@ def generate_voice(script):
     try:
 
         try:
+
             asyncio.run(
                 create_voice(
-                    script,
+                    emotional_script,
                     voice_file
                 )
             )
@@ -41,14 +52,14 @@ def generate_voice(script):
 
             loop.run_until_complete(
                 create_voice(
-                    script,
+                    emotional_script,
                     voice_file
                 )
             )
 
             loop.close()
 
-        print("AI voice generated successfully.")
+        print("Professional AI Voice Created")
 
         return voice_file
 
