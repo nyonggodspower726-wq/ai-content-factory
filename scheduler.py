@@ -25,7 +25,7 @@ def run_bot():
 
 # TEST MODE
 # Single time for testing
-schedule.every().day.at("01:00").do(run_bot)
+schedule.every().day.at("03:52").do(run_bot)
 
 
 # Production mode later:
