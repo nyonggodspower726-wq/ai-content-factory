@@ -15,28 +15,20 @@ from logger import log
 
 
 
-def main(topic=None):
+def main(topic="Top 10 AI prompts for freelancers"):
 
     print("=" * 60)
     print("PROMPTPROHUB AI OPERATING SYSTEM")
     print("=" * 60)
 
 
-    if topic is None:
-
-        topic = input(
-            "Enter campaign topic: "
-        )
-
-
-    log("Starting AI Production...")
+    log(f"Starting campaign: {topic}")
 
 
     production_plan = production.produce(topic)
 
 
     project = production_plan["project"]
-
 
 
     log("Generating script...")
@@ -49,7 +41,6 @@ def main(topic=None):
     )
 
 
-
     log("Generating voice...")
 
     voice = generate_voice(project)
@@ -58,7 +49,6 @@ def main(topic=None):
         "voice.json",
         voice
     )
-
 
 
     log("Generating SEO...")
@@ -71,7 +61,6 @@ def main(topic=None):
     )
 
 
-
     log("Generating AI scenes...")
 
 
@@ -82,9 +71,7 @@ def main(topic=None):
 
     if not scenes:
 
-        log(
-            "No AI scenes generated. Video stopped."
-        )
+        log("No AI scenes generated")
 
         return
 
@@ -95,8 +82,7 @@ def main(topic=None):
 
     video = create_video(
         script,
-        voice,
-        scenes
+        voice
     )
 
 
@@ -104,13 +90,13 @@ def main(topic=None):
     if video:
 
 
-        log("Uploading to TikTok...")
+        log("Uploading TikTok...")
 
         upload_to_tiktok(video)
 
 
 
-        log("Uploading to YouTube...")
+        log("Uploading YouTube...")
 
         upload_to_youtube(
             video,
@@ -119,16 +105,12 @@ def main(topic=None):
         )
 
 
-        log(
-            "Production Complete."
-        )
+        log("Production Complete.")
 
 
     else:
 
-        log(
-            "Video generation failed."
-        )
+        log("Video generation failed")
 
 
 
