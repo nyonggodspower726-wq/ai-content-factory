@@ -7,29 +7,21 @@ SPACE_NAME = "Wan-AI/Wan-2.2-I2V"
 
 def generate_wan_video(prompt):
 
-    print("=" * 50)
     print("Connecting to Hugging Face Wan...")
-    print("=" * 50)
 
     try:
 
+        hf_token = os.getenv("HF_API_TOKEN")
+
         client = Client(
-            SPACE_NAME
+            SPACE_NAME,
+            hf_token=hf_token
         )
 
 
         result = client.predict(
             prompt=prompt,
             api_name="/predict"
-        )
-
-
-        print(
-            "Wan response received:"
-        )
-
-        print(
-            result
         )
 
 
@@ -53,11 +45,7 @@ def generate_wan_video(prompt):
     except Exception as e:
 
         print(
-            "Wan video generation failed:"
-        )
-
-        print(
-            str(e)
+            f"Wan generation error: {e}"
         )
 
         return None
@@ -68,28 +56,12 @@ def generate_all_scenes(prompts):
 
     videos = []
 
+    for prompt in prompts:
 
-    for index, prompt in enumerate(prompts):
-
-        print(
-            f"Generating scene {index + 1}"
-        )
-
-
-        video = generate_wan_video(
-            prompt
-        )
-
+        video = generate_wan_video(prompt)
 
         if video:
 
             videos.append(video)
-
-        else:
-
-            print(
-                f"Scene {index + 1} failed"
-            )
-
 
     return videos
