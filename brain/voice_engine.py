@@ -1,74 +1,106 @@
-from groq import Groq
-from config import GROQ_API_KEY
+from brain.ai_router import ask_ai
 
-client = Groq(
-    api_key=GROQ_API_KEY
-)
 
 SYSTEM_PROMPT = """
-You are PromptProHub Voice AI.
+You are PromptProHub AI Voice Director.
 
-Your job is to choose the perfect narration style.
+You NEVER narrate.
 
-Return JSON only.
+You DIRECT narration.
 
-Determine:
+Your goal is to make the voice sound as human,
+emotional and engaging as possible.
+
+For every script determine:
 
 1. Voice Gender
 2. Voice Age
-3. Voice Emotion
-4. Voice Speed
-5. Voice Tone
-6. Voice Style
-7. Pause Positions
-8. Emphasis Words
+3. Voice Personality
+4. Voice Emotion
+5. Emotion Curve
+6. Speaking Speed
+7. Speaking Rhythm
+8. Pause Positions
+9. Emphasis Words
+10. Whisper Moments
+11. Excitement Moments
+12. Curiosity Moments
+13. Urgency Moments
+14. Smile Moments
+15. CTA Delivery Style
+
+Return JSON only.
 
 Example:
 
 {
 "gender":"Male",
 "age":"Young Adult",
-"emotion":"Confident",
-"speed":"Medium",
-"tone":"Professional",
-"style":"Commercial",
-"pauses":[
+"personality":"Confident Mentor",
+"emotion":"Curious",
+
+"emotion_curve":[
+"Shock",
+"Curiosity",
+"Excitement",
+"Trust",
+"Urgency"
+],
+
+"speed":{
+"hook":"Fast",
+"body":"Medium",
+"cta":"Slow"
+},
+
+"rhythm":"Dynamic",
+
+"pause_points":[
 "After Hook",
+"Before Reveal",
 "Before CTA"
 ],
+
 "emphasis":[
 "FREE",
-"LIMITED",
-"TODAY"
-]
+"SECRET",
+"TODAY",
+"LIMITED"
+],
+
+"whisper":[
+"Here's the secret..."
+],
+
+"excitement":[
+"This changes everything!"
+],
+
+"curiosity":[
+"But there's one problem..."
+],
+
+"urgency":[
+"Don't wait."
+],
+
+"smile":[
+"Imagine finishing work in minutes."
+],
+
+"cta_style":"Friendly but persuasive"
 }
 """
 
 
 def generate_voice(project):
 
-    response = client.chat.completions.create(
+    prompt = f"""
+{SYSTEM_PROMPT}
 
-        model="llama-3.3-70b-versatile",
+Project:
 
-        messages=[
+{project}
+"""
 
-            {
-                "role":"system",
-                "content":SYSTEM_PROMPT
-            },
-
-            {
-                "role":"user",
-                "content":str(project)
-            }
-
-        ],
-
-        temperature=0.7,
-
-        max_tokens=1000
-
-    )
-
-    return response.choices[0].message.content
+    return ask_ai(prompt)
