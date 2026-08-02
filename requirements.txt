@@ -14,3 +14,11 @@ google-auth-oauthlib
 google-auth-httplib2
 gradio_client
 google-generativeai
+google-generativeai
+groq
+gradio_client
+python-dotenv
+moviepy
+requests
+Pillow
+schedule
