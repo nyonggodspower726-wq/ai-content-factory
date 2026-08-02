@@ -42,7 +42,7 @@ def start_scheduler():
 
     schedule.clear()
 
-    schedule.every().day.at(TEST_TIME).do(run_bot)
+    schedule.every(10).seconds.do(run_bot)
 
     print(f"Scheduled trigger time (Nigeria): {TEST_TIME}")
 
