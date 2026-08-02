@@ -5,7 +5,7 @@ from bot import main
 
 
 POSTING_TIMES = [
-    "11:05",
+    "1:56",
 ]
 
 
