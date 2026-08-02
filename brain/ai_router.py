@@ -5,9 +5,6 @@ def ask_ai(prompt):
 
     providers = failover.available()
 
-    if not providers:
-        raise Exception("No AI providers configured.")
-
     for provider in providers:
 
         try:
@@ -21,35 +18,20 @@ def ask_ai(prompt):
                 from ai.groq_client import ask
                 return ask(prompt)
 
-
             elif provider == "google":
 
                 from ai.google_client import ask
                 return ask(prompt)
-
 
             elif provider == "nvidia":
 
                 from ai.nvidia_client import ask
                 return ask(prompt)
 
-
-            elif provider == "huggingface":
-
-                from ai.huggingface_client import ask
-                return ask(prompt)
-
-
         except Exception as e:
 
-            print("=" * 60)
-            print(f"{provider.upper()} FAILED")
+            print(f"{provider} failed")
             print(e)
-            print("Switching to next AI provider...")
-            print("=" * 60)
-
-            failover.disable(provider)
-
             continue
 
     raise Exception("All AI providers failed.")
