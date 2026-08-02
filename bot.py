@@ -1,7 +1,10 @@
 from brain.production_manager import production
 
+from brain.script_engine import generate_script
+from brain.voice_engine import generate_voice
 from brain.seo_engine import generate_seo
 
+from video.ai_video_worker import generate_all_scenes
 from video.video_generator import create_video
 
 from social.tiktok_uploader import upload_to_tiktok
@@ -11,7 +14,6 @@ from file_manager import save_text
 from logger import log
 
 
-
 def main():
 
     print("=" * 60)
@@ -19,28 +21,21 @@ def main():
     print("=" * 60)
 
 
+    topic = input("Enter campaign topic: ")
+
+
     log("Starting AI Production...")
 
 
-    # AI Brain creates the campaign automatically
-    production_plan = production.produce()
+    production_plan = production.produce(topic)
 
 
     project = production_plan["project"]
 
-    topic = production_plan["topic"]
 
-    script = production_plan["script"]
+    log("Generating Script...")
 
-    voice = production_plan["voice"]
-
-
-
-    log(f"AI Topic Generated: {topic}")
-
-
-
-    log("Saving script...")
+    script = generate_script(project)
 
     save_text(
         "script.json",
@@ -48,8 +43,9 @@ def main():
     )
 
 
+    log("Generating Voice...")
 
-    log("Saving voice data...")
+    voice = generate_voice(project)
 
     save_text(
         "voice.json",
@@ -57,11 +53,9 @@ def main():
     )
 
 
-
     log("Generating SEO...")
 
     seo = generate_seo(topic)
-
 
     save_text(
         "seo.json",
@@ -69,43 +63,64 @@ def main():
     )
 
 
+    log("Generating AI Scenes...")
 
-    log("Rendering final video...")
+
+    scenes = generate_all_scenes(
+        project["scene_prompts"]
+    )
+
+
+    save_text(
+        "scenes.json",
+        scenes
+    )
+
+
+    if not scenes:
+
+        log("No AI scenes generated.")
+
+        log("Video generation stopped.")
+
+        return
+
+
+
+    log("Rendering Final Video...")
+
 
     video = create_video(
-        project["scene_prompts"],
         script,
         voice
     )
 
 
+    if not video:
 
-    if video:
+        log("Video rendering failed.")
 
-
-        log("Uploading to TikTok...")
-
-        upload_to_tiktok(
-            video
-        )
-
-
-        log("Uploading to YouTube Shorts...")
-
-        upload_to_youtube(
-            video,
-            seo,
-            topic
-        )
-
-
-        log("Production Complete Successfully.")
+        return
 
 
 
-    else:
+    log("Uploading to TikTok...")
 
-        log("Video generation failed.")
+    upload_to_tiktok(video)
+
+
+
+    log("Uploading to YouTube Shorts...")
+
+    upload_to_youtube(
+        video,
+        seo,
+        topic
+    )
+
+
+
+    log("Production Complete Successfully.")
 
 
 
