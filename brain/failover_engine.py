@@ -20,15 +20,28 @@ class FailoverEngine:
 
     def available(self):
 
-        available = []
+        return api_manager.available()
 
-        for provider in self.providers:
 
-            if api_manager.get(provider):
+    def next_provider(self):
 
-                available.append(provider)
+        providers = self.available()
 
-        return available
+        if not providers:
+
+            return None
+
+        return providers[0]
+
+
+    def disable(self, provider):
+
+        api_manager.disable(provider)
+
+
+    def enable(self, provider):
+
+        api_manager.enable(provider)
 
 
 failover = FailoverEngine()
