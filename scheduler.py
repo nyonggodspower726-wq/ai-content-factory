@@ -1,4 +1,3 @@
-import schedule
 import time
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -9,12 +8,11 @@ from bot import main
 def run_bot():
 
     print("=" * 60)
-    print("TIME MATCHED - STARTING VIDEO GENERATION")
+    print("SCHEDULER TRIGGERED - STARTING BOT")
     print("=" * 60)
 
     try:
         main()
-
         print("VIDEO TASK COMPLETED SUCCESSFULLY")
 
     except Exception as e:
@@ -23,25 +21,33 @@ def run_bot():
 
 def start_scheduler():
 
-    # TEST TIME (change this manually)
-    schedule.every().day.at("16:50").do(run_bot)
-
-
     print("AI CONTENT FACTORY SCHEDULER STARTED")
 
+    already_run = False
 
     while True:
 
-        nigeria_time = datetime.now(
+        now = datetime.now(
             ZoneInfo("Africa/Lagos")
-        ).strftime("%H:%M:%S")
-
-
-        print(
-            f"Scheduler running | Nigeria time: {nigeria_time}"
         )
 
+        print(
+            f"Scheduler running | Nigeria time: {now.strftime('%H:%M:%S')}"
+        )
 
-        schedule.run_pending()
+        # TEST: change this time manually
+        if (
+            now.hour == 17
+            and now.minute == 08
+            and not already_run
+        ):
+
+            run_bot()
+            already_run = True
+
+
+        if now.minute != 34:
+            already_run = False
+
 
         time.sleep(10)
