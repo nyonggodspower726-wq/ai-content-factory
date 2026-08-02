@@ -79,6 +79,12 @@ def generate_scene_prompts(storyboard):
     raw = response.choices[0].message.content
 
 
+    # Clean AI response before JSON parsing
+    raw = raw.replace("```json", "")
+    raw = raw.replace("```", "")
+    raw = raw.strip()
+
+
     try:
 
         scenes = json.loads(raw)
@@ -103,6 +109,9 @@ def generate_scene_prompts(storyboard):
         )
 
         print(e)
+
+        print("Raw output:")
+        print(raw)
 
 
         # fallback
