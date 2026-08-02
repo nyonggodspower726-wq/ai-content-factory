@@ -1,9 +1,5 @@
-from groq import Groq
-from config import GROQ_API_KEY
+from brain.ai_router import ask_ai
 
-client = Groq(
-    api_key=GROQ_API_KEY
-)
 
 SYSTEM_PROMPT = """
 You are PromptProHub Thinking AI.
@@ -54,34 +50,16 @@ Example:
 
 def think(product, topic):
 
-    response = client.chat.completions.create(
+    prompt = f"""
+{SYSTEM_PROMPT}
 
-        model="llama-3.3-70b-versatile",
-
-        messages=[
-
-            {
-                "role":"system",
-                "content":SYSTEM_PROMPT
-            },
-
-            {
-                "role":"user",
-                "content":f"""
 Product:
+
 {product}
 
 Topic:
+
 {topic}
 """
-            }
 
-        ],
-
-        temperature=0.6,
-
-        max_tokens=1200
-
-    )
-
-    return response.choices[0].message.content
+    return ask_ai(prompt)
