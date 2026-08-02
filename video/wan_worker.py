@@ -3,7 +3,7 @@ import os
 import time
 
 
-SPACE_Surrendara1991 = "Wan-AI/Wan-2.2-I2V-A14B"
+SPACE_NAME = "surrendara1991/Wan-2-2-12v-A14B"
 
 
 def generate_wan_video(prompt):
