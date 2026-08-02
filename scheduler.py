@@ -9,7 +9,7 @@ from bot import main
 def run_bot():
 
     print("=" * 60)
-    print("Starting AI Content Factory...")
+    print("TIME MATCHED - STARTING VIDEO GENERATION")
     print("=" * 60)
 
     try:
@@ -23,13 +23,8 @@ def run_bot():
 
 def start_scheduler():
 
-    # TEST TIME
-    schedule.every().day.at("16:34").do(run_bot)
-
-    # Production later:
-    # schedule.every().day.at("09:00").do(run_bot)
-    # schedule.every().day.at("14:00").do(run_bot)
-    # schedule.every().day.at("20:00").do(run_bot)
+    # TEST TIME (change this manually)
+    schedule.every().day.at("16:50").do(run_bot)
 
 
     print("AI CONTENT FACTORY SCHEDULER STARTED")
