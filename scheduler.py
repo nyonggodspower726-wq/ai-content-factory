@@ -1,101 +1,52 @@
-from gradio_client import Client
-import os
+import schedule
 import time
+from bot import main
 
 
-SPACE_NAME = "Upsampler/wan-2-2-5b-video"
+def run_bot():
 
-
-def generate_wan_video(prompt):
-
-    print("Connecting to Hugging Face Wan...")
+    print("=" * 60)
+    print("STARTING AI CONTENT FACTORY")
+    print("=" * 60)
 
     try:
 
-        hf_token = os.getenv("HF_API_TOKEN")
+        main()
 
-        if not hf_token:
-            print("HF TOKEN NOT FOUND")
-            return None
-
-
-        print("HF TOKEN FOUND")
-
-
-        client = Client(
-            SPACE_NAME,
-            token=hf_token
-        )
-
-
-        print("Getting available API...")
-
-
-        result = client.predict(
-            prompt,
-            2,
-            api_name="/generate"
-        )
-
-
-        if isinstance(result, str):
-            return result
-
-
-        if isinstance(result, (list, tuple)):
-
-            for item in result:
-                if isinstance(item, str):
-                    return item
-
-
-        print("No video returned")
-
-        return None
-
+        print("VIDEO GENERATION COMPLETED")
 
     except Exception as e:
 
-        print(f"WAN ERROR: {e}")
-
-        return None
+        print(f"BOT ERROR: {e}")
 
 
 
-def generate_all_scenes(prompts):
+# ==============================
+# TEST MODE
+# ==============================
 
-    videos = []
-
-    prompts = prompts[:6]
-
-
-    for index, prompt in enumerate(prompts):
-
-        print("="*50)
-        print(f"GENERATING SCENE {index+1}")
-        print("="*50)
+# Use one time for testing
+schedule.every().day.at("12:00").do(run_bot)
 
 
-        attempts = 0
-        video = None
+
+# ==============================
+# PRODUCTION MODE (3 VIDEOS/DAY)
+# ==============================
+#
+# After testing, replace the line above with:
+#
+# schedule.every().day.at("09:00").do(run_bot)
+# schedule.every().day.at("14:00").do(run_bot)
+# schedule.every().day.at("20:00").do(run_bot)
 
 
-        while attempts < 3 and not video:
 
-            attempts += 1
-
-            video = generate_wan_video(prompt)
+print("AI Content Factory Scheduler Running...")
 
 
-            if not video:
-                time.sleep(5)
+while True:
 
+    schedule.run_pending()
 
-        if video:
-            videos.append(video)
-
-        else:
-            print(f"Scene {index+1} failed")
-
-
-    return videos
+    time.sleep(30)
