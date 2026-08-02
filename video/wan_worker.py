@@ -13,6 +13,7 @@ def generate_wan_video(prompt):
 
         hf_token = os.getenv("HF_API_TOKEN")
 
+
         if not hf_token:
             print("HF token missing")
             return None
@@ -20,9 +21,7 @@ def generate_wan_video(prompt):
 
         client = Client(
             SPACE_NAME,
-            headers={
-                "Authorization": f"Bearer {hf_token}"
-            }
+            token=hf_token
         )
 
 
@@ -61,18 +60,28 @@ def generate_all_scenes(prompts):
 
     videos = []
 
+
+    # limit to avoid Railway overload
+
+    prompts = prompts[:6]
+
+
     for index, prompt in enumerate(prompts):
 
         print("=" * 50)
         print(f"Generating Scene {index + 1}")
         print("=" * 50)
 
+
         video = generate_wan_video(prompt)
 
+
         if video:
+
             videos.append(video)
 
         else:
+
             print(
                 f"Scene {index + 1} failed"
             )
