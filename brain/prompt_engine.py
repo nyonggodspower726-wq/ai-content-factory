@@ -1,6 +1,6 @@
 from groq import Groq
-
 from config import GROQ_API_KEY
+import json
 
 
 client = Groq(
@@ -11,50 +11,40 @@ client = Groq(
 SYSTEM_PROMPT = """
 You are PromptProHub Cinematic Prompt Engine.
 
-Your job is to convert a storyboard into AI video generation prompts for short-form social media videos.
+Convert a storyboard into AI video generation prompts.
 
-IMPORTANT RULES:
+STRICT RULES:
 
-- Create EXACTLY 6 scenes.
-- Never create more than 6 scenes.
-- Each scene represents one cinematic video shot.
-- Each scene should be 5 seconds maximum.
-- The final video should be suitable for TikTok, YouTube Shorts, and Instagram Reels.
+- Generate EXACTLY 6 scenes.
+- Never generate more than 6 scenes.
+- Each scene is one cinematic shot.
+- Each scene is suitable for a short-form video.
 
-For each scene include:
+Focus only on PromptProHub products:
+
+- AI prompt bundles
+- AI tools
+- Freelancer productivity
+- Content creators
+- Digital marketers
+- Business owners
+
+Do not create unrelated content.
+
+Each scene must include:
 
 - scene number
-- main subject
-- environment
-- action
-- camera movement
-- lighting
-- emotion
-- visual style
-- realism details
+- prompt
 
-Rules:
-
-- Make scenes look like premium commercial advertisements.
-- Focus on PromptProHub products:
-  AI prompts, AI tools, creator workflows, freelancers, marketers, business owners.
-- Keep the same characters and visual identity across scenes.
-- Use realistic humans and environments.
-- Describe cinematic camera movements.
-- Include professional lighting.
-- Do not include subtitles.
-- Do not include text overlays.
-- Do not generate unrelated topics.
-
-Return JSON array only.
+Return ONLY a JSON array.
 
 Example:
 
 [
-{
-"scene":1,
-"prompt":"A freelancer in a modern workspace using AI tools to improve productivity, cinematic slow dolly-in camera movement, warm professional lighting, realistic details, premium advertisement style."
-}
+ {
+  "scene":1,
+  "prompt":"A freelancer using AI tools in a modern office, cinematic camera movement, realistic lighting, premium advertisement style."
+ }
 ]
 """
 
@@ -68,22 +58,57 @@ def generate_scene_prompts(storyboard):
         messages=[
 
             {
-                "role": "system",
-                "content": SYSTEM_PROMPT
+                "role":"system",
+                "content":SYSTEM_PROMPT
             },
 
             {
-                "role": "user",
-                "content": str(storyboard)
+                "role":"user",
+                "content":str(storyboard)
             }
 
         ],
 
-        temperature=0.6,
+        temperature=0.4,
 
-        max_tokens=2500
+        max_tokens=1500
 
     )
 
 
-    return response.choices[0].message.content
+    raw = response.choices[0].message.content
+
+
+    try:
+
+        scenes = json.loads(raw)
+
+
+        # HARD SAFETY LIMIT
+        scenes = scenes[:6]
+
+
+        print(
+            f"Scene prompts created: {len(scenes)}"
+        )
+
+
+        return scenes
+
+
+    except Exception as e:
+
+        print(
+            "Scene JSON parsing failed:"
+        )
+
+        print(e)
+
+
+        # fallback
+        return [
+            {
+                "scene":1,
+                "prompt":str(raw)
+            }
+        ]
