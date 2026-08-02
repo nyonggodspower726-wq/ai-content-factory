@@ -18,7 +18,7 @@ class Pipeline:
         print("PromptProHub AI Studio Brain Online")
 
 
-    def execute(self):
+    def execute(self, topic):
 
         print("=" * 60)
         print("STEP 1 : BRAND")
@@ -31,13 +31,10 @@ class Pipeline:
         print("STEP 2 : TREND BRAIN")
         print("=" * 60)
 
-        trends = discover_trends()
+        trends = discover_trends(topic)
 
 
-        # Extract AI generated topic
-        topic = trends
-
-        print("Generated Topic:")
+        print("Campaign Topic:")
         print(topic)
 
 
