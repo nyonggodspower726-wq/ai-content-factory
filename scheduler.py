@@ -13,41 +13,40 @@ def run_bot():
     print("=" * 60)
 
     try:
-
         main()
 
         print("VIDEO TASK COMPLETED SUCCESSFULLY")
 
     except Exception as e:
-
         print(f"BOT ERROR: {e}")
 
 
-# TEST MODE
-# Single time for testing
-schedule.every().day.at("15:54").do(run_bot)
+def start_scheduler():
+
+    # TEST TIME
+    schedule.every().day.at("01:00").do(run_bot)
+
+    # Production later:
+    # schedule.every().day.at("09:00").do(run_bot)
+    # schedule.every().day.at("14:00").do(run_bot)
+    # schedule.every().day.at("20:00").do(run_bot)
 
 
-# Production mode later:
-# schedule.every().day.at("09:00").do(run_bot)
-# schedule.every().day.at("14:00").do(run_bot)
-# schedule.every().day.at("20:00").do(run_bot)
+    print("AI CONTENT FACTORY SCHEDULER STARTED")
 
 
+    while True:
 
-print("AI CONTENT FACTORY SCHEDULER STARTED")
+        nigeria_time = datetime.now(
+            ZoneInfo("Africa/Lagos")
+        ).strftime("%H:%M:%S")
 
 
-while True:
+        print(
+            f"Scheduler running | Nigeria time: {nigeria_time}"
+        )
 
-    nigeria_time = datetime.now(
-        ZoneInfo("Africa/Lagos")
-    ).strftime("%H:%M")
 
-    print(
-        f"Scheduler running | Nigeria time: {nigeria_time}"
-    )
+        schedule.run_pending()
 
-    schedule.run_pending()
-
-    time.sleep(10)
+        time.sleep(10)
