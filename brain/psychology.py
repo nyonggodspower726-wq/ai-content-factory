@@ -1,9 +1,5 @@
-from groq import Groq
-from config import GROQ_API_KEY
+from brain.ai_router import ask_ai
 
-client = Groq(
-    api_key=GROQ_API_KEY
-)
 
 SYSTEM_PROMPT = """
 You are PromptProHub Psychology AI.
@@ -38,28 +34,12 @@ Example:
 
 def psychology_plan(marketing_plan):
 
-    response = client.chat.completions.create(
+    prompt = f"""
+{SYSTEM_PROMPT}
 
-        model="llama-3.3-70b-versatile",
+Marketing Plan:
 
-        messages=[
+{marketing_plan}
+"""
 
-            {
-                "role": "system",
-                "content": SYSTEM_PROMPT
-            },
-
-            {
-                "role": "user",
-                "content": str(marketing_plan)
-            }
-
-        ],
-
-        temperature=0.8,
-
-        max_tokens=800
-
-    )
-
-    return response.choices[0].message.content
+    return ask_ai(prompt)
