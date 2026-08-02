@@ -1,52 +1,53 @@
 import schedule
 import time
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
 from bot import main
 
 
 def run_bot():
 
     print("=" * 60)
-    print("STARTING AI CONTENT FACTORY")
+    print("Starting AI Content Factory...")
     print("=" * 60)
 
     try:
 
         main()
 
-        print("VIDEO GENERATION COMPLETED")
+        print("VIDEO TASK COMPLETED SUCCESSFULLY")
 
     except Exception as e:
 
         print(f"BOT ERROR: {e}")
 
 
-
-# ==============================
 # TEST MODE
-# ==============================
-
-# Use one time for testing
-schedule.every().day.at("12:00").do(run_bot)
+# Single time for testing
+schedule.every().day.at("01:00").do(run_bot)
 
 
-
-# ==============================
-# PRODUCTION MODE (3 VIDEOS/DAY)
-# ==============================
-#
-# After testing, replace the line above with:
-#
+# Production mode later:
 # schedule.every().day.at("09:00").do(run_bot)
 # schedule.every().day.at("14:00").do(run_bot)
 # schedule.every().day.at("20:00").do(run_bot)
 
 
 
-print("AI Content Factory Scheduler Running...")
+print("AI CONTENT FACTORY SCHEDULER STARTED")
 
 
 while True:
 
+    nigeria_time = datetime.now(
+        ZoneInfo("Africa/Lagos")
+    ).strftime("%H:%M")
+
+    print(
+        f"Scheduler running | Nigeria time: {nigeria_time}"
+    )
+
     schedule.run_pending()
 
-    time.sleep(30)
+    time.sleep(10)
