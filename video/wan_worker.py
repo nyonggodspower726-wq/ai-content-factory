@@ -13,20 +13,26 @@ def generate_wan_video(prompt):
 
         hf_token = os.getenv("HF_API_TOKEN")
 
+        if not hf_token:
+            print("HF token missing")
+            return None
+
+
         client = Client(
             SPACE_NAME,
-            hf_token=hf_token
+            headers={
+                "Authorization": f"Bearer {hf_token}"
+            }
         )
 
 
         result = client.predict(
-            prompt=prompt,
+            prompt,
             api_name="/predict"
         )
 
 
         if isinstance(result, str):
-
             return result
 
 
@@ -35,7 +41,6 @@ def generate_wan_video(prompt):
             for item in result:
 
                 if isinstance(item, str):
-
                     return item
 
 
@@ -56,12 +61,21 @@ def generate_all_scenes(prompts):
 
     videos = []
 
-    for prompt in prompts:
+    for index, prompt in enumerate(prompts):
+
+        print("=" * 50)
+        print(f"Generating Scene {index + 1}")
+        print("=" * 50)
 
         video = generate_wan_video(prompt)
 
         if video:
-
             videos.append(video)
+
+        else:
+            print(
+                f"Scene {index + 1} failed"
+            )
+
 
     return videos
