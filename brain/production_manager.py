@@ -1,7 +1,9 @@
 from brain.pipeline import pipeline
 
 from brain.script_engine import generate_script
-from brain.voice_engine import generate_voice
+from brain.voice_engine import generate_voice as create_voice_profile
+
+from video.voice_generator import generate_voice as create_audio
 
 
 class ProductionManager:
@@ -17,7 +19,6 @@ class ProductionManager:
         print("PROMPTPROHUB AI STUDIO")
         print("=" * 60)
 
-
         print(f"Campaign Topic: {topic}")
 
 
@@ -31,7 +32,15 @@ class ProductionManager:
 
         print("Generating Voice Profile...")
 
-        voice = generate_voice(project)
+        voice_profile = create_voice_profile(project)
+
+
+        print("Generating Emotional AI Voice...")
+
+        voice_file = create_audio(
+            script,
+            voice_profile
+        )
 
 
         production = {
@@ -42,7 +51,9 @@ class ProductionManager:
 
             "script": script,
 
-            "voice": voice,
+            "voice_profile": voice_profile,
+
+            "voice": voice_file,
 
             "status": "READY FOR VIDEO"
 
