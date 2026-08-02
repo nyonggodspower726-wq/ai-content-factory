@@ -13,7 +13,7 @@ class FailoverEngine:
 
             "nvidia",
 
-            "huggingface"
+            "openrouter"
 
         ]
 
