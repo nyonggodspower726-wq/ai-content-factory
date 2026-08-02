@@ -24,7 +24,7 @@ def run_bot():
 def start_scheduler():
 
     # TEST TIME
-    schedule.every().day.at("04:11").do(run_bot)
+    schedule.every().day.at("16:12").do(run_bot)
 
     # Production later:
     # schedule.every().day.at("09:00").do(run_bot)
