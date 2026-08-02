@@ -7,7 +7,7 @@ from bot import main
 
 
 # TEST TIME (5:58 PM)
-TEST_TIME = "17:58"
+TEST_TIME = "18:07"
 
 
 def run_bot():
