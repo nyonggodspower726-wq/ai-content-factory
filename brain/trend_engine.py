@@ -1,10 +1,4 @@
-from groq import Groq
-from config import GROQ_API_KEY
-
-
-client = Groq(
-    api_key=GROQ_API_KEY
-)
+from brain.ai_router import ask_ai
 
 
 SYSTEM_PROMPT = """
@@ -63,7 +57,6 @@ Weak:
 Strong:
 "I tested 100 ChatGPT prompts. These 5 saved me the most time."
 
-
 Return JSON only.
 
 Format:
@@ -79,39 +72,17 @@ Format:
 "video_angle":"",
 "priority":""
 }
-
 """
 
 
 def discover_trends(topic):
 
-    response = client.chat.completions.create(
+    prompt = f"""
+{SYSTEM_PROMPT}
 
-        model="llama-3.3-70b-versatile",
-
-        messages=[
-
-            {
-                "role":"system",
-                "content":SYSTEM_PROMPT
-            },
-
-            {
-                "role":"user",
-                "content":f"""
 Create a viral content strategy for this PromptProHub topic:
 
 {topic}
 """
-            }
 
-        ],
-
-        temperature=0.8,
-
-        max_tokens=2000
-
-    )
-
-
-    return response.choices[0].message.content
+    return ask_ai(prompt)
