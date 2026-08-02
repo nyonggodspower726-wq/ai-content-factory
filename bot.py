@@ -1,10 +1,7 @@
 from brain.production_manager import production
 
-from brain.script_engine import generate_script
-from brain.voice_engine import generate_voice
 from brain.seo_engine import generate_seo
 
-from video.ai_video_worker import generate_all_scenes
 from video.video_generator import create_video
 
 from social.tiktok_uploader import upload_to_tiktok
@@ -14,66 +11,104 @@ from file_manager import save_text
 from logger import log
 
 
+
 def main():
 
     print("=" * 60)
     print("PROMPTPROHUB AI OPERATING SYSTEM")
     print("=" * 60)
 
-    topic = input("Enter campaign topic: ")
 
     log("Starting AI Production...")
 
-    production_plan = production.produce(topic)
+
+    # AI Brain creates the campaign automatically
+    production_plan = production.produce()
+
 
     project = production_plan["project"]
 
-    log("Generating script...")
-    script = generate_script(project)
+    topic = production_plan["topic"]
 
-    save_text("script.json", script)
+    script = production_plan["script"]
 
-    log("Generating voice...")
-    voice = generate_voice(project)
+    voice = production_plan["voice"]
 
-    save_text("voice.json", voice)
+
+
+    log(f"AI Topic Generated: {topic}")
+
+
+
+    log("Saving script...")
+
+    save_text(
+        "script.json",
+        script
+    )
+
+
+
+    log("Saving voice data...")
+
+    save_text(
+        "voice.json",
+        voice
+    )
+
+
 
     log("Generating SEO...")
+
     seo = generate_seo(topic)
 
-    save_text("seo.json", seo)
 
-    log("Generating AI scenes...")
-
-    scenes = generate_scenes(
-        project["scene_prompts"]
+    save_text(
+        "seo.json",
+        seo
     )
+
+
 
     log("Rendering final video...")
 
     video = create_video(
+        project["scene_prompts"],
         script,
         voice
     )
 
+
+
     if video:
 
-        log("Uploading to TikTok...")
-        upload_to_tiktok(video)
 
-        log("Uploading to YouTube...")
+        log("Uploading to TikTok...")
+
+        upload_to_tiktok(
+            video
+        )
+
+
+        log("Uploading to YouTube Shorts...")
+
         upload_to_youtube(
             video,
             seo,
             topic
         )
 
-        log("Production Complete.")
+
+        log("Production Complete Successfully.")
+
+
 
     else:
 
         log("Video generation failed.")
 
 
+
 if __name__ == "__main__":
+
     main()
