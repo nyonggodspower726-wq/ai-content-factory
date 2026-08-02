@@ -6,8 +6,8 @@ from zoneinfo import ZoneInfo
 from bot import main
 
 
-# TEST TIME - CHANGE THIS ONLY
-TEST_TIME = "17:27"
+# TEST TIME (5:58 PM)
+TEST_TIME = "17:58"
 
 
 def run_bot():
@@ -17,6 +17,8 @@ def run_bot():
     print("=" * 60)
 
     try:
+
+        print("Calling bot.py...")
 
         main()
 
@@ -38,33 +40,22 @@ def start_scheduler():
     print("AI CONTENT FACTORY SCHEDULER STARTED")
     print("=" * 60)
 
-
     schedule.clear()
 
-
-    # TEST MODE
     schedule.every().day.at(TEST_TIME).do(run_bot)
 
-
-    print(
-        f"Scheduled trigger time: Nigeria {TEST_TIME}"
-    )
-
+    print(f"Scheduled trigger time (Nigeria): {TEST_TIME}")
 
     while True:
-
 
         nigeria_time = datetime.now(
             ZoneInfo("Africa/Lagos")
         ).strftime("%H:%M:%S")
 
-
         print(
             f"Scheduler running | Nigeria time: {nigeria_time}"
         )
 
-
         schedule.run_pending()
 
-
-        time.sleep(10)
+        time.sleep(1)
