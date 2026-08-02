@@ -1,11 +1,4 @@
-from groq import Groq
-
-from config import GROQ_API_KEY
-
-
-client = Groq(
-    api_key=GROQ_API_KEY
-)
+from brain.ai_router import ask_ai
 
 
 SYSTEM_PROMPT = """
@@ -32,29 +25,12 @@ You decide:
 
 def create_director_plan(topic):
 
-    response = client.chat.completions.create(
+    prompt = f"""
+{SYSTEM_PROMPT}
 
-        model="llama-3.3-70b-versatile",
+Create a professional AI commercial plan for:
 
-        messages=[
+{topic}
+"""
 
-            {
-                "role": "system",
-                "content": SYSTEM_PROMPT
-            },
-
-            {
-                "role": "user",
-                "content":
-                f"Create a professional AI commercial plan for: {topic}"
-            }
-
-        ],
-
-        temperature=0.8,
-
-        max_tokens=800
-
-    )
-
-    return response.choices[0].message.content
+    return ask_ai(prompt)
