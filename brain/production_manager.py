@@ -22,7 +22,7 @@ class ProductionManager:
         print(f"Campaign Topic: {topic}")
 
 
-        project = pipeline.execute(topic)
+        project = pipeline.run(topic)
 
 
         print("Generating Script...")
