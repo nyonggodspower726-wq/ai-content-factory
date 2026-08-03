@@ -1,6 +1,6 @@
 from brain.brain_controller import brain
 
-from voice.voice_engine import generate_voice
+from voice.voice_generator import generate_voice
 
 from video.video_generator import create_video
 
