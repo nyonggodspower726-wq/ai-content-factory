@@ -239,3 +239,109 @@ class Pipeline:
         )
 
         project["offer"] = offer
+
+        print("=" * 60)
+        print("STEP 9 : DIRECTOR ENGINE")
+        print("=" * 60)
+
+        director = self.run_engine(
+
+            "DIRECTOR ENGINE",
+
+            create_director_plan,
+
+            thinking
+
+        )
+
+        project["director"] = director
+
+
+
+        print("=" * 60)
+        print("STEP 10 : CAMERA ENGINE")
+        print("=" * 60)
+
+        camera = self.run_engine(
+
+            "CAMERA ENGINE",
+
+            create_camera_plan,
+
+            director
+
+        )
+
+        project["camera"] = camera
+
+
+
+        print("=" * 60)
+        print("STEP 11 : STORYBOARD ENGINE")
+        print("=" * 60)
+
+        storyboard = self.run_engine(
+
+            "STORYBOARD ENGINE",
+
+            create_storyboard,
+
+            director
+
+        )
+
+        project["storyboard"] = storyboard
+
+
+
+        print("=" * 60)
+        print("STEP 12 : SCENE PROMPT ENGINE")
+        print("=" * 60)
+
+        scene_prompts = self.run_engine(
+
+            "PROMPT ENGINE",
+
+            generate_scene_prompts,
+
+            storyboard
+
+        )
+
+        project["scene_prompts"] = scene_prompts
+
+
+
+        print("=" * 60)
+        print("STEP 13 : VIRAL ENGINE")
+        print("=" * 60)
+
+        viral = self.run_engine(
+
+            "VIRAL ENGINE",
+
+            evaluate_video,
+
+            storyboard
+
+        )
+
+        project["viral"] = viral
+
+
+
+        print("=" * 60)
+        print("STEP 14 : FINAL DECISION ENGINE")
+        print("=" * 60)
+
+        decision = self.run_engine(
+
+            "DECISION ENGINE",
+
+            final_decision,
+
+            project
+
+        )
+
+        project["decision"] = decision
