@@ -1,74 +1,60 @@
 import os
-import time
 import requests
-
+import time
 
 FAL_API_KEY = os.getenv("FAL_API_KEY")
 
-# We'll replace this endpoint with the exact model later
-FAL_ENDPOINT = "https://fal.run/fal-ai/wan"
+MODEL = "minimax/h3/text-to-video"
 
 
 def generate_fal_video(prompt):
 
-    print("=" * 60)
-    print("FAL.AI VIDEO")
-    print("=" * 60)
-
-    if not FAL_API_KEY:
-
-        print("FAL API KEY NOT FOUND")
-
-        return None
-
-
     headers = {
-
         "Authorization": f"Key {FAL_API_KEY}",
-
         "Content-Type": "application/json"
-
     }
-
 
     payload = {
-
-        "prompt": prompt
-
+        "prompt": prompt,
+        "duration": 5,
+        "resolution": "720p",
+        "aspect_ratio": "16:9"
     }
 
+    # Submit job
+    response = requests.post(
+        f"https://queue.fal.run/{MODEL}",
+        headers=headers,
+        json=payload
+    )
 
-    try:
+    response.raise_for_status()
 
-        response = requests.post(
+    request_id = response.json()["request_id"]
 
-            FAL_ENDPOINT,
+    print("Job Submitted:", request_id)
 
-            headers=headers,
+    # Wait for completion
+    while True:
 
-            json=payload,
+        status = requests.get(
+            f"https://queue.fal.run/{MODEL}/requests/{request_id}/status",
+            headers=headers
+        ).json()
 
-            timeout=300
+        if status["status"] == "COMPLETED":
+            break
 
-        )
+        if status["status"] == "FAILED":
+            return None
 
+        print("Generating...")
+        time.sleep(5)
 
-        response.raise_for_status()
+    # Fetch result
+    result = requests.get(
+        f"https://queue.fal.run/{MODEL}/requests/{request_id}",
+        headers=headers
+    ).json()
 
-
-        result = response.json()
-
-
-        print(result)
-
-
-        return result
-
-
-    except Exception as e:
-
-        print("FAL ERROR")
-
-        print(str(e))
-
-        return None
+    return result["video"]["url"]
