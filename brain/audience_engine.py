@@ -1,9 +1,6 @@
-from groq import Groq
-from config import GROQ_API_KEY
+from brain.ai_router import ask_ai
+import json
 
-client = Groq(
-    api_key=GROQ_API_KEY
-)
 
 SYSTEM_PROMPT = """
 You are PromptProHub Audience AI.
@@ -40,30 +37,50 @@ Example:
 """
 
 
-def analyse_audience(topic):
+def audience_plan(topic):
 
-    response = client.chat.completions.create(
+    prompt = f"""
+{SYSTEM_PROMPT}
 
-        model="llama-3.3-70b-versatile",
+Analyse the audience for:
 
-        messages=[
+{topic}
+"""
 
-            {
-                "role":"system",
-                "content":SYSTEM_PROMPT
-            },
+    response = ask_ai(prompt)
 
-            {
-                "role":"user",
-                "content":f"Analyse audience for {topic}"
-            }
+    response = response.replace("```json", "")
+    response = response.replace("```", "")
+    response = response.strip()
 
-        ],
 
-        temperature=0.7,
+    try:
 
-        max_tokens=1000
+        return json.loads(response)
 
-    )
+    except Exception as e:
 
-    return response.choices[0].message.content
+        print("Audience JSON error:")
+        print(e)
+
+        return {
+
+            "primary_audience": "AI users",
+
+            "secondary_audience": "Creators and freelancers",
+
+            "experience": "Beginner",
+
+            "pain": "Low productivity",
+
+            "desire": "Save time using AI",
+
+            "buying_intent": "Medium",
+
+            "income": "Unknown",
+
+            "content_style": "Educational",
+
+            "platform": "Short form video"
+
+        }
