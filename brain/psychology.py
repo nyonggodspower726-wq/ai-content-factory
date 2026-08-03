@@ -1,4 +1,5 @@
 from brain.ai_router import ask_ai
+import json
 
 
 SYSTEM_PROMPT = """
@@ -42,4 +43,19 @@ Marketing Plan:
 {marketing_plan}
 """
 
-    return ask_ai(prompt)
+    result = ask_ai(prompt)
+
+    try:
+
+        return json.loads(result)
+
+    except Exception:
+
+        print("=" * 60)
+        print("Psychology Engine returned non-JSON.")
+        print("Returning raw response.")
+        print("=" * 60)
+
+        return {
+            "raw_response": result
+        }
