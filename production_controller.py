@@ -10,7 +10,7 @@ from brain.memory_engine import memory
 
 from brain.learning_engine import learning
 
-from queue_manager import queue_manager
+from brain.queue_manager import queue_manager
 
 from brain.recovery_manager import recovery
 
