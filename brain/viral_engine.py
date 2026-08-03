@@ -1,9 +1,6 @@
-from groq import Groq
-from config import GROQ_API_KEY
+from brain.ai_router import ask_ai
+import json
 
-client = Groq(
-    api_key=GROQ_API_KEY
-)
 
 SYSTEM_PROMPT = """
 You are PromptProHub Viral AI.
@@ -45,12 +42,12 @@ Example:
 "shareability":87,
 "conversion":96,
 "viral_score":92,
-"strength":"...",
-"weakness":"...",
+"strength":"Excellent curiosity",
+"weakness":"CTA too weak",
 "improvements":[
-"...",
-"...",
-"..."
+"Strengthen opening hook",
+"Shorten middle section",
+"Move CTA earlier"
 ]
 }
 """
@@ -58,28 +55,35 @@ Example:
 
 def evaluate_video(plan):
 
-    response = client.chat.completions.create(
+    prompt = f"""
+{SYSTEM_PROMPT}
 
-        model="llama-3.3-70b-versatile",
+Video Plan:
 
-        messages=[
+{plan}
+"""
 
-            {
-                "role":"system",
-                "content":SYSTEM_PROMPT
-            },
+    raw = ask_ai(prompt)
 
-            {
-                "role":"user",
-                "content":str(plan)
-            }
+    raw = raw.replace("```json", "")
+    raw = raw.replace("```", "")
+    raw = raw.strip()
 
-        ],
+    try:
 
-        temperature=0.7,
+        return json.loads(raw)
 
-        max_tokens=1200
+    except Exception as e:
 
-    )
+        print("=" * 60)
+        print("Viral Engine JSON parsing failed")
+        print(e)
+        print("=" * 60)
 
-    return response.choices[0].message.content
+        return {
+            "viral_score": 0,
+            "strength": "Unknown",
+            "weakness": "AI returned invalid JSON",
+            "improvements": [],
+            "raw_response": raw
+        }
