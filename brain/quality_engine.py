@@ -1,4 +1,5 @@
 from brain.ai_router import ask_ai
+import json
 
 
 SYSTEM_PROMPT = """
@@ -56,4 +57,32 @@ Review this production:
 {project}
 """
 
-    return ask_ai(prompt)
+    raw = ask_ai(prompt)
+
+    raw = raw.replace("```json", "")
+    raw = raw.replace("```", "")
+    raw = raw.strip()
+
+    try:
+
+        return json.loads(raw)
+
+    except Exception as e:
+
+        print("=" * 60)
+        print("Quality Engine JSON parsing failed")
+        print(e)
+        print("=" * 60)
+
+        return {
+            "score": 0,
+            "approved": False,
+            "strengths": [],
+            "weaknesses": [
+                "AI returned invalid JSON."
+            ],
+            "recommendations": [
+                "Retry quality inspection."
+            ],
+            "raw_response": raw
+        }
