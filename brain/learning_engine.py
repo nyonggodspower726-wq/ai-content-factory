@@ -1,5 +1,3 @@
-import json
-
 from brain.memory_engine import memory
 
 
@@ -14,29 +12,46 @@ class LearningEngine:
 
         history = memory.load()
 
-        if len(history) == 0:
+        if not history:
 
             return {
-
-                "status":"No history available."
-
+                "status": "No history available."
             }
 
         total = len(history)
 
         topics = []
+        approved = 0
+        rejected = 0
 
         for item in history:
 
-            topics.append(
+            topics.append(item.get("topic", ""))
 
-                item["topic"]
+            decision = item.get("decision", {})
 
-            )
+            if isinstance(decision, dict):
+
+                if decision.get("produce"):
+
+                    approved += 1
+
+                else:
+
+                    rejected += 1
 
         report = {
 
             "videos_created": total,
+
+            "approved_projects": approved,
+
+            "rejected_projects": rejected,
+
+            "approval_rate": round(
+                (approved / total) * 100,
+                2
+            ),
 
             "recent_topics": topics[-10:]
 
@@ -49,15 +64,42 @@ class LearningEngine:
 
         report = self.analyse()
 
+        recommendations = []
+
+        if report.get("videos_created", 0) < 10:
+
+            recommendations.append(
+                "Produce more videos to improve learning."
+            )
+
+        if report.get("approval_rate", 0) < 80:
+
+            recommendations.append(
+                "Improve hooks, storytelling and marketing strategy."
+            )
+
+        if not recommendations:
+
+            recommendations.append(
+                "Current production quality is good. Continue producing similar content."
+            )
+
         return {
 
-            "next_action":
-
-            "Create more videos similar to the best performing topics.",
+            "next_action": recommendations,
 
             "report": report
 
         }
+
+
+    def learn(self, project):
+
+        print("=" * 60)
+        print("Learning from latest production...")
+        print("=" * 60)
+
+        return self.recommend()
 
 
 learning = LearningEngine()
