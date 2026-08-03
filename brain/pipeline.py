@@ -13,40 +13,29 @@ class Pipeline:
 
     def run(self, topic):
 
-        monitor.start()
+        monitor.reset()
 
-        monitor.update(
-            "Pipeline",
-            "STARTED"
-        )
+        monitor.start("Pipeline")
 
         try:
 
             credits.use_groq()
 
-            project = controller.produce(
-                topic
-            )
+            project = controller.produce(topic)
 
-            monitor.update(
-                "Production",
-                "SUCCESS"
-            )
+            monitor.finish("Groq")
 
-            monitor.report()
+            monitor.summary()
 
             return project
 
         except Exception as e:
 
-            monitor.update(
-                "Production",
-                "FAILED"
-            )
+            monitor.fail(e)
 
             print(e)
 
-            monitor.report()
+            monitor.summary()
 
             return None
 
