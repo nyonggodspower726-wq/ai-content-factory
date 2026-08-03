@@ -7,7 +7,7 @@ from bot import main
 
 
 # DAILY TEST TIME (Nigeria time)
-TEST_TIME = "01:46"
+TEST_TIME = "09:42"
 
 
 def run_bot():
