@@ -1,142 +1,71 @@
-from video.provider_manager import provider_manager
+from video.open_source_manager import open_source_manager
 import time
 
 
-
-def generate_scene(prompt, scene_number):
+def generate_scene(prompt):
 
     print("=" * 60)
-    print(f"GENERATING SCENE {scene_number}")
+    print("GENERATING AI SCENE")
     print("=" * 60)
-
 
     attempts = 0
-
 
     while attempts < 3:
 
         attempts += 1
 
-
-        print(
-            f"Attempt {attempts}/3"
-        )
-
+        print(f"Attempt {attempts}")
 
         try:
 
-            scene = provider_manager.generate(
-                prompt
-            )
-
+            scene = open_source_manager.generate(prompt)
 
             if scene:
 
-                print(
-                    f"Scene {scene_number} completed"
-                )
+                print("Scene generated successfully.")
 
-                return {
-                    "scene": scene_number,
-                    "video": scene,
-                    "status": "SUCCESS"
-                }
-
-
-            else:
-
-                print(
-                    "Provider returned no video"
-                )
-
+                return scene
 
         except Exception as e:
 
-            print(
-                "Scene generation error:"
-            )
-
             print(e)
 
+        print("Retrying in 5 seconds...")
 
+        time.sleep(5)
 
-        if attempts < 3:
+    print("Scene generation failed.")
 
-            print(
-                "Retrying in 10 seconds..."
-            )
-
-            time.sleep(10)
-
-
-
-    print(
-        f"Scene {scene_number} failed"
-    )
-
-
-    return {
-        "scene": scene_number,
-        "video": None,
-        "status": "FAILED"
-    }
-
+    return None
 
 
 
 def generate_all_scenes(prompts):
 
+    scenes = []
 
-    if not prompts:
-
-        print(
-            "No scene prompts received"
-        )
-
-        return []
-
-
-
-    videos = []
-
-
-    # Production limit
     prompts = prompts[:6]
 
+    print("=" * 60)
+    print("AI VIDEO FACTORY")
+    print("=" * 60)
 
+    for index, prompt in enumerate(prompts):
 
-    for index, prompt in enumerate(prompts, start=1):
+        print(f"Generating Scene {index + 1}")
 
+        scene = generate_scene(prompt)
 
-        result = generate_scene(
-            prompt,
-            index
-        )
+        if scene:
 
-
-        if result["video"]:
-
-            videos.append(
-                result["video"]
-            )
-
+            scenes.append(scene)
 
         else:
 
-            print(
-                f"Skipping failed scene {index}"
-            )
-
-
+            print(f"Scene {index + 1} skipped.")
 
     print("=" * 60)
-
-    print(
-        f"TOTAL SUCCESSFUL SCENES: {len(videos)}"
-    )
-
+    print(f"TOTAL SCENES GENERATED: {len(scenes)}")
     print("=" * 60)
 
-
-
-    return videos
+    return scenes
