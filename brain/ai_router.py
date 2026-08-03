@@ -38,12 +38,6 @@ def ask_ai(prompt):
                 return ask(prompt)
 
 
-            elif provider == "huggingface":
-
-                from ai.huggingface_client import ask
-                return ask(prompt)
-
-
         except Exception as e:
 
             print(f"{provider} failed")
