@@ -68,4 +68,4 @@ def start_scheduler():
         schedule.run_pending()
 
 
-        time.sleep(10)
+        time.sleep(1)
