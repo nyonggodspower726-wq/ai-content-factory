@@ -1,4 +1,5 @@
 from brain.ai_router import ask_ai
+import json
 
 
 SYSTEM_PROMPT = """
@@ -47,4 +48,28 @@ Optimize this project:
 {project}
 """
 
-    return ask_ai(prompt)
+    raw = ask_ai(prompt)
+
+    raw = raw.replace("```json", "")
+    raw = raw.replace("```", "")
+    raw = raw.strip()
+
+    try:
+
+        return json.loads(raw)
+
+    except Exception as e:
+
+        print("=" * 60)
+        print("Optimizer Engine JSON parsing failed")
+        print(e)
+        print("=" * 60)
+
+        return {
+            "optimized": False,
+            "changes": [
+                "Optimization failed."
+            ],
+            "project": project,
+            "raw_response": raw
+        }
