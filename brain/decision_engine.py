@@ -1,9 +1,6 @@
-from groq import Groq
-from config import GROQ_API_KEY
+from brain.ai_router import ask_ai
+import json
 
-client = Groq(
-    api_key=GROQ_API_KEY
-)
 
 SYSTEM_PROMPT = """
 You are PromptProHub Decision AI.
@@ -48,28 +45,38 @@ Example:
 
 def final_decision(project):
 
-    response = client.chat.completions.create(
+    prompt = f"""
+{SYSTEM_PROMPT}
 
-        model="llama-3.3-70b-versatile",
+Project:
 
-        messages=[
+{project}
+"""
 
-            {
-                "role": "system",
-                "content": SYSTEM_PROMPT
-            },
+    raw = ask_ai(prompt)
 
-            {
-                "role": "user",
-                "content": str(project)
-            }
+    raw = raw.replace("```json", "")
+    raw = raw.replace("```", "")
+    raw = raw.strip()
 
-        ],
+    try:
 
-        temperature=0.6,
+        return json.loads(raw)
 
-        max_tokens=1200
+    except Exception as e:
 
-    )
+        print("=" * 60)
+        print("Decision Engine JSON parsing failed")
+        print(e)
+        print("=" * 60)
 
-    return response.choices[0].message.content
+        return {
+            "produce": False,
+            "confidence": 0,
+            "platform": "Unknown",
+            "posting_time": "Unknown",
+            "audience": "Unknown",
+            "conversion": "Unknown",
+            "recommendation": "Retry AI generation",
+            "raw_response": raw
+        }
