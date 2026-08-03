@@ -1,9 +1,6 @@
-from groq import Groq
-from config import GROQ_API_KEY
+from brain.ai_router import ask_ai
+import json
 
-client = Groq(
-    api_key=GROQ_API_KEY
-)
 
 SYSTEM_PROMPT = """
 You are PromptProHub Offer AI.
@@ -36,30 +33,61 @@ Example:
 """
 
 
-def create_offer(topic):
+def create_offer(product, audience):
 
-    response = client.chat.completions.create(
+    prompt = f"""
+{SYSTEM_PROMPT}
 
-        model="llama-3.3-70b-versatile",
 
-        messages=[
+Product:
 
-            {
-                "role":"system",
-                "content":SYSTEM_PROMPT
-            },
+{product}
 
-            {
-                "role":"user",
-                "content":f"Create the best offer for {topic}"
-            }
 
-        ],
+Audience:
 
-        temperature=0.8,
+{audience}
 
-        max_tokens=1000
 
-    )
+Create the strongest possible offer.
+"""
 
-    return response.choices[0].message.content
+
+    response = ask_ai(prompt)
+
+
+    response = response.replace("```json", "")
+    response = response.replace("```", "")
+    response = response.strip()
+
+
+    try:
+
+        return json.loads(response)
+
+
+    except Exception as e:
+
+        print("=" * 60)
+        print("Offer Engine JSON parsing failed")
+        print(e)
+        print("=" * 60)
+
+
+        return {
+
+            "offer": "Premium AI Productivity Bundle",
+
+            "bundle": "AI prompts + workflows + guides",
+
+            "bonus": "Free AI productivity checklist",
+
+            "scarcity": "Limited launch access",
+
+            "urgency": "Early users get bonuses",
+
+            "value": "Save time and increase productivity",
+
+            "cta": "Get access now"
+
+        }
