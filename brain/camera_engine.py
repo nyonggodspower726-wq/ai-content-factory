@@ -4,35 +4,20 @@ import random
 CAMERA_MOVES = [
 
     "slow dolly in",
-
     "slow dolly out",
-
     "cinematic orbit shot",
-
     "slow pan left",
-
     "slow pan right",
-
     "smooth crane shot",
-
     "steady handheld",
-
     "slow zoom in",
-
     "slow zoom out",
-
     "tracking shot",
-
     "over the shoulder",
-
     "close-up",
-
     "wide establishing shot",
-
     "low angle",
-
     "high angle",
-
     "macro shot"
 
 ]
@@ -41,17 +26,11 @@ CAMERA_MOVES = [
 LIGHTING = [
 
     "golden hour lighting",
-
     "soft studio lighting",
-
     "cinematic blue lighting",
-
     "warm natural light",
-
     "luxury office lighting",
-
     "dramatic contrast lighting",
-
     "professional commercial lighting"
 
 ]
@@ -60,37 +39,57 @@ LIGHTING = [
 COLOR_GRADING = [
 
     "teal and orange",
-
     "warm cinematic",
-
     "premium luxury",
-
     "dark modern",
-
     "high contrast",
-
     "clean corporate"
 
 ]
 
 
-def apply_camera(prompt):
+
+def create_camera_plan(director):
 
     camera = random.choice(CAMERA_MOVES)
 
-    light = random.choice(LIGHTING)
+    lighting = random.choice(LIGHTING)
 
     color = random.choice(COLOR_GRADING)
+
+
+    return {
+
+        "camera_move": camera,
+
+        "lighting": lighting,
+
+        "color_grading": color,
+
+        "style": "cinematic commercial",
+
+        "quality": "8k ultra realistic",
+
+        "director_reference": director
+
+    }
+
+
+
+def apply_camera(prompt):
+
+    plan = create_camera_plan(prompt)
+
 
     enhanced = (
 
         f"{prompt}, "
 
-        f"{camera}, "
+        f"{plan['camera_move']}, "
 
-        f"{light}, "
+        f"{plan['lighting']}, "
 
-        f"{color}, "
+        f"{plan['color_grading']}, "
 
         f"8k, "
 
@@ -99,5 +98,6 @@ def apply_camera(prompt):
         f"cinematic commercial quality"
 
     )
+
 
     return enhanced
