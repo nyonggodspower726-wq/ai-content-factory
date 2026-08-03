@@ -269,3 +269,148 @@ def add_background_music(
         )
 
         return video
+# ==========================================
+# CREATE AI GENERATED VIDEO
+# ==========================================
+
+def create_video(
+
+    prompts,
+
+    script,
+
+    voice_file
+
+):
+
+    print("=" * 60)
+    print("PROMPTPROHUB AI VIDEO STUDIO")
+    print("=" * 60)
+
+    try:
+
+        print("Generating AI scenes...")
+
+        ai_scenes = generate_all_scenes(
+            prompts
+        )
+
+        if len(ai_scenes) == 0:
+
+            print(
+                "No AI scenes generated"
+            )
+
+            return None
+
+
+        print(
+            "Downloading AI scenes..."
+        )
+
+        scene_files = download_ai_videos(
+            ai_scenes
+        )
+
+        if len(scene_files) == 0:
+
+            print(
+                "No valid AI scenes downloaded"
+            )
+
+            return None
+
+
+        print(
+            "Building scene timeline..."
+        )
+
+        video = build_scene_video(
+            scene_files
+        )
+
+        if video is None:
+
+            print(
+                "Video assembly failed"
+            )
+
+            return None
+
+
+        print(
+            "Adding AI voice..."
+        )
+
+        if voice_file and os.path.exists(
+            voice_file
+        ):
+
+            voice = AudioFileClip(
+                voice_file
+            )
+
+            video = video.set_duration(
+                voice.duration
+            )
+
+            video = video.set_audio(
+                voice
+            )
+
+        else:
+
+            print(
+                "Voice file not found"
+            )
+
+
+        print(
+            "Adding background music..."
+        )
+
+        music_file = get_music()
+
+        if music_file:
+
+            video = add_background_music(
+
+                video,
+
+                music_file
+
+            )
+
+
+        output = (
+            "output/ai_sales_video.mp4"
+        )
+
+        os.makedirs(
+            "output",
+            exist_ok=True
+        )
+
+        print(
+            "Exporting final video..."
+        )
+
+        video.write_videofile(
+
+            output,
+
+            codec="libx264",
+
+            audio_codec="aac",
+
+            fps=30,
+
+            bitrate="3500k",
+
+            audio_bitrate="128k",
+
+            preset="medium",
+
+            threads=4
+
+            )
