@@ -40,7 +40,7 @@ class BrainController:
         project["trend"] = discover_trends(topic)
 
         print("Audience")
-        project["audience"] = analyse_audience(topic)
+        project["audience"] = audience_plan(topic)
 
         print("Offer")
         project["offer"] = create_offer(topic)
