@@ -95,3 +95,147 @@ class Pipeline:
             "ceo": ceo_plan
 
         }
+
+        print("=" * 60)
+        print("STEP 1 : BRAND ENGINE")
+        print("=" * 60)
+
+        brand_data = self.run_engine(
+
+            "BRAND ENGINE",
+
+            brand.get_brand
+
+        )
+
+        project["brand"] = brand_data
+
+
+
+        print("=" * 60)
+        print("STEP 2 : TREND ENGINE")
+        print("=" * 60)
+
+        trends = self.run_engine(
+
+            "TREND ENGINE",
+
+            discover_trends,
+
+            topic
+
+        )
+
+        project["trend"] = trends
+
+
+
+        print("=" * 60)
+        print("STEP 3 : PRODUCT ENGINE")
+        print("=" * 60)
+
+        product = self.run_engine(
+
+            "PRODUCT ENGINE",
+
+            recommend_product,
+
+            topic
+
+        )
+
+        project["product"] = product
+
+
+
+        print("=" * 60)
+        print("STEP 4 : AUDIENCE ENGINE")
+        print("=" * 60)
+
+        audience = self.run_engine(
+
+            "AUDIENCE ENGINE",
+
+            audience_plan,
+
+            topic
+
+        )
+
+        project["audience"] = audience
+
+
+
+        print("=" * 60)
+        print("STEP 5 : THINKING ENGINE")
+        print("=" * 60)
+
+        thinking = self.run_engine(
+
+            "THINKING ENGINE",
+
+            think,
+
+            product,
+
+            topic
+
+        )
+
+        project["thinking"] = thinking
+
+
+
+        print("=" * 60)
+        print("STEP 6 : MARKETING ENGINE")
+        print("=" * 60)
+
+        marketing = self.run_engine(
+
+            "MARKETING ENGINE",
+
+            marketing_plan,
+
+            thinking
+
+        )
+
+        project["marketing"] = marketing
+
+
+
+        print("=" * 60)
+        print("STEP 7 : PSYCHOLOGY ENGINE")
+        print("=" * 60)
+
+        psychology = self.run_engine(
+
+            "PSYCHOLOGY ENGINE",
+
+            psychology_plan,
+
+            marketing
+
+        )
+
+        project["psychology"] = psychology
+
+
+
+        print("=" * 60)
+        print("STEP 8 : OFFER ENGINE")
+        print("=" * 60)
+
+        offer = self.run_engine(
+
+            "OFFER ENGINE",
+
+            create_offer,
+
+            product,
+
+            audience
+
+        )
+
+        project["offer"] = offer
