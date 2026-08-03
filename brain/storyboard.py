@@ -1,4 +1,5 @@
 from brain.ai_router import ask_ai
+import json
 
 
 SYSTEM_PROMPT = """
@@ -20,6 +21,29 @@ Rules:
 The final scene MUST sell the product naturally.
 
 Return JSON only.
+
+Example:
+
+{
+    "scenes":[
+        {
+            "scene":1,
+            "purpose":"Hook",
+            "visuals":"Freelancer overwhelmed with work",
+            "camera":"Close-up",
+            "emotion":"Stress",
+            "duration":"5s"
+        },
+        {
+            "scene":2,
+            "purpose":"Problem",
+            "visuals":"Hours wasted writing prompts",
+            "camera":"Tracking",
+            "emotion":"Frustration",
+            "duration":"6s"
+        }
+    ]
+}
 """
 
 
@@ -33,4 +57,19 @@ Marketing Plan:
 {plan}
 """
 
-    return ask_ai(prompt)
+    result = ask_ai(prompt)
+
+    try:
+
+        return json.loads(result)
+
+    except Exception:
+
+        print("=" * 60)
+        print("Storyboard Engine returned non-JSON.")
+        print("Returning raw response.")
+        print("=" * 60)
+
+        return {
+            "raw_response": result
+        }
