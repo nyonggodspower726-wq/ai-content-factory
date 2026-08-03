@@ -10,7 +10,7 @@ class VideoProviderManager:
         self.providers = [
 
             {
-                "name": "Wan 2.2",
+                "name": "WAN 2.2",
                 "function": generate_wan_video
             },
 
@@ -25,3 +25,42 @@ class VideoProviderManager:
             }
 
         ]
+
+    def generate(self, prompt):
+
+        print("=" * 60)
+        print("PROMPTPROHUB VIDEO PROVIDER MANAGER")
+        print("=" * 60)
+
+        for provider in self.providers:
+
+            print(f"Trying {provider['name']}...")
+
+            try:
+
+                result = provider["function"](prompt)
+
+                if result:
+
+                    print(f"{provider['name']} succeeded.")
+
+                    return result
+
+                else:
+
+                    print(f"{provider['name']} returned nothing.")
+
+            except Exception as e:
+
+                print(f"{provider['name']} failed.")
+
+                print(str(e))
+
+        print("=" * 60)
+        print("ALL VIDEO PROVIDERS FAILED")
+        print("=" * 60)
+
+        return None
+
+
+provider_manager = VideoProviderManager()
