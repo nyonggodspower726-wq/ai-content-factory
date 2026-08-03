@@ -1,4 +1,5 @@
 from brain.ai_router import ask_ai
+import json
 
 
 SYSTEM_PROMPT = """
@@ -20,6 +21,19 @@ You decide:
 6. Music mood
 7. Colour grading
 8. Call to action
+
+Example:
+
+{
+    "video_style":"Cinematic",
+    "hook":"Strong Curiosity",
+    "emotion":"Excitement",
+    "scene_count":6,
+    "camera_style":"Dynamic",
+    "music":"Epic",
+    "color_grading":"High Contrast",
+    "cta":"Download the Prompt Bundle"
+}
 """
 
 
@@ -33,4 +47,19 @@ Create a professional AI commercial plan for:
 {topic}
 """
 
-    return ask_ai(prompt)
+    result = ask_ai(prompt)
+
+    try:
+
+        return json.loads(result)
+
+    except Exception:
+
+        print("=" * 60)
+        print("Director Engine returned non-JSON.")
+        print("Returning raw response.")
+        print("=" * 60)
+
+        return {
+            "raw_response": result
+        }
