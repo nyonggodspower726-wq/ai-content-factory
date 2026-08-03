@@ -1,70 +1,145 @@
-import os
-import asyncio
-import edge_tts
+from brain.brain_controller import brain
 
-from voice.emotion_engine import build_emotional_script
+from voice.voice_generator import generate_voice
 
-VOICE = "en-US-BrianMultilingualNeural"
+from video.video_generator import create_video
 
 
-async def create_voice(text, output_file):
-
-    communicate = edge_tts.Communicate(
-        text=text,
-        voice=VOICE
-    )
-
-    await communicate.save(output_file)
+class ProductionController:
 
 
-def generate_voice(script, voice_profile):
+    def __init__(self):
 
-    print("=" * 60)
-    print("AI VOICE DIRECTOR")
-    print("=" * 60)
+        print("=" * 60)
+        print("PROMPTPROHUB PRODUCTION CONTROLLER ONLINE")
+        print("=" * 60)
 
-    print("Applying emotions...")
 
-    emotional_script = build_emotional_script(
-        script,
-        voice_profile
-    )
 
-    os.makedirs("output", exist_ok=True)
+    def run(self, topic):
 
-    voice_file = "output/voice.mp3"
+        print("=" * 60)
+        print("STARTING PRODUCTION")
+        print("=" * 60)
 
-    try:
 
         try:
 
-            asyncio.run(
-                create_voice(
-                    emotional_script,
-                    voice_file
-                )
+            # ==========================
+            # BRAIN CREATION
+            # ==========================
+
+            print("Running Brain System...")
+
+            project = brain.create(topic)
+
+
+            if not project:
+
+                print("Brain failed")
+
+                return None
+
+
+
+            # ==========================
+            # VOICE GENERATION
+            # ==========================
+
+            print("Generating AI Voice...")
+
+
+            script = project.get(
+                "script",
+                ""
             )
 
-        except RuntimeError:
 
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-
-            loop.run_until_complete(
-                create_voice(
-                    emotional_script,
-                    voice_file
-                )
+            voice_profile = project.get(
+                "voice_profile",
+                "professional"
             )
 
-            loop.close()
 
-        print("Professional AI Voice Created")
+            voice_file = generate_voice(
 
-        return voice_file
+                script,
 
-    except Exception as e:
+                voice_profile
 
-        print(f"Voice generation failed: {e}")
+            )
 
-        return None
+
+            if not voice_file:
+
+                print("Voice generation failed")
+
+                return None
+
+
+
+            # ==========================
+            # VIDEO GENERATION
+            # ==========================
+
+            print("Generating AI Video...")
+
+
+            prompts = project.get(
+                "scene_prompts",
+                []
+            )
+
+
+            video_file = create_video(
+
+                prompts,
+
+                script,
+
+                voice_file
+
+            )
+
+
+            if not video_file:
+
+                print("Video generation failed")
+
+                return None
+
+
+
+            project["voice"] = voice_file
+
+            project["video"] = video_file
+
+
+
+            print("=" * 60)
+            print("PRODUCTION COMPLETE")
+            print("=" * 60)
+
+
+            return project
+
+
+
+        except Exception as e:
+
+
+            print("=" * 60)
+
+            print("PRODUCTION ERROR")
+
+            print(str(e))
+
+            print("=" * 60)
+
+
+            return None
+
+
+
+
+controller = ProductionController()
