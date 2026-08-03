@@ -1,8 +1,9 @@
+from video.minimax_worker import generate_minimax_video
 from video.wan_worker import generate_wan_video
+
 
 # Future providers
 # from video.cosmos_worker import generate_cosmos_video
-# from video.fal_worker import generate_fal_video
 # from video.replicate_worker import generate_replicate_video
 # from video.comfy_worker import generate_comfy_video
 
@@ -14,20 +15,22 @@ class VideoProviderManager:
         self.providers = [
 
             {
-                "name": "WAN 2.2",
+                "name": "MiniMax H3 (Fal AI)",
+                "function": generate_minimax_video
+            },
+
+
+            {
+                "name": "WAN 2.2 (Hugging Face)",
                 "function": generate_wan_video
             },
 
-            # Uncomment when each provider is ready
+
+            # Future expansion
 
             # {
             #     "name": "NVIDIA Cosmos",
             #     "function": generate_cosmos_video
-            # },
-
-            # {
-            #     "name": "Fal.ai",
-            #     "function": generate_fal_video
             # },
 
             # {
@@ -42,41 +45,59 @@ class VideoProviderManager:
 
         ]
 
+
     def generate(self, prompt):
 
         print("=" * 60)
-        print("VIDEO PROVIDER MANAGER")
+        print("PROMPTPROHUB VIDEO PROVIDER MANAGER")
         print("=" * 60)
+
 
         for provider in self.providers:
 
-            print(f"Trying {provider['name']}...")
+            print(
+                f"Trying {provider['name']}..."
+            )
+
 
             try:
 
                 result = provider["function"](prompt)
 
+
                 if result:
 
-                    print(f"{provider['name']} succeeded.")
+                    print(
+                        f"{provider['name']} SUCCESS"
+                    )
 
                     return result
 
+
                 else:
 
-                    print(f"{provider['name']} returned nothing.")
+                    print(
+                        f"{provider['name']} failed - no output"
+                    )
+
 
             except Exception as e:
 
-                print(f"{provider['name']} failed.")
+                print(
+                    f"{provider['name']} ERROR"
+                )
 
-                print(str(e))
+                print(e)
+
+
 
         print("=" * 60)
-        print("NO VIDEO PROVIDER SUCCEEDED")
+        print("ALL VIDEO PROVIDERS FAILED")
         print("=" * 60)
+
 
         return None
+
 
 
 provider_manager = VideoProviderManager()
