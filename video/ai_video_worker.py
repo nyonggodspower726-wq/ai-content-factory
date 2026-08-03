@@ -3,22 +3,23 @@ import time
 
 
 
-def generate_scene(prompt):
+def generate_scene(prompt, scene_number):
 
-    print("=" * 50)
-    print("GENERATING AI SCENE")
-    print("=" * 50)
+    print("=" * 60)
+    print(f"GENERATING SCENE {scene_number}")
+    print("=" * 60)
+
 
     attempts = 0
-    scene = None
 
 
-    while attempts < 3 and not scene:
+    while attempts < 3:
 
         attempts += 1
 
+
         print(
-            f"Scene generation attempt {attempts}"
+            f"Attempt {attempts}/3"
         )
 
 
@@ -32,10 +33,21 @@ def generate_scene(prompt):
             if scene:
 
                 print(
-                    "Scene generated successfully"
+                    f"Scene {scene_number} completed"
                 )
 
-                return scene
+                return {
+                    "scene": scene_number,
+                    "video": scene,
+                    "status": "SUCCESS"
+                }
+
+
+            else:
+
+                print(
+                    "Provider returned no video"
+                )
 
 
         except Exception as e:
@@ -47,58 +59,84 @@ def generate_scene(prompt):
             print(e)
 
 
-        time.sleep(5)
+
+        if attempts < 3:
+
+            print(
+                "Retrying in 10 seconds..."
+            )
+
+            time.sleep(10)
+
 
 
     print(
-        "Scene generation failed after retries"
+        f"Scene {scene_number} failed"
     )
 
-    return None
+
+    return {
+        "scene": scene_number,
+        "video": None,
+        "status": "FAILED"
+    }
 
 
 
 
 def generate_all_scenes(prompts):
 
-    scenes = []
+
+    if not prompts:
+
+        print(
+            "No scene prompts received"
+        )
+
+        return []
 
 
-    # Safety limit
+
+    videos = []
+
+
+    # Production limit
     prompts = prompts[:6]
 
 
-    for index, prompt in enumerate(prompts):
 
-        print("=" * 50)
-        print(
-            f"GENERATING SCENE {index + 1}"
-        )
-        print("=" * 50)
+    for index, prompt in enumerate(prompts, start=1):
 
 
-        scene = generate_scene(
-            prompt
+        result = generate_scene(
+            prompt,
+            index
         )
 
 
-        if scene:
+        if result["video"]:
 
-            scenes.append(scene)
+            videos.append(
+                result["video"]
+            )
 
 
         else:
 
             print(
-                f"Scene {index + 1} skipped"
+                f"Skipping failed scene {index}"
             )
 
 
-    print("=" * 50)
+
+    print("=" * 60)
+
     print(
-        f"TOTAL SCENES CREATED: {len(scenes)}"
+        f"TOTAL SUCCESSFUL SCENES: {len(videos)}"
     )
-    print("=" * 50)
+
+    print("=" * 60)
 
 
-    return scenes
+
+    return videos
