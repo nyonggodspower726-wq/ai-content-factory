@@ -1,11 +1,5 @@
-from groq import Groq
-from config import GROQ_API_KEY
+from brain.ai_router import ask_ai
 import json
-
-
-client = Groq(
-    api_key=GROQ_API_KEY
-)
 
 
 SYSTEM_PROMPT = """
@@ -46,78 +40,46 @@ Example:
   "prompt":"A freelancer using AI tools in a modern office, cinematic camera movement, realistic lighting, premium advertisement style."
  }
 ]
+]
 """
 
 
 def generate_scene_prompts(storyboard):
 
-    response = client.chat.completions.create(
+    prompt = f"""
+{SYSTEM_PROMPT}
 
-        model="llama-3.3-70b-versatile",
+Storyboard:
 
-        messages=[
+{storyboard}
+"""
 
-            {
-                "role":"system",
-                "content":SYSTEM_PROMPT
-            },
+    raw = ask_ai(prompt)
 
-            {
-                "role":"user",
-                "content":str(storyboard)
-            }
-
-        ],
-
-        temperature=0.4,
-
-        max_tokens=1500
-
-    )
-
-
-    raw = response.choices[0].message.content
-
-
-    # Clean AI response before JSON parsing
     raw = raw.replace("```json", "")
     raw = raw.replace("```", "")
     raw = raw.strip()
-
 
     try:
 
         scenes = json.loads(raw)
 
-
-        # HARD SAFETY LIMIT
         scenes = scenes[:6]
 
-
-        print(
-            f"Scene prompts created: {len(scenes)}"
-        )
-
+        print(f"Scene prompts created: {len(scenes)}")
 
         return scenes
 
-
     except Exception as e:
 
-        print(
-            "Scene JSON parsing failed:"
-        )
-
+        print("=" * 60)
+        print("Prompt Engine JSON parsing failed")
         print(e)
+        print("=" * 60)
 
-        print("Raw output:")
-        print(raw)
-
-
-        # fallback
         return [
             {
-                "scene":1,
-                "prompt":str(raw)
+                "scene": 1,
+                "prompt": str(raw)
             }
         ]
