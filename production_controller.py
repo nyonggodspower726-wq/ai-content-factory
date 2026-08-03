@@ -12,7 +12,7 @@ from brain.learning_engine import learning
 
 from queue_manager import queue_manager
 
-from recovery_manager import recovery
+from brain.recovery_manager import recovery
 
 
 class ProductionController:
