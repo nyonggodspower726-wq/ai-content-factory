@@ -1,61 +1,69 @@
-from brain.director import create_director_plan
-from brain.marketing_engine import marketing_plan
-from brain.psychology import psychology_plan
-from brain.storyboard import create_storyboard
-from brain.prompt_engine import generate_scene_prompts
-from brain.viral_engine import evaluate_video
+from brain.monitor import monitor
+from brain.recovery_manager import recovery
+from brain.queue_manager import queue_manager
+from brain.provider_memory import provider_memory
 
 
 class MasterEngine:
 
     def __init__(self):
 
-        print("PromptProHub AI Studio Initialized")
+        print("=" * 60)
+        print("PROMPTPROHUB MASTER ENGINE ONLINE")
+        print("=" * 60)
 
 
-    def build(self, topic):
+    def initialize(self, topic):
 
-        print("Step 1 : Director")
+        print("=" * 60)
+        print("MASTER ENGINE INITIALIZING")
+        print("=" * 60)
 
-        director = create_director_plan(topic)
+        queue_manager.add(topic)
 
-        print("Step 2 : Marketing")
+        monitor.reset()
 
-        marketing = marketing_plan(topic)
+        recovery.reset()
 
-        print("Step 3 : Psychology")
-
-        psychology = psychology_plan(marketing)
-
-        print("Step 4 : Storyboard")
-
-        storyboard = create_storyboard(director)
-
-        print("Step 5 : Scene Prompts")
-
-        prompts = generate_scene_prompts(storyboard)
-
-        print("Step 6 : Viral Analysis")
-
-        viral = evaluate_video(storyboard)
-
-        return {
-
-            "topic": topic,
-
-            "director": director,
-
-            "marketing": marketing,
-
-            "psychology": psychology,
-
-            "storyboard": storyboard,
-
-            "scene_prompts": prompts,
-
-            "viral": viral
-
-        }
+        print("Factory Ready.")
 
 
-engine = MasterEngine()
+    def before_ai(self, provider):
+
+        provider_memory.remember(provider)
+
+        monitor.start(f"AI Provider : {provider}")
+
+
+    def after_ai(self, provider):
+
+        provider_memory.success(provider)
+
+        monitor.finish(provider)
+
+
+    def ai_failed(self, provider, error):
+
+        provider_memory.failed(provider)
+
+        monitor.fail(error)
+
+
+    def shutdown(self):
+
+        print("=" * 60)
+
+        print("MASTER ENGINE SHUTDOWN")
+
+        print("=" * 60)
+
+        monitor.summary()
+
+        recovery.report()
+
+        queue_manager.report()
+
+        print("=" * 60)
+
+
+master_engine = MasterEngine()
