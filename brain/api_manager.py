@@ -22,8 +22,8 @@ class APIManager:
                 "enabled": True
             },
 
-            "huggingface": {
-                "key": os.getenv("HF_API_TOKEN"),
+            "openrouter": {
+                "key": os.getenv("OPENROUTER_API_KEY"),
                 "enabled": True
             }
 
