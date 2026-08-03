@@ -1,9 +1,6 @@
-from groq import Groq
-from config import GROQ_API_KEY
+from brain.ai_router import ask_ai
+import json
 
-client = Groq(
-    api_key=GROQ_API_KEY
-)
 
 SYSTEM_PROMPT = """
 You are the CEO of PromptProHub AI.
@@ -71,36 +68,69 @@ Example:
 """
 
 
-def ceo(topic, product):
+class CEOEngine:
 
-    response = client.chat.completions.create(
+    def review(self, topic, product="PromptProHub Products"):
 
-        model="llama-3.3-70b-versatile",
+        prompt = f"""
+{SYSTEM_PROMPT}
 
-        messages=[
-
-            {
-                "role":"system",
-                "content":SYSTEM_PROMPT
-            },
-
-            {
-                "role":"user",
-                "content":f"""
 Topic:
 {topic}
 
 Product:
 {product}
 """
+
+        raw = ask_ai(prompt)
+
+        raw = raw.replace("```json", "")
+        raw = raw.replace("```", "")
+        raw = raw.strip()
+
+        try:
+
+            return json.loads(raw)
+
+        except Exception as e:
+
+            print("=" * 60)
+            print("CEO Engine JSON parsing failed")
+            print(e)
+            print("=" * 60)
+
+            return {
+
+                "objective": "Create High Quality AI Content",
+
+                "customer": "Digital Creators",
+
+                "campaign": "Educational",
+
+                "emotion": "Curiosity",
+
+                "marketing": "Problem Solution",
+
+                "priority": "Value First",
+
+                "goal": "Conversions",
+
+                "departments": [
+
+                    "thinking",
+                    "marketing",
+                    "psychology",
+                    "director",
+                    "storyboard",
+                    "prompt",
+                    "script",
+                    "voice",
+                    "video",
+                    "seo"
+
+                ]
+
             }
 
-        ],
 
-        temperature=0.5,
-
-        max_tokens=1500
-
-    )
-
-    return response.choices[0].message.content
+ceo = CEOEngine()
