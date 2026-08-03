@@ -414,3 +414,86 @@ def create_video(
             threads=4
 
             )
+        print(
+            "Video exported successfully"
+        )
+
+
+        try:
+
+            print(
+                "Adding subtitles..."
+            )
+
+            output = add_subtitles(
+
+                output,
+
+                script
+
+            )
+
+            print(
+                "Subtitles added"
+            )
+
+        except Exception as e:
+
+            print(
+                f"Subtitle error: {e}"
+            )
+
+
+        try:
+
+            print(
+                "Adding branding..."
+            )
+
+            hook_text = script.split(".")[0]
+
+            output = add_hook(
+
+                output,
+
+                hook_text
+
+            )
+
+            print(
+                "Branding added"
+            )
+
+        except Exception as e:
+
+            print(
+                f"Branding error: {e}"
+            )
+
+
+        try:
+
+            video.close()
+
+        except Exception:
+
+            pass
+
+
+        print("=" * 60)
+        print("PROMPTPROHUB AI VIDEO COMPLETE")
+        print("=" * 60)
+
+        return output
+
+
+    except Exception as e:
+
+        print("=" * 60)
+        print("AI VIDEO PRODUCTION FAILED")
+        print("=" * 60)
+
+        print(type(e).__name__)
+        print(str(e))
+
+        return None
