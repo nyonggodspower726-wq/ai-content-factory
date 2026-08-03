@@ -2,7 +2,7 @@ from brain.ceo_engine import ceo
 from brain.brand_engine import brand
 from brain.trend_engine import discover_trends
 from brain.product_engine import recommend_product
-from brain.audience_engine import analyse_audience
+from brain.audience_engine import audience_plan
 from brain.offer_engine import create_offer
 from brain.thinking_engine import think
 from brain.marketing_engine import marketing_plan
