@@ -1,5 +1,5 @@
 from production_controller import controller
-from brain.monitor import monitor
+from monitor import monitor
 from brain.credit_manager import credits
 
 
