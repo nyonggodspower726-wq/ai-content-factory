@@ -24,31 +24,6 @@ class MemoryEngine:
                 json.dump([], f)
 
 
-    def save(self, topic, result):
-
-        with open(self.file, "r") as f:
-
-            data = json.load(f)
-
-        data.append({
-
-            "time": datetime.now().isoformat(),
-
-            "topic": topic,
-
-            "result": result
-
-        })
-
-        with open(self.file, "w") as f:
-
-            json.dump(
-                data,
-                f,
-                indent=4
-            )
-
-
     def load(self):
 
         with open(self.file, "r") as f:
@@ -56,11 +31,74 @@ class MemoryEngine:
             return json.load(f)
 
 
+    def remember(self, project):
+
+        memory = self.load()
+
+        memory.append({
+
+            "time": datetime.now().isoformat(),
+
+            "topic": project.get("topic"),
+
+            "status": project.get("status"),
+
+            "decision": project.get("decision"),
+
+            "viral": project.get("viral"),
+
+            "seo": project.get("seo")
+
+        })
+
+        # Keep only the latest 1000 memories
+        memory = memory[-1000:]
+
+        with open(self.file, "w") as f:
+
+            json.dump(
+                memory,
+                f,
+                indent=4
+            )
+
+
     def latest(self, amount=5):
 
         memory = self.load()
 
         return memory[-amount:]
+
+
+    def search(self, keyword):
+
+        keyword = keyword.lower()
+
+        results = []
+
+        for item in self.load():
+
+            topic = str(
+                item.get("topic", "")
+            ).lower()
+
+            if keyword in topic:
+
+                results.append(item)
+
+        return results
+
+
+    def total(self):
+
+        return len(self.load())
+
+
+    def clear(self):
+
+        with open(self.file, "w") as f:
+
+            json.dump([], f)
 
 
 memory = MemoryEngine()
