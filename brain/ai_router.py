@@ -5,7 +5,7 @@ from brain.provider_memory import provider_memory
 def ask_ai(prompt):
 
     # Try the last successful provider first
-    remembered = provider_memory.get()
+    remembered = provider_memory.best_provider()
 
     if remembered:
 
@@ -38,8 +38,7 @@ def ask_ai(prompt):
 
             provider_memory.clear()
 
-
-    # If no saved provider or it failed, try all providers
+    # Try providers in failover order
     providers = failover.available()
 
     for provider in providers:
@@ -74,7 +73,8 @@ def ask_ai(prompt):
                 continue
 
             # Remember the working provider
-            provider_memory.set(provider)
+            provider_memory.remember(provider)
+            provider_memory.success(provider)
 
             return result
 
@@ -82,6 +82,9 @@ def ask_ai(prompt):
 
             print(f"{provider} failed")
             print(e)
+
+            provider_memory.remember(provider)
+            provider_memory.failed(provider)
 
             continue
 
