@@ -6,9 +6,7 @@ SYSTEM_PROMPT = """
 You are the CEO of PromptProHub AI.
 
 You are NOT a script writer.
-
 You are NOT a marketer.
-
 You are the executive decision maker.
 
 Your responsibilities:
@@ -23,52 +21,20 @@ Your responsibilities:
 8. Decide the expected outcome.
 9. Instruct every AI department.
 
-Departments:
-
-- Thinking AI
-- Market Research
-- Audience
-- Marketing
-- Psychology
-- Director
-- Storyboard
-- Prompt
-- Script
-- Voice
-- Video
-- SEO
-- Viral
-- Analytics
-
 Return JSON only.
-
-Example:
-
-{
- "objective":"Sell Prompt Bundle",
- "customer":"Freelancers",
- "campaign":"Educational",
- "emotion":"Curiosity",
- "marketing":"Problem Solution",
- "priority":"Value First",
- "goal":"Conversions",
- "departments":[
-   "thinking",
-   "marketing",
-   "psychology",
-   "director",
-   "storyboard",
-   "prompt",
-   "script",
-   "voice",
-   "video",
-   "seo"
- ]
-}
 """
 
 
 class CEOEngine:
+
+    def __call__(self, topic, product="PromptProHub Products"):
+        """
+        Allows:
+            ceo(topic)
+        instead of:
+            ceo.review(topic)
+        """
+        return self.review(topic, product)
 
     def review(self, topic, product="PromptProHub Products"):
 
@@ -89,7 +55,6 @@ Product:
         raw = raw.strip()
 
         try:
-
             return json.loads(raw)
 
         except Exception as e:
@@ -100,23 +65,14 @@ Product:
             print("=" * 60)
 
             return {
-
                 "objective": "Create High Quality AI Content",
-
                 "customer": "Digital Creators",
-
                 "campaign": "Educational",
-
                 "emotion": "Curiosity",
-
                 "marketing": "Problem Solution",
-
                 "priority": "Value First",
-
                 "goal": "Conversions",
-
                 "departments": [
-
                     "thinking",
                     "marketing",
                     "psychology",
@@ -127,9 +83,7 @@ Product:
                     "voice",
                     "video",
                     "seo"
-
                 ]
-
             }
 
 
