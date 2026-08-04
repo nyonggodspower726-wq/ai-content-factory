@@ -1,38 +1,81 @@
 import os
+import random
 
 
-def get_music():
+def get_music(mood="cinematic"):
 
     """
-    PromptProHub AI Music Loader
+    PromptProHub AI Music Engine
 
-    For now this function simply checks whether
-    an AI-generated background music file already
-    exists inside output/music/.
+    Music folders:
 
-    Later this can be connected to an AI music
-    generation engine without changing the rest
-    of the system.
+    assets/music/
+
+        cinematic/
+        energetic/
+        emotional/
+        luxury/
+        trailer/
+
+    Supported:
+
+    mp3
+    wav
+    m4a
     """
 
-    os.makedirs(
-        "output/music",
-        exist_ok=True
+    root = "assets/music"
+
+    folder = os.path.join(root, mood.lower())
+
+    supported = (
+        ".mp3",
+        ".wav",
+        ".m4a"
     )
 
-    music_file = "output/music/background_music.mp3"
+    # ---------------------------------------
+    # Mood Folder
+    # ---------------------------------------
 
-    if os.path.exists(music_file):
+    if os.path.exists(folder):
 
-        print(
-            "Background music found:",
-            music_file
-        )
+        music = [
 
-        return music_file
+            os.path.join(folder, file)
 
-    print(
-        "No background music available."
-    )
+            for file in os.listdir(folder)
+
+            if file.lower().endswith(supported)
+
+        ]
+
+        if music:
+
+            selected = random.choice(music)
+
+            print("=" * 60)
+            print("PROMPTPROHUB MUSIC ENGINE")
+            print("=" * 60)
+            print("Mood :", mood)
+            print("Selected :", selected)
+
+            return selected
+
+    # ---------------------------------------
+    # Legacy Background Music
+    # ---------------------------------------
+
+    legacy = "output/music/background_music.mp3"
+
+    if os.path.exists(legacy):
+
+        print("Using legacy background music.")
+
+        return legacy
+
+    print("=" * 60)
+    print("No background music found.")
+    print("=" * 60)
 
     return None
