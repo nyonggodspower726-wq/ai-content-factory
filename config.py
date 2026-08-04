@@ -17,10 +17,25 @@ AI_VIDEO_API_KEY = os.getenv("AI_VIDEO_API_KEY")
 
 
 # =====================================
+# COVERR
+# =====================================
+
+COVERR_API_KEY = os.getenv("COVERR_API_KEY")
+
+COVERR_API_URL = os.getenv(
+    "COVERR_API_URL",
+    "https://api.coverr.co/videos"
+)
+
+
+# =====================================
 # BRAND
 # =====================================
 
-BRAND_NAME = os.getenv("BRAND_NAME", "PromptProHub")
+BRAND_NAME = os.getenv(
+    "BRAND_NAME",
+    "PromptProHub"
+)
 
 WEBSITE_URL = os.getenv("WEBSITE_URL")
 
