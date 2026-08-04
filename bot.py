@@ -14,93 +14,183 @@ from logger import log
 
 def main(topic="Top 10 AI prompts for freelancers"):
 
-
     print("=" * 60)
-    print("PromptProHub AI Studio Brain Online")
+    print("PROMPTPROHUB AI STUDIO ONLINE")
     print("=" * 60)
 
 
-    log(f"Starting campaign: {topic}")
+    try:
+
+        log(
+            f"Starting campaign: {topic}"
+        )
 
 
-    production_plan = production.produce(topic)
+        # =========================
+        # BRAIN PRODUCTION
+        # =========================
 
+        log(
+            "Running AI production brain..."
+        )
 
-    project = production_plan["project"]
-
-    script = production_plan["script"]
-
-    voice_file = production_plan["voice"]
-
-
-    save_text(
-        "script.json",
-        script
-    )
-
-
-    save_text(
-        "voice.json",
-        production_plan["voice_profile"]
-    )
-
-
-    log("Generating SEO...")
-
-
-    seo = generate_seo(topic)
-
-
-    save_text(
-        "seo.json",
-        seo
-    )
-
-
-    log("Rendering final video...")
-
-
-    video = create_video(
-
-        project["scene_prompts"],
-
-        script,
-
-        voice_file
-
-    )
-
-
-    if video:
-
-
-        log("Uploading TikTok...")
-
-
-        upload_to_tiktok(video)
-
-
-
-        log("Uploading YouTube...")
-
-
-        upload_to_youtube(
-
-            video,
-
-            seo,
-
+        production_plan = production.produce(
             topic
+        )
+
+
+        if not production_plan:
+
+            log(
+                "Production brain returned nothing"
+            )
+
+            return
+
+
+        project = production_plan.get(
+            "project",
+            {}
+        )
+
+
+        script = production_plan.get(
+            "script",
+            {}
+        )
+
+
+        voice_file = production_plan.get(
+            "voice"
+        )
+
+
+        save_text(
+            "script.json",
+            script
+        )
+
+
+        save_text(
+            "voice.json",
+            production_plan.get(
+                "voice_profile",
+                {}
+            )
+        )
+
+
+        # =========================
+        # SEO
+        # =========================
+
+        log(
+            "Generating SEO..."
+        )
+
+
+        seo = generate_seo(
+            topic
+        )
+
+
+        save_text(
+            "seo.json",
+            seo
+        )
+
+
+        # =========================
+        # VIDEO
+        # =========================
+
+        log(
+            "Rendering AI sales video..."
+        )
+
+
+        video = create_video(
+
+            project.get(
+                "scene_prompts",
+                []
+            ),
+
+            script,
+
+            voice_file
 
         )
 
 
-        log("Production Complete.")
+        if not video:
+
+            log(
+                "Video generation failed"
+            )
+
+            return
 
 
-    else:
 
-        log("Video generation failed")
+        # =========================
+        # SOCIAL UPLOAD
+        # =========================
+
+        try:
+
+            log(
+                "Uploading TikTok..."
+            )
+
+            upload_to_tiktok(
+                video
+            )
+
+
+        except Exception as e:
+
+            log(
+                f"TikTok upload failed: {e}"
+            )
+
+
+
+        try:
+
+            log(
+                "Uploading YouTube Shorts..."
+            )
+
+            upload_to_youtube(
+
+                video,
+
+                seo,
+
+                topic
+
+            )
+
+
+        except Exception as e:
+
+            log(
+                f"YouTube upload failed: {e}"
+            )
+
+
+
+        log(
+            "Production completed successfully."
+        )
+
+
+    except Exception as e:
+
+        log(
+            f"BOT FAILED: {e}"
+        )
 
 
 
