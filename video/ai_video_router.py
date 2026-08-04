@@ -1,11 +1,19 @@
-from video.wan_worker import generate_wan_video
+import time
 
+# ============================================================
+# VIDEO PROVIDERS
+# ============================================================
 
-# Optional providers
 try:
     from video.minimax_worker import generate_minimax_video
 except Exception:
     generate_minimax_video = None
+
+
+try:
+    from video.wan_worker import generate_wan_video
+except Exception:
+    generate_wan_video = None
 
 
 try:
@@ -21,6 +29,10 @@ except Exception:
 
 
 
+# ============================================================
+# AI VIDEO ROUTER
+# ============================================================
+
 class AIVideoRouter:
 
 
@@ -30,22 +42,19 @@ class AIVideoRouter:
         providers = [
 
             (
-                "WAN 2.2",
-                generate_wan_video
-            ),
-
-
-            (
                 "MiniMax H3",
                 generate_minimax_video
             ),
 
+            (
+                "WAN 2.2",
+                generate_wan_video
+            ),
 
             (
                 "Pexels",
                 generate_pexels_video
             ),
-
 
             (
                 "Unsplash",
@@ -55,18 +64,16 @@ class AIVideoRouter:
         ]
 
 
-
         for name, engine in providers:
 
 
             if engine is None:
 
                 print(
-                    f"{name} not available - skipping"
+                    f"{name} unavailable - skipping"
                 )
 
                 continue
-
 
 
             print("=" * 60)
@@ -74,30 +81,36 @@ class AIVideoRouter:
             print("=" * 60)
 
 
-
             try:
+
+                start = time.time()
 
 
                 result = engine(prompt)
 
 
+                elapsed = round(
+                    time.time() - start,
+                    2
+                )
+
 
                 if result:
-
 
                     print(
                         f"{name} SUCCESS"
                     )
 
+                    print(
+                        f"Time: {elapsed}s"
+                    )
 
                     return result
 
 
-
                 print(
-                    f"{name} returned nothing"
+                    f"{name} returned empty result"
                 )
-
 
 
             except Exception as e:
@@ -107,11 +120,16 @@ class AIVideoRouter:
                     f"{name} FAILED"
                 )
 
-
                 print(
                     str(e)
                 )
 
+
+            print(
+                "Switching provider..."
+            )
+
+            time.sleep(3)
 
 
 
@@ -120,9 +138,7 @@ class AIVideoRouter:
         print("=" * 60)
 
 
-
         return None
-
 
 
 
