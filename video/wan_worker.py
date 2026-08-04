@@ -5,23 +5,27 @@ import time
 SPACE_NAME = "Upsampler/wan-2-2-5b-video"
 
 
+
 def generate_wan_video(prompt):
 
     print("=" * 60)
     print("WAN 2.2 VIDEO GENERATOR")
     print("=" * 60)
 
+
     try:
 
         print("Connecting to WAN Space...")
 
-        # Removed hf_token because Railway gradio_client rejects it
+
         client = Client(
             SPACE_NAME
         )
 
 
-        print("Generating WAN video...")
+        print(
+            "Generating WAN video..."
+        )
 
 
         result = client.predict(
@@ -54,18 +58,33 @@ def generate_wan_video(prompt):
         )
 
 
-        print("Processing WAN response...")
+        print(
+            "Processing WAN response..."
+        )
+
+
+        print(
+            "WAN RAW RESPONSE:"
+        )
+
+        print(result)
+
 
 
         time.sleep(3)
 
 
+
         video_url = extract_video(result)
+
 
 
         if video_url:
 
-            print("WAN VIDEO SUCCESS")
+
+            print(
+                "WAN VIDEO SUCCESS"
+            )
 
 
             return {
@@ -77,9 +96,11 @@ def generate_wan_video(prompt):
             }
 
 
+
         print(
             "WAN returned no usable video."
         )
+
 
         return None
 
@@ -92,10 +113,13 @@ def generate_wan_video(prompt):
         print("WAN FAILED")
         print("=" * 60)
 
-        print(str(e))
+        print(
+            str(e)
+        )
 
 
         return None
+
 
 
 
@@ -109,7 +133,9 @@ def extract_video(result):
 
 
 
-    # String response
+    # ------------------------------
+    # STRING RESPONSE
+    # ------------------------------
 
     if isinstance(result, str):
 
@@ -119,35 +145,51 @@ def extract_video(result):
 
 
 
-    # Dictionary response
+        if "http" in result:
+
+            return result
+
+
+
+    # ------------------------------
+    # DICTIONARY RESPONSE
+    # ------------------------------
 
     if isinstance(result, dict):
 
 
-        if "video" in result:
+        for key, value in result.items():
 
 
-            if isinstance(result["video"], dict):
+            if isinstance(value, str):
 
-                return result["video"].get(
-                    "url"
-                )
+                if ".mp4" in value:
 
-
-            return result["video"]
+                    return value
 
 
 
-        if "url" in result:
-
-            return result["url"]
+            if isinstance(value, dict):
 
 
+                if "url" in value:
+
+                    return value["url"]
 
 
-    # List response
 
-    if isinstance(result, list):
+                if "path" in value:
+
+                    return value["path"]
+
+
+
+
+    # ------------------------------
+    # LIST / TUPLE RESPONSE
+    # ------------------------------
+
+    if isinstance(result, (list, tuple)):
 
 
         for item in result:
@@ -159,6 +201,23 @@ def extract_video(result):
             if url:
 
                 return url
+
+
+
+
+    # ------------------------------
+    # FILE OBJECT RESPONSE
+    # ------------------------------
+
+    if hasattr(result, "path"):
+
+        return result.path
+
+
+
+    if hasattr(result, "url"):
+
+        return result.url
 
 
 
