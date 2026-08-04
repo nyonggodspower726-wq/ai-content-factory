@@ -30,12 +30,26 @@ except Exception:
     generate_unsplash_video = None
 
 
+try:
+    from video.coverr_worker import generate_coverr_video
+except Exception:
+    generate_coverr_video = None
+
+
 
 # ============================================================
 # ROUTER SETTINGS
 # ============================================================
 
-PRIMARY_PROVIDER = "MiniMax"
+# Change this anytime you want
+# Options:
+# MiniMax
+# WAN
+# Pexels
+# Unsplash
+# Coverr
+
+PRIMARY_PROVIDER = "Coverr"
 
 
 
@@ -51,28 +65,44 @@ class AIVideoRouter:
 
         providers = {
 
-            "MiniMax": generate_minimax_video,
 
-            "WAN": generate_wan_video,
+            "MiniMax":
+                generate_minimax_video,
 
-            "Pexels": generate_pexels_video,
 
-            "Unsplash": generate_unsplash_video
+            "WAN":
+                generate_wan_video,
+
+
+            "Pexels":
+                generate_pexels_video,
+
+
+            "Unsplash":
+                generate_unsplash_video,
+
+
+            "Coverr":
+                generate_coverr_video
 
         }
 
 
 
-        order = list(providers.keys())
+        order = list(
+            providers.keys()
+        )
 
 
-        # Put primary provider first
+        # Move selected provider to first position
 
         if PRIMARY_PROVIDER in order:
+
 
             order.remove(
                 PRIMARY_PROVIDER
             )
+
 
             order.insert(
                 0,
@@ -89,9 +119,11 @@ class AIVideoRouter:
 
             if engine is None:
 
+
                 print(
                     f"{name} unavailable - skipping"
                 )
+
 
                 continue
 
@@ -111,9 +143,11 @@ class AIVideoRouter:
                 start = time.time()
 
 
+
                 result = engine(
                     prompt
                 )
+
 
 
                 elapsed = round(
@@ -129,6 +163,7 @@ class AIVideoRouter:
                     print(
                         f"{name} SUCCESS"
                     )
+
 
                     print(
                         f"Generation time: {elapsed}s"
@@ -152,14 +187,15 @@ class AIVideoRouter:
                     f"{name} FAILED"
                 )
 
+
                 print(
-                    e
+                    str(e)
                 )
 
 
 
             print(
-                "Moving to next provider..."
+                "Switching provider..."
             )
 
 
@@ -169,9 +205,10 @@ class AIVideoRouter:
 
         print("=" * 60)
         print(
-            "NO VIDEO PROVIDER AVAILABLE"
+            "ALL VIDEO PROVIDERS FAILED"
         )
         print("=" * 60)
+
 
 
         return None
