@@ -1,10 +1,12 @@
 from video.minimax_worker import generate_minimax_video
 from video.wan_worker import generate_wan_video
+from video.hunyuan_worker import generate_hunyuan_video
 from video.pexels_worker import generate_pexels_video
 from video.unsplash_worker import generate_unsplash_video
 
 
 class AIVideoRouter:
+
 
     def generate(self, prompt):
 
@@ -13,6 +15,8 @@ class AIVideoRouter:
             ("MiniMax H3", generate_minimax_video),
 
             ("WAN 2.2", generate_wan_video),
+
+            ("HunyuanVideo", generate_hunyuan_video),
 
             ("Pexels", generate_pexels_video),
 
@@ -23,12 +27,13 @@ class AIVideoRouter:
 
         for name, engine in providers:
 
+
+            print("=" * 60)
+            print(f"TRYING {name}")
+            print("=" * 60)
+
+
             try:
-
-                print("=" * 50)
-                print(f"TRYING {name}")
-                print("=" * 50)
-
 
                 result = engine(prompt)
 
@@ -43,24 +48,26 @@ class AIVideoRouter:
 
 
                 print(
-                    f"{name} unavailable"
+                    f"{name} returned nothing"
                 )
 
 
             except Exception as e:
 
                 print(
-                    f"{name} failed"
+                    f"{name} FAILED"
                 )
 
                 print(e)
 
 
+
         print(
-            "ALL VIDEO ENGINES FAILED"
+            "ALL VIDEO PROVIDERS FAILED"
         )
 
         return None
+
 
 
 router = AIVideoRouter()
