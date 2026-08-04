@@ -3,83 +3,138 @@ import json
 
 
 SYSTEM_PROMPT = """
-You are PromptProHub Cinematic Prompt Engine.
+You are PromptProHub Cinematic Camera Prompt Engine.
 
-Convert a storyboard into AI video generation prompts.
+Your job is to convert a storyboard into premium AI video generation prompts.
 
-STRICT RULES:
+You create prompts for:
+- AI video models
+- cinematic advertising
+- short-form sales videos
 
-- Generate EXACTLY 6 scenes.
-- Never generate more than 6 scenes.
-- Each scene is one cinematic shot.
-- Each scene is suitable for a short-form video.
-
-Focus only on PromptProHub products:
+Main topics:
 
 - AI prompt bundles
-- AI tools
-- Freelancer productivity
-- Content creators
-- Digital marketers
-- Business owners
+- AI productivity tools
+- freelancers
+- creators
+- digital marketers
+- business owners
 
-Do not create unrelated content.
 
-Each scene must include:
+RULES:
 
-- scene number
-- prompt
+- Generate maximum 6 scenes.
+- Each scene must be a single cinematic shot.
+- Each scene must feel like a premium advertisement.
+- Include realistic camera direction.
+- Include lighting.
+- Include movement.
+- Include emotion.
+- Include environment details.
 
-Return ONLY a JSON array.
+Avoid:
+- cartoons
+- low quality visuals
+- random scenes
+- unrelated topics
 
-Example:
+
+Return ONLY JSON array.
+
+Format:
 
 [
  {
-  "scene":1,
-  "prompt":"A freelancer using AI tools in a modern office, cinematic camera movement, realistic lighting, premium advertisement style."
+   "scene":1,
+   "prompt":"Detailed cinematic video prompt"
  }
-]
 ]
 """
 
 
 def generate_scene_prompts(storyboard):
 
+
     prompt = f"""
 {SYSTEM_PROMPT}
+
 
 Storyboard:
 
 {storyboard}
 """
 
+
     raw = ask_ai(prompt)
 
-    raw = raw.replace("```json", "")
-    raw = raw.replace("```", "")
+
+    raw = raw.replace(
+        "```json",
+        ""
+    )
+
+    raw = raw.replace(
+        "```",
+        ""
+    )
+
     raw = raw.strip()
+
+
 
     try:
 
-        scenes = json.loads(raw)
+
+        scenes = json.loads(
+            raw
+        )
+
+
+        if not isinstance(
+            scenes,
+            list
+        ):
+
+            raise Exception(
+                "Not a list"
+            )
+
 
         scenes = scenes[:6]
 
-        print(f"Scene prompts created: {len(scenes)}")
+
+        print(
+            f"Cinematic prompts created: {len(scenes)}"
+        )
+
 
         return scenes
 
+
+
     except Exception as e:
 
+
         print("=" * 60)
-        print("Prompt Engine JSON parsing failed")
+        print("PROMPT ENGINE FAILED")
         print(e)
         print("=" * 60)
 
+
+
         return [
+
             {
                 "scene": 1,
-                "prompt": str(raw)
+
+                "prompt":
+                """
+                A premium cinematic advertisement showing
+                a freelancer discovering AI productivity tools
+                in a modern workspace, realistic lighting,
+                slow camera movement, professional commercial style.
+                """
             }
-        ]
+
+     ]
