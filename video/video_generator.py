@@ -390,3 +390,222 @@ def download_ai_videos(video_urls):
 
 
     return downloaded
+# ============================================================
+# CREATE AI GENERATED VIDEO
+# ============================================================
+
+def create_video(
+
+    prompts,
+
+    script,
+
+    voice_file
+
+):
+
+    print("=" * 60)
+    print("PROMPTPROHUB AI VIDEO STUDIO")
+    print("=" * 60)
+
+
+    try:
+
+        print("Generating AI scenes...")
+
+
+        ai_scenes = generate_all_scenes(
+            prompts
+        )
+
+
+        if ai_scenes is None:
+
+            print("AI returned None.")
+
+            return None
+
+
+        if not isinstance(ai_scenes, list):
+
+            print("AI returned invalid format.")
+
+            print(type(ai_scenes))
+
+            return None
+
+
+        if len(ai_scenes) == 0:
+
+            print("No AI scenes generated.")
+
+            return None
+
+
+
+        print("Downloading AI scenes...")
+
+
+        scene_files = download_ai_videos(
+            ai_scenes
+        )
+
+
+        if not scene_files:
+
+            print("No downloadable scenes.")
+
+            return None
+
+
+
+        # =====================================
+        # CAMERA ENGINE
+        # =====================================
+
+        print(
+            "Applying Camera Engine..."
+        )
+
+
+        processed_scenes = []
+
+
+        for scene in scene_files:
+
+
+            processed = apply_camera_effects(
+                scene
+            )
+
+
+            processed_scenes.append(
+                processed
+            )
+
+
+
+        print(
+            "Building timeline..."
+        )
+
+
+        video = build_scene_video(
+            processed_scenes
+        )
+
+
+        if video is None:
+
+            print(
+                "Timeline creation failed."
+            )
+
+            return None
+
+
+
+        print(
+            "Adding narration..."
+        )
+
+
+        if (
+
+            voice_file
+
+            and
+
+            os.path.exists(
+                voice_file
+            )
+
+        ):
+
+
+            voice = AudioFileClip(
+                voice_file
+            )
+
+
+            video = video.set_duration(
+                voice.duration
+            )
+
+
+            video = video.set_audio(
+                voice
+            )
+
+
+        else:
+
+            print(
+                "Voice file missing."
+            )
+
+
+
+        print(
+            "Adding music..."
+        )
+
+
+        music_file = get_music()
+
+
+        if music_file:
+
+            video = add_background_music(
+
+                video,
+
+                music_file
+
+            )
+
+
+
+        output = "output/ai_sales_video.mp4"
+
+
+        os.makedirs(
+
+            "output",
+
+            exist_ok=True
+
+        )
+
+
+        print(
+            "Exporting final video..."
+        )
+
+
+        video.write_videofile(
+
+            output,
+
+            codec="libx264",
+
+            audio_codec="aac",
+
+            fps=30,
+
+            bitrate="3500k",
+
+            audio_bitrate="128k",
+
+            preset="medium",
+
+            threads=4,
+
+            logger=None
+
+        )
+
+
+        print(
+            "Video exported successfully."
+)
