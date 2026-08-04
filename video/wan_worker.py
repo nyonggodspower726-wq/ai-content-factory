@@ -6,35 +6,23 @@ import time
 SPACE_NAME = "Upsampler/wan-2-2-5b-video"
 
 
-
 def generate_wan_video(prompt):
 
-    print("=" * 50)
-    print("WAN VIDEO GENERATOR")
-    print("=" * 50)
-
+    print("=" * 60)
+    print("WAN 2.2 VIDEO GENERATOR")
+    print("=" * 60)
 
     try:
 
-        hf_token = os.getenv(
-            "HF_API_TOKEN"
-        )
-
+        hf_token = os.getenv("HF_API_TOKEN")
 
         if not hf_token:
 
-            print(
-                "HF TOKEN NOT FOUND"
-            )
+            print("HF_API_TOKEN not found")
 
             return None
 
-
-
-        print(
-            "Connecting to WAN..."
-        )
-
+        print("Connecting to WAN Space...")
 
         client = Client(
 
@@ -44,12 +32,7 @@ def generate_wan_video(prompt):
 
         )
 
-
-
-        print(
-            "Generating video..."
-        )
-
+        print("Generating WAN video...")
 
         result = client.predict(
 
@@ -80,93 +63,84 @@ def generate_wan_video(prompt):
 
         )
 
+        print("Processing WAN response...")
 
-
-        print(
-            "Processing WAN result..."
-        )
-
-
-        time.sleep(5)
-
-
+        time.sleep(3)
 
         video_url = extract_video(result)
 
-
-
         if video_url:
 
-            print(
-                "WAN VIDEO SUCCESS"
-            )
+            print("WAN VIDEO SUCCESS")
 
-            return video_url
+            return {
 
+                "provider": "wan",
 
+                "url": video_url
 
-        print(
-            "WAN returned no video"
-        )
+            }
 
+        print("WAN returned no usable video.")
 
         return None
-
-
 
     except Exception as e:
 
-
-        print(
-            "WAN ERROR:"
-        )
-
+        print("=" * 60)
+        print("WAN FAILED")
+        print("=" * 60)
         print(e)
 
-
         return None
-
-
 
 
 def extract_video(result):
 
+    if result is None:
+
+        return None
+
+    # ------------------------------------
+    # String response
+    # ------------------------------------
 
     if isinstance(result, str):
 
-        if result.endswith(".mp4"):
+        if ".mp4" in result:
 
             return result
 
+    # ------------------------------------
+    # Dictionary response
+    # ------------------------------------
 
+    if isinstance(result, dict):
+
+        if "video" in result:
+
+            if isinstance(result["video"], dict):
+
+                return result["video"].get("url")
+
+            return result["video"]
+
+        if "url" in result:
+
+            return result["url"]
+
+    # ------------------------------------
+    # List response
+    # ------------------------------------
 
     if isinstance(result, list):
 
-
         for item in result:
 
+            url = extract_video(item)
 
-            if isinstance(item, str):
+            if url:
 
-                if item.endswith(".mp4"):
-
-                    return item
-
-
-
-            if isinstance(item, dict):
-
-
-                if "video" in item:
-
-                    return item["video"]
-
-
-
-                if "url" in item:
-
-                    return item["url"]
-
-
+                return url
 
     return None
