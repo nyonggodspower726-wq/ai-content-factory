@@ -1,72 +1,133 @@
 import os
-import time
-import requests
-
-FAL_API_KEY = os.getenv("FAL_KEY")
-
-MODEL = "minimax/h3/text-to-video"
-
-BASE_URL = f"https://fal.run/{MODEL}"
+from gradio_client import Client
 
 
-def generate_minimax_video(
-    prompt,
-    duration=5,
-    resolution="2K",
-    aspect_ratio="16:9"
-):
+# MiniMax Hugging Face Space
+SPACE_NAME = "adahling305/minimax-h3-demo"
 
-    if not FAL_API_KEY:
-        print("FAL API KEY NOT FOUND")
-        return None
 
-    headers = {
-        "Authorization": f"Key {FAL_API_KEY}",
-        "Content-Type": "application/json"
-    }
+def generate_minimax_video(prompt):
 
-    payload = {
-        "prompt": prompt,
-        "duration": duration,
-        "resolution": resolution,
-        "aspect_ratio": aspect_ratio
-    }
+    print("=" * 60)
+    print("MINIMAX H3 VIDEO GENERATOR")
+    print("=" * 60)
 
     try:
 
-        print("=" * 60)
-        print("MINIMAX H3")
-        print("=" * 60)
+        print("Connecting to MiniMax Space...")
 
-        response = requests.post(
-            BASE_URL,
-            headers=headers,
-            json=payload,
-            timeout=120
+        client = Client(
+            SPACE_NAME
         )
 
-        response.raise_for_status()
 
-        result = response.json()
+        print("Generating video...")
 
-        if "video" in result:
+        result = client.predict(
 
-            video = result["video"]
+            prompt=prompt,
 
-            if isinstance(video, dict):
+            canvas="960x544 - 16:9 fast",
 
-                url = video.get("url")
+            duration=2,
 
-                if url:
-                    print("MiniMax video generated.")
-                    return url
+            steps=12,
 
-        print(result)
+            seed=42,
+
+            api_name="/generate"
+
+        )
+
+
+        print("Processing MiniMax result...")
+
+
+        video_url = extract_video(result)
+
+
+        if video_url:
+
+            print("MINIMAX SUCCESS")
+
+            return video_url
+
+
+        print(
+            "MiniMax returned no video"
+        )
 
         return None
+
 
     except Exception as e:
 
-        print(f"MiniMax Error: {e}")
+        print(
+            "MINIMAX ERROR:"
+        )
+
+        print(e)
 
         return None
+
+
+
+def extract_video(result):
+
+
+    # Direct URL
+
+    if isinstance(result, str):
+
+        if result.endswith(".mp4"):
+
+            return result
+
+
+
+    # List response
+
+    if isinstance(result, list):
+
+        for item in result:
+
+
+            if isinstance(item, str):
+
+                if ".mp4" in item:
+
+                    return item
+
+
+
+            if isinstance(item, dict):
+
+
+                if "video" in item:
+
+                    return item["video"]
+
+
+                if "url" in item:
+
+                    return item["url"]
+
+
+
+    # Dictionary response
+
+    if isinstance(result, dict):
+
+
+        if "video" in result:
+
+            return result["video"]
+
+
+        if "url" in result:
+
+            return result["url"]
+
+
+
+    return None
