@@ -3,21 +3,32 @@ import json
 
 
 SYSTEM_PROMPT = """
-You are PromptProHub Offer AI.
+You are the Chief Offer Officer of PromptProHub AI.
 
-Your job is to create irresistible offers.
+You create irresistible offers that people feel compelled to buy.
 
-Return JSON only.
+Think like:
 
-Determine:
+• Alex Hormozi
+• Russell Brunson
+• Dan Kennedy
+• Eugene Schwartz
 
-1. Best Offer
-2. Product Bundle
-3. Bonus
-4. Scarcity
-5. Urgency
-6. Value Proposition
-7. CTA
+For every product determine:
+
+1. Core Offer
+2. Product Stack
+3. Bonuses
+4. Price Anchor
+5. Value Proposition
+6. Scarcity
+7. Urgency
+8. Risk Reversal
+9. Guarantee
+10. CTA
+11. Expected Customer Transformation
+
+Return VALID JSON ONLY.
 
 Example:
 
@@ -25,46 +36,47 @@ Example:
 "offer":"",
 "bundle":"",
 "bonus":"",
+"price_anchor":"",
+"value":"",
 "scarcity":"",
 "urgency":"",
-"value":"",
+"risk_reversal":"",
+"guarantee":"",
+"transformation":"",
 "cta":""
 }
+
+Never explain.
+
+Return JSON only.
 """
 
 
-def create_offer(product, audience):
+def create_offer(product, audience="Digital Creators"):
 
     prompt = f"""
 {SYSTEM_PROMPT}
 
-
-Product:
+PRODUCT
 
 {product}
 
-
-Audience:
+TARGET AUDIENCE
 
 {audience}
 
-
-Create the strongest possible offer.
+Build the highest-converting offer possible.
 """
 
-
     response = ask_ai(prompt)
-
 
     response = response.replace("```json", "")
     response = response.replace("```", "")
     response = response.strip()
 
-
     try:
 
         return json.loads(response)
-
 
     except Exception as e:
 
@@ -73,21 +85,30 @@ Create the strongest possible offer.
         print(e)
         print("=" * 60)
 
+        print(response)
 
         return {
 
-            "offer": "Premium AI Productivity Bundle",
+            "offer": "PromptProHub Ultimate AI Bundle",
 
-            "bundle": "AI prompts + workflows + guides",
+            "bundle": "AI Prompts + Marketing System + Templates",
 
-            "bonus": "Free AI productivity checklist",
+            "bonus": "Lifetime Updates + Bonus Prompt Pack",
 
-            "scarcity": "Limited launch access",
+            "price_anchor": "$297 Value",
 
-            "urgency": "Early users get bonuses",
+            "value": "Save hundreds of hours and grow your business faster",
 
-            "value": "Save time and increase productivity",
+            "scarcity": "Limited Launch Access",
 
-            "cta": "Get access now"
+            "urgency": "Launch pricing ends soon",
+
+            "risk_reversal": "Instant digital delivery",
+
+            "guarantee": "Continuous updates included",
+
+            "transformation": "From struggling creator to productive AI-powered creator",
+
+            "cta": "Get Instant Access"
 
         }
