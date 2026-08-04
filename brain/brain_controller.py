@@ -17,90 +17,240 @@ from brain.decision_engine import final_decision
 
 class BrainController:
 
+
     def __init__(self):
 
         print("=" * 60)
-        print("PROMPTPROHUB AI STUDIO BRAIN ONLINE")
+        print("PROMPTPROHUB AI BRAIN ONLINE")
         print("=" * 60)
+
+
+
+    def safe_run(self, name, function, *args):
+
+        try:
+
+            print(name)
+
+            return function(*args)
+
+        except Exception as e:
+
+            print(
+                f"{name} FAILED:",
+                e
+            )
+
+            return {}
+
+
 
     def build(self, topic):
 
-        project = {}
+        project = {
 
-        print("CEO")
+            "topic": topic
 
-        # Product Recommendation
-        product = recommend_product(topic)
-        project["product"] = product
+        }
 
-        # CEO Planning
-        project["ceo"] = ceo.review(
-            topic,
-            product
-        )
 
-        print("Brand")
-        project["brand"] = brand.get_brand()
+        print("=" * 60)
+        print("BUILDING AI CAMPAIGN")
+        print("=" * 60)
 
-        print("Trend")
-        project["trend"] = discover_trends(topic)
 
-        print("Audience")
-        project["audience"] = audience_plan(topic)
 
-        print("Offer")
-        project["offer"] = create_offer(
-            project["product"],
-            project["audience"]
-        )
+        project["product"] = self.safe_run(
 
-        print("Thinking")
-        project["thinking"] = think(
-            project["product"],
+            "Product",
+
+            recommend_product,
+
             topic
+
         )
 
-        print("Marketing")
-        project["marketing"] = marketing_plan(
-            project["thinking"]
+
+
+        project["ceo"] = self.safe_run(
+
+            "CEO",
+
+            ceo.review,
+
+            topic,
+
+            project["product"]
+
         )
 
-        print("Psychology")
-        project["psychology"] = psychology_plan(
+
+
+        project["brand"] = self.safe_run(
+
+            "Brand",
+
+            brand.get_brand
+
+        )
+
+
+
+        project["trend"] = self.safe_run(
+
+            "Trend",
+
+            discover_trends,
+
+            topic
+
+        )
+
+
+
+        project["audience"] = self.safe_run(
+
+            "Audience",
+
+            audience_plan,
+
+            topic
+
+        )
+
+
+
+        project["offer"] = self.safe_run(
+
+            "Offer",
+
+            create_offer,
+
+            project["product"],
+
+            project["audience"]
+
+        )
+
+
+
+        project["thinking"] = self.safe_run(
+
+            "Thinking",
+
+            think,
+
+            project["product"],
+
+            topic
+
+        )
+
+
+
+        project["marketing"] = self.safe_run(
+
+            "Marketing",
+
+            marketing_plan,
+
+            project
+
+        )
+
+
+
+        project["psychology"] = self.safe_run(
+
+            "Psychology",
+
+            psychology_plan,
+
             project["marketing"]
+
         )
 
-        print("Director")
-        project["director"] = create_director_plan(
-            project["thinking"]
+
+
+        project["director"] = self.safe_run(
+
+            "Director",
+
+            create_director_plan,
+
+            project
+
         )
 
-        print("Storyboard")
-        project["storyboard"] = create_storyboard(
+
+
+        project["storyboard"] = self.safe_run(
+
+            "Storyboard",
+
+            create_storyboard,
+
             project["director"]
+
         )
 
-        print("Scene Prompts")
-        project["scene_prompts"] = generate_scene_prompts(
+
+
+        project["scene_prompts"] = self.safe_run(
+
+            "Scene Prompts",
+
+            generate_scene_prompts,
+
             project["storyboard"]
+
         )
 
-        print("Script")
-        project["script"] = generate_script(
+
+
+        project["script"] = self.safe_run(
+
+            "Script",
+
+            generate_script,
+
             project
+
         )
 
-        print("Viral Analysis")
-        project["viral"] = evaluate_video(
+
+
+        project["viral"] = self.safe_run(
+
+            "Viral Analysis",
+
+            evaluate_video,
+
             project["storyboard"]
+
         )
 
-        print("Decision")
-        project["decision"] = final_decision(
+
+
+        project["decision"] = self.safe_run(
+
+            "Final Decision",
+
+            final_decision,
+
             project
+
         )
+
+
+        print("=" * 60)
+        print("BRAIN CAMPAIGN COMPLETE")
+        print("=" * 60)
+
 
         return project
+
+
 
 
 brain = BrainController()
