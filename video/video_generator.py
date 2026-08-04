@@ -45,23 +45,35 @@ def download_ai_videos(video_urls):
 
             if isinstance(item, dict):
 
-                if "video" in item:
+    # OpenAI/FAL/WAN style
+    if item.get("video"):
 
-                    url = item["video"]["url"]
+        if isinstance(item["video"], dict):
 
+            url = item["video"].get("url")
 
-                elif "url" in item:
+        else:
 
-                    url = item["url"]
+            url = item["video"]
 
+    # Direct url
+    elif item.get("url"):
 
-                else:
+        url = item["url"]
 
-                    print(
-                        "Unknown video response format"
-                    )
+    else:
 
-                    continue
+        print("Invalid AI scene response:")
+
+        print(item)
+
+        continue
+
+    if not url:
+
+        print("Scene URL missing")
+
+        continue
 
 
             else:
