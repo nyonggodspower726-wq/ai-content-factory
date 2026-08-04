@@ -1,64 +1,59 @@
 import os
 import requests
 
-
-PEXELS_API = os.getenv("PEXELS_API_KEY")
+PEXELS_API_KEY = os.getenv("PEXELS_API_KEY")
 
 
 def generate_pexels_video(prompt):
 
-    print("=" * 60)
-    print("PEXELS FALLBACK")
-    print("=" * 60)
-
-    if not PEXELS_API:
-
-        print("Pexels API not configured.")
-
+    if not PEXELS_API_KEY:
+        print("PEXELS_API_KEY not found")
         return None
 
     try:
 
+        headers = {
+            "Authorization": PEXELS_API_KEY
+        }
+
         response = requests.get(
-
             "https://api.pexels.com/videos/search",
-
-            headers={
-
-                "Authorization": PEXELS_API
-
-            },
-
+            headers=headers,
             params={
-
                 "query": prompt,
-
-                "per_page": 1
-
+                "per_page": 3
             },
-
             timeout=60
-
         )
 
         response.raise_for_status()
 
         data = response.json()
 
-        videos = data.get("videos", [])
-
-        if not videos:
-
+        if not data.get("videos"):
             return None
 
-        return {
+        urls = []
 
-            "url": videos[0]["video_files"][0]["link"]
+        for video in data["videos"]:
 
-        }
+            files = video.get("video_files", [])
+
+            if not files:
+                continue
+
+            best = max(files, key=lambda x: x.get("width", 0))
+
+            urls.append({
+                "provider": "pexels",
+                "url": best["link"]
+            })
+
+        return urls
 
     except Exception as e:
 
+        print("PEXELS ERROR")
         print(e)
 
         return None
