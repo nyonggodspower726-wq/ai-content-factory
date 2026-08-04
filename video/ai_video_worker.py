@@ -2,63 +2,76 @@ from video.ai_video_router import router
 import time
 
 
+# ============================================================
+# GENERATE ONE SCENE
+# ============================================================
+
 def generate_scene(prompt):
 
     print("=" * 60)
-    print("GENERATING AI SCENE")
+    print("PROMPTPROHUB AI SCENE GENERATOR")
     print("=" * 60)
 
-    attempts = 0
+    max_attempts = 5
 
-    while attempts < 3:
+    for attempt in range(1, max_attempts + 1):
 
-        attempts += 1
-
-        print(f"Attempt {attempts}")
+        print(f"Attempt {attempt}/{max_attempts}")
 
         try:
 
             scene = router.generate(prompt)
 
-            if scene is not None:
+            if scene:
 
                 print("Scene generated successfully.")
 
                 return scene
 
+            print("Provider returned no result.")
+
         except Exception as e:
 
-            print(e)
+            print(f"Generation Error: {e}")
 
-        print("Retrying in 5 seconds...")
+        if attempt < max_attempts:
 
-        time.sleep(5)
+            print("Retrying in 8 seconds...")
+            time.sleep(8)
 
-    print("Scene generation failed.")
+    print("Scene generation completely failed.")
 
     return None
 
+
+# ============================================================
+# GENERATE ALL SCENES
+# ============================================================
 
 def generate_all_scenes(prompts):
 
     scenes = []
 
-    if prompts is None:
+    if not prompts:
 
+        print("=" * 60)
         print("No prompts received.")
-
+        print("=" * 60)
         return scenes
 
-    prompts = prompts[:6]
+    # Maximum scenes supported
+    prompts = prompts[:8]
 
     print("=" * 60)
     print("PROMPTPROHUB AI VIDEO FACTORY")
     print("=" * 60)
 
-    for index, prompt in enumerate(prompts):
+    total = len(prompts)
+
+    for index, prompt in enumerate(prompts, start=1):
 
         print("=" * 60)
-        print(f"Generating Scene {index + 1}")
+        print(f"Generating Scene {index}/{total}")
         print("=" * 60)
 
         scene = generate_scene(prompt)
@@ -67,14 +80,18 @@ def generate_all_scenes(prompts):
 
             scenes.append(scene)
 
-            print(f"Scene {index + 1} Complete")
+            print(f"Scene {index} Complete")
 
         else:
 
-            print(f"Scene {index + 1} Failed")
+            print(f"Scene {index} Failed - continuing...")
 
     print("=" * 60)
-    print(f"TOTAL SCENES GENERATED: {len(scenes)}")
+    print("VIDEO FACTORY REPORT")
+    print("=" * 60)
+    print(f"Requested Scenes : {total}")
+    print(f"Generated Scenes : {len(scenes)}")
+    print(f"Failed Scenes    : {total - len(scenes)}")
     print("=" * 60)
 
     return scenes
