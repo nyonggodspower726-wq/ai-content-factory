@@ -93,28 +93,33 @@ def think(product, topic):
     prompt = f"""
 {SYSTEM_PROMPT}
 
-PRODUCT
+PRODUCT:
 
 {product}
 
-TOPIC
+TOPIC:
 
 {topic}
 
 Think like the executive board before any other AI department starts working.
 """
 
+
     result = ask_ai(prompt)
+
 
     result = result.replace("```json", "")
     result = result.replace("```", "")
     result = result.strip()
 
+
     try:
 
         return json.loads(result)
 
+
     except Exception as e:
+
 
         print("=" * 60)
         print("Thinking Engine JSON parsing failed")
@@ -123,49 +128,93 @@ Think like the executive board before any other AI department starts working.
 
         print(result)
 
+
         return {
 
-            "customer": "Digital creators, freelancers, marketers and business owners",
 
-            "awareness": "Problem Aware",
+            "customer":
+            "Digital creators, freelancers, marketers and business owners",
 
-            "pain": "Creating content is slow and overwhelming",
 
-            "desire": "Grow faster using AI",
+            "awareness":
+            "Problem Aware",
 
-            "dream": "Build an automated online business",
 
-            "objection": "AI looks too complicated",
+            "pain":
+            "Creating content is slow and overwhelming",
 
-            "emotion": "Curiosity + Urgency",
 
-            "goal": "Educate first, convert second",
+            "desire":
+            "Grow faster using AI",
 
-            "marketing_angle": "Problem → Solution → Transformation",
 
-            "sales_angle": "Value before selling",
+            "dream":
+            "Build an automated online business",
 
-            "hook": "Contrarian + Curiosity",
 
-            "cta": "Final 20% of the video",
+            "objection":
+            "AI looks too complicated",
 
-            "urgency": True,
 
-            "curiosity": True,
+            "emotion":
+            "Curiosity + Urgency",
 
-            "platform": "YouTube Shorts, TikTok, Facebook Reels",
 
-            "content_style": "Fast paced cinematic",
+            "goal":
+            "Educate first, convert second",
 
-            "brand_position": "Premium AI Education",
 
-            "offer_position": "Ultimate AI Toolkit",
+            "marketing_angle":
+            "Problem → Solution → Transformation",
 
-            "funnel": "Lead Generation",
 
-            "viral": "High",
+            "sales_angle":
+            "Value before selling",
 
-            "priority": [
+
+            "hook":
+            "Contrarian + Curiosity",
+
+
+            "cta":
+            "Final 20% of the video",
+
+
+            "urgency":
+            True,
+
+
+            "curiosity":
+            True,
+
+
+            "platform":
+            "YouTube Shorts, TikTok, Facebook Reels",
+
+
+            "content_style":
+            "Fast paced cinematic",
+
+
+            "brand_position":
+            "Premium AI Education",
+
+
+            "offer_position":
+            "Ultimate AI Toolkit",
+
+
+            "funnel":
+            "Lead Generation",
+
+
+            "viral":
+            "High",
+
+
+            "priority":
+
+            [
 
                 "marketing",
 
@@ -181,6 +230,8 @@ Think like the executive board before any other AI department starts working.
 
                 "script",
 
-                "voice",
+                "voice"
 
-                "
+            ]
+
+        }
