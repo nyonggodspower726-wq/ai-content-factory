@@ -3,49 +3,88 @@ import json
 
 
 SYSTEM_PROMPT = """
-You are PromptProHub Thinking AI.
+You are the Chief Strategy Officer of PromptProHub AI.
 
-You are the CEO of an AI advertising agency.
+You NEVER write scripts.
 
-You NEVER create the final script.
+You NEVER create storyboards.
 
-You NEVER create the final storyboard.
+You THINK before every department works.
 
-Instead you THINK first.
+Think like:
 
-For every request decide:
+• Alex Hormozi
+• Steve Jobs
+• Russell Brunson
+• David Ogilvy
+• Gary Halbert
+• MrBeast
+• Sam Altman
 
-1. Who is the ideal customer?
-2. What is their biggest pain?
-3. What emotion should the video create?
-4. What marketing angle should be used?
-5. Should the video educate, entertain or sell?
-6. What hook strategy is best?
-7. What CTA strategy is best?
-8. Should urgency be used?
-9. Should curiosity be used?
-10. Which AI engines should receive the highest priority?
+Your responsibility is to make every campaign:
 
-Return JSON only.
+• Impossible to ignore
+• Highly shareable
+• Highly profitable
+• Emotionally powerful
+• Conversion focused
+
+Before giving instructions analyse:
+
+1. Target customer
+2. Market sophistication
+3. Awareness level
+4. Biggest pain
+5. Biggest desire
+6. Dream outcome
+7. Buying objection
+8. Emotional trigger
+9. Marketing angle
+10. Sales angle
+11. Viral potential
+12. Platform
+13. Hook strategy
+14. CTA strategy
+15. Content style
+16. Brand positioning
+17. Offer positioning
+18. Funnel stage
+
+Then decide which departments deserve the highest priority.
+
+Return VALID JSON ONLY.
 
 Example:
 
 {
-  "customer":"Freelancers",
-  "pain":"Writing prompts takes too long",
-  "emotion":"Curiosity",
-  "goal":"Education first, sell later",
-  "hook":"Strong curiosity",
-  "cta":"Last scene",
-  "urgency":true,
-  "curiosity":true,
-  "priority":[
-    "marketing",
-    "psychology",
-    "storyboard",
-    "prompt"
-  ]
+"customer":"",
+"awareness":"",
+"pain":"",
+"desire":"",
+"dream":"",
+"objection":"",
+"emotion":"",
+"goal":"",
+"marketing_angle":"",
+"sales_angle":"",
+"hook":"",
+"cta":"",
+"urgency":true,
+"curiosity":true,
+"platform":"",
+"content_style":"",
+"brand_position":"",
+"offer_position":"",
+"funnel":"",
+"viral":"High",
+"priority":[]
 }
+
+Never explain.
+
+Never use markdown.
+
+Return JSON only.
 """
 
 
@@ -54,27 +93,94 @@ def think(product, topic):
     prompt = f"""
 {SYSTEM_PROMPT}
 
-Product:
+PRODUCT
 
 {product}
 
-Topic:
+TOPIC
 
 {topic}
+
+Think like the executive board before any other AI department starts working.
 """
 
     result = ask_ai(prompt)
 
+    result = result.replace("```json", "")
+    result = result.replace("```", "")
+    result = result.strip()
+
     try:
+
         return json.loads(result)
 
-    except Exception:
+    except Exception as e:
 
         print("=" * 60)
-        print("Thinking Engine returned non-JSON.")
-        print("Returning raw response.")
+        print("Thinking Engine JSON parsing failed")
+        print(e)
         print("=" * 60)
+
+        print(result)
 
         return {
-            "raw_response": result
-        }
+
+            "customer": "Digital creators, freelancers, marketers and business owners",
+
+            "awareness": "Problem Aware",
+
+            "pain": "Creating content is slow and overwhelming",
+
+            "desire": "Grow faster using AI",
+
+            "dream": "Build an automated online business",
+
+            "objection": "AI looks too complicated",
+
+            "emotion": "Curiosity + Urgency",
+
+            "goal": "Educate first, convert second",
+
+            "marketing_angle": "Problem → Solution → Transformation",
+
+            "sales_angle": "Value before selling",
+
+            "hook": "Contrarian + Curiosity",
+
+            "cta": "Final 20% of the video",
+
+            "urgency": True,
+
+            "curiosity": True,
+
+            "platform": "YouTube Shorts, TikTok, Facebook Reels",
+
+            "content_style": "Fast paced cinematic",
+
+            "brand_position": "Premium AI Education",
+
+            "offer_position": "Ultimate AI Toolkit",
+
+            "funnel": "Lead Generation",
+
+            "viral": "High",
+
+            "priority": [
+
+                "marketing",
+
+                "psychology",
+
+                "offer",
+
+                "director",
+
+                "storyboard",
+
+                "prompt",
+
+                "script",
+
+                "voice",
+
+                "
