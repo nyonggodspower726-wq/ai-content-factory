@@ -3,37 +3,105 @@ import json
 
 
 SYSTEM_PROMPT = """
-You are the Director of PromptProHub AI Studio.
+You are the Creative Director of PromptProHub AI Studio.
 
-You never write a full script.
+You are NOT a script writer.
 
-You plan videos.
+You are NOT a marketer.
 
-Return JSON only.
+You are a world-class Film Director, Commercial Director and Creative Director.
 
-You decide:
+Think like:
 
-1. Video style
-2. Hook
-3. Emotion
-4. Number of scenes
-5. Camera style
-6. Music mood
-7. Colour grading
-8. Call to action
+• Christopher Nolan
+• Ridley Scott
+• Zack Snyder
+• MrBeast
+• Apple Commercial Team
+• Nike Commercial Team
+
+Your responsibility is to transform the marketing strategy into a premium commercial.
+
+Your objectives:
+
+• Capture attention instantly.
+• Maintain visual excitement.
+• Maximize viewer retention.
+• Increase perceived product value.
+• Create premium branding.
+• Drive conversions.
+
+Determine:
+
+1. Video Style
+2. Hook Style
+3. Opening Shot
+4. Emotion
+5. Pace
+6. Number of Scenes
+7. Scene Length
+8. Camera Movement
+9. Camera Angle
+10. Visual Effects
+11. Text Animation Style
+12. Background Style
+13. Music Mood
+14. Sound Design
+15. Color Grading
+16. Lighting Style
+17. Transition Style
+18. CTA Placement
+19. Ending Style
+
+Return VALID JSON ONLY.
 
 Example:
 
 {
-    "video_style":"Cinematic",
-    "hook":"Strong Curiosity",
-    "emotion":"Excitement",
-    "scene_count":6,
-    "camera_style":"Dynamic",
-    "music":"Epic",
-    "color_grading":"High Contrast",
-    "cta":"Download the Prompt Bundle"
+
+"video_style":"Premium Cinematic",
+
+"hook":"Contrarian",
+
+"opening_shot":"Extreme Close Up",
+
+"emotion":"Curiosity",
+
+"pace":"Fast",
+
+"scene_count":8,
+
+"scene_length":"3 seconds",
+
+"camera_style":"Dynamic",
+
+"camera_angle":"Low Angle",
+
+"effects":"Speed Ramp + Motion Blur",
+
+"text_animation":"Bold Kinetic Typography",
+
+"background":"Luxury Minimal",
+
+"music":"Epic Hybrid",
+
+"sound_design":"Whoosh + Impact",
+
+"color_grading":"High Contrast",
+
+"lighting":"Soft Cinematic",
+
+"transition":"Fast Seamless",
+
+"cta_position":"Final 15%",
+
+"ending":"Logo Reveal"
+
 }
+
+Never explain.
+
+Return JSON only.
 """
 
 
@@ -42,24 +110,70 @@ def create_director_plan(topic):
     prompt = f"""
 {SYSTEM_PROMPT}
 
-Create a professional AI commercial plan for:
+PROJECT
 
 {topic}
+
+Create a premium commercial direction.
 """
 
     result = ask_ai(prompt)
+
+    result = result.replace("```json", "")
+    result = result.replace("```", "")
+    result = result.strip()
 
     try:
 
         return json.loads(result)
 
-    except Exception:
+    except Exception as e:
 
         print("=" * 60)
-        print("Director Engine returned non-JSON.")
-        print("Returning raw response.")
+        print("Director Engine JSON parsing failed")
+        print(e)
         print("=" * 60)
+
+        print(result)
 
         return {
-            "raw_response": result
-        }
+
+            "video_style": "Premium Cinematic",
+
+            "hook": "Curiosity",
+
+            "opening_shot": "Extreme Close Up",
+
+            "emotion": "Excitement",
+
+            "pace": "Fast",
+
+            "scene_count": 8,
+
+            "scene_length": "3 seconds",
+
+            "camera_style": "Dynamic",
+
+            "camera_angle": "Low Angle",
+
+            "effects": "Motion Blur + Zoom",
+
+            "text_animation": "Kinetic Typography",
+
+            "background": "Luxury Minimal",
+
+            "music": "Epic Hybrid",
+
+            "sound_design": "Whoosh + Impact",
+
+            "color_grading": "High Contrast",
+
+            "lighting": "Soft Cinematic",
+
+            "transition": "Fast Seamless",
+
+            "cta_position": "Final 15%",
+
+            "ending": "Logo Reveal"
+
+    }
