@@ -1,91 +1,109 @@
-import os
 import requests
 
+from config import (
+    COVERR_API_KEY,
+    COVERR_API_URL
+)
 
-COVERR_API_KEY = os.getenv("COVERR_API_KEY")
 
+# ============================================================
+# COVERR VIDEO PROVIDER
+# ============================================================
 
 def generate_coverr_video(prompt):
 
     if not COVERR_API_KEY:
 
-        print("Coverr API key missing")
+        print("=" * 60)
+        print("COVERR API KEY MISSING")
+        print("=" * 60)
 
         return None
 
-
     try:
 
-        url = "https://api.coverr.co/videos"
-
+        print("=" * 60)
+        print("SEARCHING COVERR")
+        print("=" * 60)
 
         headers = {
-            "Authorization": COVERR_API_KEY
+            "Authorization": f"Bearer {COVERR_API_KEY}",
+            "Accept": "application/json"
         }
-
 
         params = {
             "query": prompt,
-            "page": 1,
-            "page_size": 1
+            "page": 0,
+            "page_size": 1,
+            "urls": "true"
         }
 
-
         response = requests.get(
-
-            url,
-
+            COVERR_API_URL,
             headers=headers,
-
             params=params,
-
             timeout=60
-
         )
 
+        print(f"Coverr Status: {response.status_code}")
 
         response.raise_for_status()
 
-
         data = response.json()
 
+        print("Coverr Response:")
+        print(data)
 
-        videos = data.get(
-            "hits",
-            []
-        )
+        videos = data.get("hits", [])
 
+        if len(videos) == 0:
 
-        if not videos:
-
-            print(
-                "No Coverr videos found"
-            )
+            print("No Coverr videos found.")
 
             return None
 
+        video = videos[0]
 
-        video_url = videos[0].get(
-            "url"
+        # Try all possible download locations
+        urls = video.get("urls", {})
+
+        video_url = (
+            urls.get("mp4_download")
+            or urls.get("download")
+            or urls.get("preview")
+            or video.get("download_url")
+            or video.get("video_url")
+            or video.get("url")
         )
 
+        if not video_url:
 
-        if video_url:
+            print("No downloadable video URL found.")
 
-            print(
-                "Coverr video found"
-            )
+            return None
 
-            return video_url
+        print("Coverr video found.")
+        print(video_url)
 
+        return video_url
 
+    except requests.HTTPError as e:
+
+        print("=" * 60)
+        print("COVERR HTTP ERROR")
+        print("=" * 60)
+        print(e)
+
+        if e.response is not None:
+            print(e.response.text)
+
+        return None
 
     except Exception as e:
 
-        print(
-            "Coverr error:",
-            e
-        )
+        print("=" * 60)
+        print("COVERR FAILED")
+        print("=" * 60)
+        print(e)
 
-
-    return None
+        return None
