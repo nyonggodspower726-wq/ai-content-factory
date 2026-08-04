@@ -1,7 +1,8 @@
+import os
 import requests
 
 
-COGVIDEO_ENDPOINT = ""
+COGVIDEO_ENDPOINT = os.getenv("COGVIDEO_ENDPOINT")
 
 
 def generate_cogvideo_video(prompt):
@@ -10,7 +11,7 @@ def generate_cogvideo_video(prompt):
     print("COGVIDEO X")
     print("=" * 60)
 
-    if COGVIDEO_ENDPOINT == "":
+    if not COGVIDEO_ENDPOINT:
 
         print("CogVideo endpoint not configured.")
 
@@ -36,22 +37,68 @@ def generate_cogvideo_video(prompt):
 
         result = response.json()
 
-        if isinstance(result, dict):
+        video_url = extract_video(result)
 
-            if "video" in result:
+        if video_url:
 
-                return result["video"]
+            print("COGVIDEO SUCCESS")
 
-            if "url" in result:
+            return {
 
-                return result["url"]
+                "provider": "cogvideo",
+
+                "url": video_url
+
+            }
+
+        print("CogVideo returned no usable video.")
 
         return None
 
     except Exception as e:
 
-        print("COGVIDEO ERROR")
-
-        print(str(e))
+        print("=" * 60)
+        print("COGVIDEO FAILED")
+        print("=" * 60)
+        print(e)
 
         return None
+
+
+def extract_video(result):
+
+    if result is None:
+
+        return None
+
+    if isinstance(result, str):
+
+        if ".mp4" in result:
+
+            return result
+
+    if isinstance(result, dict):
+
+        if "video" in result:
+
+            if isinstance(result["video"], dict):
+
+                return result["video"].get("url")
+
+            return result["video"]
+
+        if "url" in result:
+
+            return result["url"]
+
+    if isinstance(result, list):
+
+        for item in result:
+
+            url = extract_video(item)
+
+            if url:
+
+                return url
+
+    return None
