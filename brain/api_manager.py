@@ -29,14 +29,12 @@ class APIManager:
 
         }
 
-
     def get_key(self, provider):
 
         if provider not in self.providers:
             return None
 
         return self.providers[provider]["key"]
-
 
     def enabled(self, provider):
 
@@ -45,28 +43,39 @@ class APIManager:
 
         return self.providers[provider]["enabled"]
 
-
     def disable(self, provider):
 
         if provider in self.providers:
             self.providers[provider]["enabled"] = False
-
 
     def enable(self, provider):
 
         if provider in self.providers:
             self.providers[provider]["enabled"] = True
 
-
     def available(self):
+
+        print("=" * 60)
+        print("API STATUS")
+        print("=" * 60)
 
         available = []
 
         for name, info in self.providers.items():
 
+            print(
+                f"{name:<12}"
+                f"Enabled: {info['enabled']} | "
+                f"Key Exists: {bool(info['key'])}"
+            )
+
             if info["enabled"] and info["key"]:
 
                 available.append(name)
+
+        print("-" * 60)
+        print("AVAILABLE PROVIDERS:", available)
+        print("=" * 60)
 
         return available
 
