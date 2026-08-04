@@ -407,3 +407,142 @@ def create_video(
             exist_ok=True
 
         )
+        print(
+            "Exporting final video..."
+        )
+
+        video.write_videofile(
+
+            output,
+
+            codec="libx264",
+
+            audio_codec="aac",
+
+            fps=30,
+
+            bitrate="3500k",
+
+            audio_bitrate="128k",
+
+            preset="medium",
+
+            threads=4
+
+        )
+
+        print(
+            "Video exported successfully."
+        )
+
+        # ----------------------------------
+        # SUBTITLES
+        # ----------------------------------
+
+        try:
+
+            print(
+                "Adding subtitles..."
+            )
+
+            output = add_subtitles(
+
+                output,
+
+                script
+
+            )
+
+            print(
+                "Subtitles added."
+            )
+
+        except Exception as e:
+
+            print(
+                f"Subtitle Error: {e}"
+            )
+
+        # ----------------------------------
+        # BRANDING
+        # ----------------------------------
+
+        try:
+
+            print(
+                "Adding branding..."
+            )
+
+            hook_text = ""
+
+            if isinstance(script, str):
+
+                hook_text = script.split(".")[0]
+
+            elif isinstance(script, dict):
+
+                hook_text = script.get(
+                    "hook",
+                    "PromptProHub AI"
+                )
+
+            else:
+
+                hook_text = "PromptProHub AI"
+
+            output = add_hook(
+
+                output,
+
+                hook_text
+
+            )
+
+            print(
+                "Branding added."
+            )
+
+        except Exception as e:
+
+            print(
+                f"Branding Error: {e}"
+            )
+
+        # ----------------------------------
+        # CLEANUP
+        # ----------------------------------
+
+        try:
+
+            video.close()
+
+        except Exception:
+
+            pass
+
+        print("=" * 60)
+        print("PROMPTPROHUB AI VIDEO COMPLETE")
+        print("=" * 60)
+
+        return output
+
+    except Exception as e:
+
+        print("=" * 60)
+        print("AI VIDEO PRODUCTION FAILED")
+        print("=" * 60)
+
+        print(type(e).__name__)
+        print(str(e))
+
+        try:
+
+            if "video" in locals():
+
+                video.close()
+
+        except Exception:
+
+            pass
+
+        return None
