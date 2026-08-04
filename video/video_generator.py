@@ -609,3 +609,107 @@ def create_video(
         print(
             "Video exported successfully."
 )
+        # =====================================
+        # ADD SUBTITLES
+        # =====================================
+
+        try:
+
+            print(
+                "Adding subtitles..."
+            )
+
+
+            output = add_subtitles(
+
+                output,
+
+                script
+
+            )
+
+
+            print(
+                "Subtitles added."
+            )
+
+
+        except Exception as e:
+
+            print(
+                f"Subtitle generation failed: {e}"
+            )
+
+
+
+        # =====================================
+        # ADD BRANDING
+        # =====================================
+
+        hook_text = script.split(".")[0]
+
+
+        try:
+
+            print(
+                "Adding branding..."
+            )
+
+
+            final_video = add_hook(
+
+                output,
+
+                hook_text
+
+            )
+
+
+            print(
+                "Branding completed."
+            )
+
+
+        except Exception as e:
+
+            print(
+                f"Branding failed: {e}"
+            )
+
+
+            final_video = output
+
+
+
+        # =====================================
+        # CLEANUP
+        # =====================================
+
+        try:
+
+            video.close()
+
+        except Exception:
+
+            pass
+
+
+
+        print("=" * 60)
+        print("PROMPTPROHUB VIDEO COMPLETED")
+        print("=" * 60)
+
+
+        return final_video
+
+
+
+    except Exception as e:
+
+
+        print(
+            f"Video creation failed: {e}"
+        )
+
+
+        return None
