@@ -8,20 +8,25 @@ class FailoverEngine:
         self.providers = [
 
             "groq",
-
             "google",
-
             "nvidia",
-
             "openrouter"
 
         ]
 
-
     def available(self):
 
-        return api_manager.available()
+        available = api_manager.available()
 
+        ordered = []
+
+        for provider in self.providers:
+
+            if provider in available:
+
+                ordered.append(provider)
+
+        return ordered
 
     def next_provider(self):
 
@@ -33,11 +38,9 @@ class FailoverEngine:
 
         return providers[0]
 
-
     def disable(self, provider):
 
         api_manager.disable(provider)
-
 
     def enable(self, provider):
 
