@@ -163,3 +163,117 @@ def download_ai_videos(video_urls):
                 os.remove(filename)
 
     return downloaded
+# ============================================================
+# BUILD SCENE VIDEO
+# ============================================================
+
+def build_scene_video(scene_files):
+
+    clips = []
+
+    if not scene_files:
+
+        print("No scene files available.")
+
+        return None
+
+    for file in scene_files:
+
+        try:
+
+            print(f"Loading {file}")
+
+            clip = VideoFileClip(file)
+
+            clip = clip.resize(height=1280)
+
+            clips.append(clip)
+
+        except Exception as e:
+
+            print(f"Scene loading failed: {e}")
+
+    if len(clips) == 0:
+
+        print("No valid video clips.")
+
+        return None
+
+    final_video = concatenate_videoclips(
+
+        clips,
+
+        method="compose"
+
+    )
+
+    return final_video
+
+
+# ============================================================
+# BACKGROUND MUSIC
+# ============================================================
+
+def add_background_music(
+
+    video,
+
+    music_file
+
+):
+
+    if video is None:
+
+        return None
+
+    if not music_file:
+
+        print("No music selected.")
+
+        return video
+
+    if not os.path.exists(music_file):
+
+        print("Music file not found.")
+
+        return video
+
+    try:
+
+        voice = video.audio
+
+        music = AudioFileClip(music_file)
+
+        music = music.volumex(0.12)
+
+        music = music.set_duration(video.duration)
+
+        if voice:
+
+            final_audio = CompositeAudioClip(
+
+                [
+
+                    music,
+
+                    voice
+
+                ]
+
+            )
+
+        else:
+
+            final_audio = music
+
+        video = video.set_audio(final_audio)
+
+        print("Background music added.")
+
+        return video
+
+    except Exception as e:
+
+        print(f"Music Error: {e}")
+
+        return video
