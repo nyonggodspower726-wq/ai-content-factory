@@ -8,8 +8,7 @@ genai.configure(
 
 
 # Updated Gemini model
-model = genai.GenerativeModel(
-    "gemini-2.5-flash-lite"
+model = "gemini-2.5-flash"
 )
 
 
