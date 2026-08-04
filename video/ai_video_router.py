@@ -1,7 +1,24 @@
-from video.minimax_worker import generate_minimax_video
 from video.wan_worker import generate_wan_video
-from video.pexels_worker import generate_pexels_video
-from video.unsplash_worker import generate_unsplash_video
+
+
+# Optional providers
+try:
+    from video.minimax_worker import generate_minimax_video
+except Exception:
+    generate_minimax_video = None
+
+
+try:
+    from video.pexels_worker import generate_pexels_video
+except Exception:
+    generate_pexels_video = None
+
+
+try:
+    from video.unsplash_worker import generate_unsplash_video
+except Exception:
+    generate_unsplash_video = None
+
 
 
 class AIVideoRouter:
@@ -9,20 +26,47 @@ class AIVideoRouter:
 
     def generate(self, prompt):
 
+
         providers = [
 
-            ("MiniMax H3", generate_minimax_video),
+            (
+                "WAN 2.2",
+                generate_wan_video
+            ),
 
-            ("WAN 2.2", generate_wan_video),
 
-            ("Pexels", generate_pexels_video),
+            (
+                "MiniMax H3",
+                generate_minimax_video
+            ),
 
-            ("Unsplash", generate_unsplash_video)
+
+            (
+                "Pexels",
+                generate_pexels_video
+            ),
+
+
+            (
+                "Unsplash",
+                generate_unsplash_video
+            )
 
         ]
 
 
+
         for name, engine in providers:
+
+
+            if engine is None:
+
+                print(
+                    f"{name} not available - skipping"
+                )
+
+                continue
+
 
 
             print("=" * 60)
@@ -30,18 +74,24 @@ class AIVideoRouter:
             print("=" * 60)
 
 
+
             try:
+
 
                 result = engine(prompt)
 
 
+
                 if result:
+
 
                     print(
                         f"{name} SUCCESS"
                     )
 
+
                     return result
+
 
 
                 print(
@@ -49,13 +99,19 @@ class AIVideoRouter:
                 )
 
 
+
             except Exception as e:
+
 
                 print(
                     f"{name} FAILED"
                 )
 
-                print(str(e))
+
+                print(
+                    str(e)
+                )
+
 
 
 
@@ -63,7 +119,10 @@ class AIVideoRouter:
         print("ALL VIDEO PROVIDERS FAILED")
         print("=" * 60)
 
+
+
         return None
+
 
 
 
