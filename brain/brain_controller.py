@@ -1,73 +1,106 @@
-def build(self, topic):
+from brain.ceo_engine import ceo
+from brain.brand_engine import brand
+from brain.trend_engine import discover_trends
+from brain.product_engine import recommend_product
+from brain.audience_engine import audience_plan
+from brain.offer_engine import create_offer
+from brain.thinking_engine import think
+from brain.marketing_engine import marketing_plan
+from brain.psychology import psychology_plan
+from brain.director import create_director_plan
+from brain.storyboard import create_storyboard
+from brain.prompt_engine import generate_scene_prompts
+from brain.script_engine import generate_script
+from brain.viral_engine import evaluate_video
+from brain.decision_engine import final_decision
 
-    project = {}
 
-    print("CEO")
-    product = recommend_product(topic)
-    project["product"] = product
+class BrainController:
 
-    # CEO Engine
-    project["ceo"] = ceo.review(topic, product)
+    def __init__(self):
 
-    print("Brand")
-    project["brand"] = brand.get_brand()
+        print("=" * 60)
+        print("PROMPTPROHUB AI STUDIO BRAIN ONLINE")
+        print("=" * 60)
 
-    print("Trend")
-    project["trend"] = discover_trends(topic)
+    def build(self, topic):
 
-    print("Audience")
-    project["audience"] = audience_plan(topic)
+        project = {}
 
-    print("Offer")
-    project["offer"] = create_offer(
-        project["product"],
-        project["audience"]
-    )
+        print("CEO")
 
-    print("Thinking")
-    project["thinking"] = think(
-        project["product"],
-        topic
-    )
+        # Product Recommendation
+        product = recommend_product(topic)
+        project["product"] = product
 
-    print("Marketing")
-    project["marketing"] = marketing_plan(
-        project["thinking"]
-    )
+        # CEO Planning
+        project["ceo"] = ceo.review(
+            topic,
+            product
+        )
 
-    print("Psychology")
-    project["psychology"] = psychology_plan(
-        project["marketing"]
-    )
+        print("Brand")
+        project["brand"] = brand.get_brand()
 
-    print("Director")
-    project["director"] = create_director_plan(
-        project["thinking"]
-    )
+        print("Trend")
+        project["trend"] = discover_trends(topic)
 
-    print("Storyboard")
-    project["storyboard"] = create_storyboard(
-        project["director"]
-    )
+        print("Audience")
+        project["audience"] = audience_plan(topic)
 
-    print("Scene Prompts")
-    project["scene_prompts"] = generate_scene_prompts(
-        project["storyboard"]
-    )
+        print("Offer")
+        project["offer"] = create_offer(
+            project["product"],
+            project["audience"]
+        )
 
-    print("Script")
-    project["script"] = generate_script(
-        project
-    )
+        print("Thinking")
+        project["thinking"] = think(
+            project["product"],
+            topic
+        )
 
-    print("Viral Analysis")
-    project["viral"] = evaluate_video(
-        project["storyboard"]
-    )
+        print("Marketing")
+        project["marketing"] = marketing_plan(
+            project["thinking"]
+        )
 
-    print("Decision")
-    project["decision"] = final_decision(
-        project
-    )
+        print("Psychology")
+        project["psychology"] = psychology_plan(
+            project["marketing"]
+        )
 
-    return project
+        print("Director")
+        project["director"] = create_director_plan(
+            project["thinking"]
+        )
+
+        print("Storyboard")
+        project["storyboard"] = create_storyboard(
+            project["director"]
+        )
+
+        print("Scene Prompts")
+        project["scene_prompts"] = generate_scene_prompts(
+            project["storyboard"]
+        )
+
+        print("Script")
+        project["script"] = generate_script(
+            project
+        )
+
+        print("Viral Analysis")
+        project["viral"] = evaluate_video(
+            project["storyboard"]
+        )
+
+        print("Decision")
+        project["decision"] = final_decision(
+            project
+        )
+
+        return project
+
+
+brain = BrainController()
