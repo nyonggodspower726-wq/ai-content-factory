@@ -1,4 +1,4 @@
-from video.open_source_manager import open_source_manager
+from video.ai_video_router import router
 import time
 
 
@@ -18,9 +18,9 @@ def generate_scene(prompt):
 
         try:
 
-            scene = open_source_manager.generate(prompt)
+            scene = router.generate(prompt)
 
-            if scene:
+            if scene is not None:
 
                 print("Scene generated successfully.")
 
@@ -39,20 +39,27 @@ def generate_scene(prompt):
     return None
 
 
-
 def generate_all_scenes(prompts):
 
     scenes = []
 
+    if prompts is None:
+
+        print("No prompts received.")
+
+        return scenes
+
     prompts = prompts[:6]
 
     print("=" * 60)
-    print("AI VIDEO FACTORY")
+    print("PROMPTPROHUB AI VIDEO FACTORY")
     print("=" * 60)
 
     for index, prompt in enumerate(prompts):
 
+        print("=" * 60)
         print(f"Generating Scene {index + 1}")
+        print("=" * 60)
 
         scene = generate_scene(prompt)
 
@@ -60,9 +67,11 @@ def generate_all_scenes(prompts):
 
             scenes.append(scene)
 
+            print(f"Scene {index + 1} Complete")
+
         else:
 
-            print(f"Scene {index + 1} skipped.")
+            print(f"Scene {index + 1} Failed")
 
     print("=" * 60)
     print(f"TOTAL SCENES GENERATED: {len(scenes)}")
