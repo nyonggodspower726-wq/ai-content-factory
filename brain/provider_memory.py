@@ -25,9 +25,9 @@ class ProviderMemory:
         with open(self.file, "w") as f:
             json.dump(data, f, indent=4)
 
-    # -----------------------------
-    # NEW METHOD (Fixes Railway Error)
-    # -----------------------------
+    # --------------------------
+    # NEW
+    # --------------------------
     def get(self, provider=None):
 
         data = self.load()
@@ -36,6 +36,17 @@ class ProviderMemory:
             return data
 
         return data.get(provider, {})
+
+    # --------------------------
+    # NEW
+    # --------------------------
+    def set(self, provider, value):
+
+        data = self.load()
+
+        data[provider] = value
+
+        self.save(data)
 
     def remember(self, provider):
 
