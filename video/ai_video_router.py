@@ -1,9 +1,9 @@
-from video.wan import generate as wan_generate
-from video.cogvideo import generate as cog_generate
-from video.ltx import generate as ltx_generate
-from video.minimax import generate as minimax_generate
-from video.pexels import generate as pexels_generate
-from video.unsplash import generate as unsplash_generate
+from video.wan_worker import generate_wan_video
+from video.cogvideo_worker import generate_cogvideo_video
+from video.ltx_worker import generate_ltx_video
+from video.minimax_worker import generate_minimax_video
+from video.pexels_worker import generate_pexels_video
+from video.unsplash_worker import generate_unsplash_video
 
 
 class AIVideoRouter:
@@ -12,17 +12,17 @@ class AIVideoRouter:
 
         providers = [
 
-            ("WAN", wan_generate),
+            ("WAN 2.2", generate_wan_video),
 
-            ("CogVideo", cog_generate),
+            ("CogVideoX", generate_cogvideo_video),
 
-            ("LTX", ltx_generate),
+            ("LTX", generate_ltx_video),
 
-            ("MiniMax", minimax_generate),
+            ("MiniMax", generate_minimax_video),
 
-            ("Pexels", pexels_generate),
+            ("Pexels", generate_pexels_video),
 
-            ("Unsplash", unsplash_generate)
+            ("Unsplash", generate_unsplash_video)
 
         ]
 
@@ -30,7 +30,9 @@ class AIVideoRouter:
 
             try:
 
-                print(f"Trying {name}...")
+                print("=" * 60)
+                print(f"TRYING {name}")
+                print("=" * 60)
 
                 result = engine(prompt)
 
@@ -40,11 +42,18 @@ class AIVideoRouter:
 
                     return result
 
+                else:
+
+                    print(f"{name} unavailable")
+
             except Exception as e:
 
                 print(f"{name} Failed")
-
                 print(e)
+
+        print("=" * 60)
+        print("NO AI VIDEO PROVIDER AVAILABLE")
+        print("=" * 60)
 
         return None
 
