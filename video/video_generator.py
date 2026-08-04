@@ -14,12 +14,15 @@ from video.subtitles import add_subtitles
 from audio.music import get_music
 
 
-
-# ==========================================
+# ============================================================
 # DOWNLOAD AI GENERATED SCENES
-# SUPPORTS WAN + FAL/MINIMAX OUTPUT
-# ==========================================
-
+# Supports:
+# - WAN
+# - FAL
+# - MiniMax
+# - CogVideo
+# - LTX
+# ============================================================
 
 def download_ai_videos(video_urls):
 
@@ -28,64 +31,86 @@ def download_ai_videos(video_urls):
         exist_ok=True
     )
 
-
     downloaded = []
 
+    if not video_urls:
+
+        print("=" * 60)
+        print("No AI videos returned.")
+        print("=" * 60)
+
+        return downloaded
 
     for index, item in enumerate(video_urls):
 
-        filename = (
-            f"output/scenes/scene_{index}.mp4"
-        )
-
+        filename = f"output/scenes/scene_{index}.mp4"
 
         try:
 
-            # Handle different provider formats
+            url = None
 
+            # -----------------------------
+            # Dictionary response
+            # -----------------------------
             if isinstance(item, dict):
 
-    # OpenAI/FAL/WAN style
-    if item.get("video"):
+                # video -> {url: ...}
+                if item.get("video"):
 
-        if isinstance(item["video"], dict):
+                    if isinstance(item["video"], dict):
 
-            url = item["video"].get("url")
+                        url = item["video"].get("url")
 
-        else:
+                    else:
 
-            url = item["video"]
+                        url = item["video"]
 
-    # Direct url
-    elif item.get("url"):
+                # direct url
+                elif item.get("url"):
 
-        url = item["url"]
+                    url = item["url"]
 
-    else:
+                else:
 
-        print("Invalid AI scene response:")
+                    print(
+                        f"Scene {index+1}: invalid response"
+                    )
 
-        print(item)
+                    print(item)
 
-        continue
+                    continue
 
-    if not url:
-
-        print("Scene URL missing")
-
-        continue
-
-
-            else:
+            # -----------------------------
+            # String response
+            # -----------------------------
+            elif isinstance(item, str):
 
                 url = item
 
+            else:
 
+                print(
+                    f"Scene {index+1}: unsupported response"
+                )
+
+                print(type(item))
+
+                continue
+
+            # -----------------------------
+            # Empty URL
+            # -----------------------------
+            if not url:
+
+                print(
+                    f"Scene {index+1}: missing URL"
+                )
+
+                continue
 
             print(
-                f"Downloading AI scene {index + 1}"
+                f"Downloading Scene {index+1}"
             )
-
 
             response = requests.get(
 
@@ -97,415 +122,44 @@ def download_ai_videos(video_urls):
 
             )
 
-
             response.raise_for_status()
-
-
 
             with open(
                 filename,
                 "wb"
             ) as file:
 
-
                 for chunk in response.iter_content(
-
                     chunk_size=1024 * 1024
-
                 ):
-
 
                     if chunk:
 
                         file.write(chunk)
 
-
-
-            # Validate video file
-
-            clip = VideoFileClip(
-                filename
-            )
-
+            # Validate video
+            clip = VideoFileClip(filename)
 
             clip.get_frame(0)
 
-
             clip.close()
 
-
-
-            downloaded.append(
-                filename
-            )
-
+            downloaded.append(filename)
 
             print(
-                f"Scene {index + 1} downloaded successfully"
+                f"Scene {index+1} downloaded."
             )
-
-
 
         except Exception as e:
 
-
             print(
-                f"Scene {index + 1} download failed:"
+                f"Scene {index+1} failed."
             )
 
             print(e)
-
-
 
             if os.path.exists(filename):
 
                 os.remove(filename)
 
-
-
     return downloaded
-# ==========================================
-# BUILD AI SCENE VIDEO
-# ==========================================
-
-def build_scene_video(scene_files):
-
-    clips = []
-
-    for file in scene_files:
-
-        try:
-
-            print(
-                f"Loading {file}"
-            )
-
-            clip = VideoFileClip(file)
-
-            clip = clip.resize(
-                height=1280
-            )
-
-            clips.append(
-                clip
-            )
-
-        except Exception as e:
-
-            print(
-                f"Scene loading error: {e}"
-            )
-
-    if len(clips) == 0:
-
-        return None
-
-    final_video = concatenate_videoclips(
-
-        clips,
-
-        method="compose"
-
-    )
-
-    return final_video
-
-
-
-# ==========================================
-# ADD BACKGROUND MUSIC
-# ==========================================
-
-def add_background_music(
-
-    video,
-
-    music_file
-
-):
-
-    if not music_file:
-
-        return video
-
-    if not os.path.exists(music_file):
-
-        print(
-            "Music file not found"
-        )
-
-        return video
-
-    try:
-
-        voice = video.audio
-
-        music = AudioFileClip(
-            music_file
-        )
-
-        music = music.volumex(
-            0.12
-        )
-
-        music = music.set_duration(
-            video.duration
-        )
-
-        final_audio = CompositeAudioClip(
-
-            [
-
-                music,
-
-                voice
-
-            ]
-
-        )
-
-        video = video.set_audio(
-            final_audio
-        )
-
-        print(
-            "Background music added"
-        )
-
-        return video
-
-    except Exception as e:
-
-        print(
-            f"Music error: {e}"
-        )
-
-        return video
-# ==========================================
-# CREATE AI GENERATED VIDEO
-# ==========================================
-
-def create_video(
-
-    prompts,
-
-    script,
-
-    voice_file
-
-):
-
-    print("=" * 60)
-    print("PROMPTPROHUB AI VIDEO STUDIO")
-    print("=" * 60)
-
-    try:
-
-        print("Generating AI scenes...")
-
-        ai_scenes = generate_all_scenes(
-            prompts
-        )
-
-        if len(ai_scenes) == 0:
-
-            print(
-                "No AI scenes generated"
-            )
-
-            return None
-
-
-        print(
-            "Downloading AI scenes..."
-        )
-
-        scene_files = download_ai_videos(
-            ai_scenes
-        )
-
-        if len(scene_files) == 0:
-
-            print(
-                "No valid AI scenes downloaded"
-            )
-
-            return None
-
-
-        print(
-            "Building scene timeline..."
-        )
-
-        video = build_scene_video(
-            scene_files
-        )
-
-        if video is None:
-
-            print(
-                "Video assembly failed"
-            )
-
-            return None
-
-
-        print(
-            "Adding AI voice..."
-        )
-
-        if voice_file and os.path.exists(
-            voice_file
-        ):
-
-            voice = AudioFileClip(
-                voice_file
-            )
-
-            video = video.set_duration(
-                voice.duration
-            )
-
-            video = video.set_audio(
-                voice
-            )
-
-        else:
-
-            print(
-                "Voice file not found"
-            )
-
-
-        print(
-            "Adding background music..."
-        )
-
-        music_file = get_music()
-
-        if music_file:
-
-            video = add_background_music(
-
-                video,
-
-                music_file
-
-            )
-
-
-        output = (
-            "output/ai_sales_video.mp4"
-        )
-
-        os.makedirs(
-            "output",
-            exist_ok=True
-        )
-
-        print(
-            "Exporting final video..."
-        )
-
-        video.write_videofile(
-
-            output,
-
-            codec="libx264",
-
-            audio_codec="aac",
-
-            fps=30,
-
-            bitrate="3500k",
-
-            audio_bitrate="128k",
-
-            preset="medium",
-
-            threads=4
-
-            )
-        print(
-            "Video exported successfully"
-        )
-
-
-        try:
-
-            print(
-                "Adding subtitles..."
-            )
-
-            output = add_subtitles(
-
-                output,
-
-                script
-
-            )
-
-            print(
-                "Subtitles added"
-            )
-
-        except Exception as e:
-
-            print(
-                f"Subtitle error: {e}"
-            )
-
-
-        try:
-
-            print(
-                "Adding branding..."
-            )
-
-            hook_text = script.split(".")[0]
-
-            output = add_hook(
-
-                output,
-
-                hook_text
-
-            )
-
-            print(
-                "Branding added"
-            )
-
-        except Exception as e:
-
-            print(
-                f"Branding error: {e}"
-            )
-
-
-        try:
-
-            video.close()
-
-        except Exception:
-
-            pass
-
-
-        print("=" * 60)
-        print("PROMPTPROHUB AI VIDEO COMPLETE")
-        print("=" * 60)
-
-        return output
-
-
-    except Exception as e:
-
-        print("=" * 60)
-        print("AI VIDEO PRODUCTION FAILED")
-        print("=" * 60)
-
-        print(type(e).__name__)
-        print(str(e))
-
-        return None
