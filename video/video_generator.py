@@ -230,3 +230,189 @@ def build_scene_video(scene_files):
     )
 
     return final_video
+# ============================================================
+# BACKGROUND MUSIC
+# ============================================================
+
+def add_background_music(
+
+    video,
+
+    music_file
+
+):
+
+    if video is None:
+
+        return None
+
+    if not music_file:
+
+        print("No music selected.")
+
+        return video
+
+    if not os.path.exists(music_file):
+
+        print("Music file not found.")
+
+        return video
+
+    try:
+
+        voice = video.audio
+
+        music = AudioFileClip(music_file)
+
+        music = music.volumex(0.12)
+
+        music = music.set_duration(video.duration)
+
+        if voice:
+
+            final_audio = CompositeAudioClip(
+
+                [
+
+                    music,
+
+                    voice
+
+                ]
+
+            )
+
+        else:
+
+            final_audio = music
+
+        video = video.set_audio(final_audio)
+
+        print("Background music added.")
+
+        return video
+
+    except Exception as e:
+
+        print(f"Music Error: {e}")
+
+        return video
+
+
+# ============================================================
+# CREATE AI GENERATED VIDEO
+# ============================================================
+
+def create_video(
+
+    prompts,
+
+    script,
+
+    voice_file
+
+):
+
+    print("=" * 60)
+    print("PROMPTPROHUB AI VIDEO STUDIO")
+    print("=" * 60)
+
+    try:
+
+        print("Generating AI scenes...")
+
+        ai_scenes = generate_all_scenes(
+            prompts
+        )
+
+        if ai_scenes is None:
+
+            print("AI returned None.")
+
+            return None
+
+        if not isinstance(ai_scenes, list):
+
+            print("AI returned invalid format.")
+
+            print(type(ai_scenes))
+
+            return None
+
+        if len(ai_scenes) == 0:
+
+            print("No AI scenes generated.")
+
+            return None
+
+        print("Downloading AI scenes...")
+
+        scene_files = download_ai_videos(
+            ai_scenes
+        )
+
+        if not scene_files:
+
+            print("No downloadable scenes.")
+
+            return None
+
+        # =====================================
+        # CAMERA ENGINE
+        # =====================================
+
+        print("Applying Camera Engine...")
+
+        processed_scenes = []
+
+        for scene in scene_files:
+
+            processed = apply_camera_effects(
+                scene
+            )
+
+            processed_scenes.append(
+                processed
+            )
+
+        print("Building timeline...")
+
+        video = build_scene_video(
+            processed_scenes
+        )
+
+        if video is None:
+
+            print("Timeline creation failed.")
+
+            return None
+
+        print("Adding narration...")
+
+        if (
+
+            voice_file
+
+            and
+
+            os.path.exists(
+                voice_file
+            )
+
+        ):
+
+            voice = AudioFileClip(
+                voice_file
+            )
+
+            video = video.set_duration(
+                voice.duration
+            )
+
+            video = video.set_audio(
+                voice
+            )
+
+        else:
+
+            print("Voice file missing.")
