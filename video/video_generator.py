@@ -416,3 +416,70 @@ def create_video(
         else:
 
             print("Voice file missing.")
+        print("Adding music...")
+
+        music_file = get_music()
+
+        if music_file:
+
+            video = add_background_music(
+
+                video,
+
+                music_file
+
+            )
+
+        output = "output/ai_sales_video.mp4"
+
+        os.makedirs(
+
+            "output",
+
+            exist_ok=True
+
+        )
+
+        print("Exporting final video...")
+
+        video.write_videofile(
+
+            output,
+
+            codec="libx264",
+
+            audio_codec="aac",
+
+            fps=30,
+
+            bitrate="3500k",
+
+            audio_bitrate="128k",
+
+            preset="medium",
+
+            threads=4,
+
+            logger=None
+
+        )
+
+        print("Video exported successfully.")
+
+        # =========================================
+        # SUBTITLES
+        # =========================================
+
+        try:
+
+            print("Adding subtitles...")
+
+            output = add_subtitles(
+
+                output,
+
+                script
+
+            )
+
+            print("Subtitles added.")
