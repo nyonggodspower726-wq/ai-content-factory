@@ -45,18 +45,25 @@ def generate_coverr_video(prompt):
             timeout=60
         )
 
+        print("=" * 60)
         print(f"Coverr Status: {response.status_code}")
+        print("=" * 60)
+
+        print("Response Body:")
+        print(response.text)
 
         response.raise_for_status()
 
         data = response.json()
 
-        print("Coverr Response:")
+        print("=" * 60)
+        print("Coverr JSON Response")
+        print("=" * 60)
         print(data)
 
         videos = data.get("hits", [])
 
-        if len(videos) == 0:
+        if not videos:
 
             print("No Coverr videos found.")
 
@@ -64,7 +71,6 @@ def generate_coverr_video(prompt):
 
         video = videos[0]
 
-        # Try all possible download locations
         urls = video.get("urls", {})
 
         video_url = (
@@ -82,7 +88,9 @@ def generate_coverr_video(prompt):
 
             return None
 
-        print("Coverr video found.")
+        print("=" * 60)
+        print("COVERR VIDEO FOUND")
+        print("=" * 60)
         print(video_url)
 
         return video_url
@@ -92,9 +100,13 @@ def generate_coverr_video(prompt):
         print("=" * 60)
         print("COVERR HTTP ERROR")
         print("=" * 60)
+
         print(e)
 
         if e.response is not None:
+
+            print("Status:", e.response.status_code)
+            print("Body:")
             print(e.response.text)
 
         return None
@@ -104,6 +116,7 @@ def generate_coverr_video(prompt):
         print("=" * 60)
         print("COVERR FAILED")
         print("=" * 60)
+
         print(e)
 
         return None
