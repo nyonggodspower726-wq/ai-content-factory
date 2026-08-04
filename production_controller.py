@@ -15,23 +15,34 @@ from brain.queue_manager import queue_manager
 from brain.recovery_manager import recovery
 
 
+
 class ProductionController:
+
 
     def __init__(self):
 
         print("=" * 60)
-        print("PROMPTPROHUB PRODUCTION CONTROLLER")
+        print("PROMPTPROHUB PRODUCTION CONTROLLER ONLINE")
         print("=" * 60)
+
+
 
     def produce(self, topic):
 
         print("=" * 60)
-        print("STARTING PRODUCTION")
+        print("STARTING AI PRODUCTION")
         print("=" * 60)
 
-        # --------------------------
-        # Brain
-        # --------------------------
+
+
+        # ==========================
+        # BRAIN SYSTEM
+        # ==========================
+
+        print(
+            "RUNNING BRAIN SYSTEM"
+        )
+
 
         project = recovery.execute(
 
@@ -41,55 +52,92 @@ class ProductionController:
 
         )
 
-        # --------------------------
-        # Voice
-        # --------------------------
+
+        if not project:
+
+            print(
+                "Brain failed."
+            )
+
+            return None
+
+
+
+        # ==========================
+        # VOICE
+        # ==========================
 
         print("=" * 60)
         print("VOICE ENGINE")
         print("=" * 60)
 
+
         voice = recovery.execute(
 
             generate_voice,
 
-            project["script"]
+            project.get(
+                "script",
+                ""
+            )
 
         )
 
+
         project["voice"] = voice
 
-        # --------------------------
-        # Video
-        # --------------------------
+
+
+        # ==========================
+        # VIDEO
+        # ==========================
 
         print("=" * 60)
         print("VIDEO ENGINE")
         print("=" * 60)
 
+
         video = recovery.execute(
 
             create_video,
 
-            project["scene_prompts"],
+            project.get(
+                "scene_prompts",
+                []
+            ),
 
-            project["script"],
+            project.get(
+                "script",
+                ""
+            ),
 
             voice
 
         )
 
+
         project["video"] = video
 
-        # --------------------------
-        # Save Project
-        # --------------------------
 
-        database.save(project)
 
-        # --------------------------
-        # Memory
-        # --------------------------
+        # ==========================
+        # DATABASE
+        # ==========================
+
+        print(
+            "Saving project..."
+        )
+
+
+        database.save(
+            project
+        )
+
+
+
+        # ==========================
+        # MEMORY
+        # ==========================
 
         memory.save(
 
@@ -101,23 +149,33 @@ class ProductionController:
 
                 "decision":
 
-                project["decision"]
+                project.get(
+                    "decision",
+                    {}
+                )
 
             }
 
         )
 
-        # --------------------------
-        # Queue
-        # --------------------------
 
-        queue_manager.complete(topic)
 
-        # --------------------------
-        # Learning
-        # --------------------------
+        # ==========================
+        # QUEUE
+        # ==========================
+
+        queue_manager.complete(
+            topic
+        )
+
+
+
+        # ==========================
+        # LEARNING
+        # ==========================
 
         report = learning.recommend()
+
 
         print("=" * 60)
         print("LEARNING REPORT")
@@ -125,11 +183,18 @@ class ProductionController:
 
         print(report)
 
+
+
         print("=" * 60)
-        print("PRODUCTION COMPLETED")
+        print("PRODUCTION COMPLETE")
         print("=" * 60)
 
+
+
         return project
+
+
+
 
 
 controller = ProductionController()
