@@ -1,243 +1,136 @@
 import os
-import requests
-
-from video.cache_engine import CacheEngine
-from video.coverr import generate_coverr_video
+import json
+import hashlib
 
 
-class ClipEngine:
+class CacheEngine:
 
     def __init__(self):
 
-        self.cache = CacheEngine()
+        self.cache_folder = "assets/cache"
 
-        self.clip_folder = "assets/clips"
+        self.cache_file = os.path.join(
+            self.cache_folder,
+            "cache.json"
+        )
 
         os.makedirs(
-            self.clip_folder,
+            self.cache_folder,
             exist_ok=True
         )
 
+        if not os.path.exists(self.cache_file):
+
+            with open(
+                self.cache_file,
+                "w",
+                encoding="utf-8"
+            ) as file:
+
+                json.dump(
+                    {},
+                    file
+                )
+
+
         print("=" * 60)
-        print("PROMPTPROHUB CLIP ENGINE")
+        print("CACHE ENGINE READY")
         print("=" * 60)
 
 
-    def download_clip(
 
-        self,
-
-        url,
-
-        filename
-
-    ):
+    def _load_cache(self):
 
         try:
 
-            print(
-                "Downloading clip..."
-            )
-
-            response = requests.get(
-
-                url,
-
-                stream=True,
-
-                timeout=180
-
-            )
-
-            response.raise_for_status()
-
-
             with open(
-
-                filename,
-
-                "wb"
-
+                self.cache_file,
+                "r",
+                encoding="utf-8"
             ) as file:
 
+                return json.load(file)
 
-                for chunk in response.iter_content(
+        except Exception:
 
-                    chunk_size=1024 * 1024
-
-                ):
-
-                    if chunk:
-
-                        file.write(chunk)
+            return {}
 
 
 
-            print(
-                f"Saved: {filename}"
+    def _save_cache(self, cache):
+
+        with open(
+            self.cache_file,
+            "w",
+            encoding="utf-8"
+        ) as file:
+
+            json.dump(
+                cache,
+                file,
+                indent=4
             )
 
 
-            return filename
 
+    def generate_key(self, prompt):
 
+        return hashlib.md5(
 
-        except Exception as e:
-
-            print(
-                f"Download failed: {e}"
+            prompt.encode(
+                "utf-8"
             )
 
-            return None
+        ).hexdigest()
 
 
 
-    def generate(self, scenes):
+    def exists(self, prompt):
 
+        cache = self._load_cache()
 
-        results = []
+        key = self.generate_key(prompt)
 
+        return key in cache
 
-        if not scenes:
 
-            return results
 
+    def get(self, prompt):
 
+        cache = self._load_cache()
 
-        for index, scene in enumerate(scenes):
+        key = self.generate_key(prompt)
 
+        return cache.get(key)
 
-            prompt = scene.get(
 
-                "prompt",
 
-                ""
+    def save(
+        self,
+        prompt,
+        file_path
+    ):
 
-            )
+        cache = self._load_cache()
 
+        key = self.generate_key(prompt)
 
-            if not prompt:
+        cache[key] = file_path
 
-                continue
-
-
-
-            print("=" * 60)
-
-            print(
-                f"Processing Scene {index + 1}"
-            )
-
-            print(
-                f"Prompt: {prompt}"
-            )
-
-            print("=" * 60)
-
-
-
-            # ---------------------------------
-            # CHECK CACHE FIRST
-            # ---------------------------------
-
-            if self.cache.exists(prompt):
-
-                cached = self.cache.get(prompt)
-
-
-                if cached and os.path.exists(cached):
-
-                    print(
-                        "Using cached clip."
-                    )
-
-                    scene["clip"] = cached
-
-                    results.append(scene)
-
-                    continue
-
-
-
-            # ---------------------------------
-            # SEARCH COVERR
-            # ---------------------------------
-
-            video_url = generate_coverr_video(
-
-                prompt
-
-            )
-
-
-            if not video_url:
-
-                print(
-                    "No clip found from Coverr."
-                )
-
-                scene["clip"] = None
-
-                results.append(scene)
-
-                continue
-
-
-
-            # ---------------------------------
-            # DOWNLOAD CLIP
-            # ---------------------------------
-
-            filename = os.path.join(
-
-                self.clip_folder,
-
-                f"scene_{index + 1}.mp4"
-
-            )
-
-
-            clip_file = self.download_clip(
-
-                video_url,
-
-                filename
-
-            )
-
-
-            if clip_file:
-
-
-                scene["clip"] = clip_file
-
-
-                self.cache.save(
-
-                    prompt,
-
-                    clip_file
-
-                )
-
-
-            else:
-
-                scene["clip"] = None
-
-
-
-            results.append(scene)
-
-
-
-        print("=" * 60)
-
-        print(
-            f"{len(results)} clips prepared."
+        self._save_cache(
+            cache
         )
 
-        print("=" * 60)
+        print(
+            f"Cached: {file_path}"
+        )
 
 
-        return results
+
+    def clear(self):
+
+        self._save_cache({})
+
+        print(
+            "Cache cleared."
+    )
