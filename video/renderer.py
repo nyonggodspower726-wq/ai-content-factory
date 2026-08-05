@@ -1,7 +1,7 @@
 import os
 
 from moviepy.editor import (
-    VideoFileClip,
+    ImageClip,
     AudioFileClip,
     concatenate_videoclips
 )
@@ -12,7 +12,7 @@ class Renderer:
     def __init__(self):
 
         print("=" * 60)
-        print("PROMPTPROHUB RENDER ENGINE")
+        print("PROMPTPROHUB IMAGE RENDER ENGINE")
         print("=" * 60)
 
         os.makedirs(
@@ -40,7 +40,7 @@ class Renderer:
 
         for scene in timeline:
 
-            path = scene.get("clip")
+            path = scene.get("image")
 
             if not path:
 
@@ -52,35 +52,56 @@ class Renderer:
 
             try:
 
-                clip = VideoFileClip(path)
-
-                clip = clip.resize(
-                    height=1280
-                )
-
-                clip = clip.crop(
-                    x_center=clip.w / 2,
-                    y_center=clip.h / 2,
-                    width=720,
-                    height=1280
-                )
-
                 duration = scene.get(
                     "duration",
                     5
                 )
 
-                clip = clip.subclip(
-                    0,
-                    min(
-                        duration,
-                        clip.duration
+                clip = (
+
+                    ImageClip(path)
+
+                    .set_duration(duration)
+
+                    .resize(height=1280)
+
+                    .crop(
+                        x_center=360,
+                        y_center=640,
+                        width=720,
+                        height=1280
                     )
+
                 )
 
-                # ==================================================
-                # Save MoviePy clip for Camera Engine
-                # ==================================================
+                # ====================================
+                # Simple Cinematic Motion
+                # ====================================
+
+                motion = scene.get(
+                    "motion",
+                    "slow_zoom"
+                )
+
+                if motion == "slow_zoom":
+
+                    clip = clip.resize(
+                        lambda t: 1 + (
+                            0.05 * t / duration
+                        )
+                    )
+
+                elif motion == "zoom_out":
+
+                    clip = clip.resize(
+                        lambda t: 1.05 - (
+                            0.05 * t / duration
+                        )
+                    )
+
+                clip = clip.fadein(0.5)
+
+                clip = clip.fadeout(0.5)
 
                 scene["clip_object"] = clip
 
@@ -94,61 +115,75 @@ class Renderer:
 
         if len(clips) == 0:
 
-            print("No clips loaded.")
+            print("No images loaded.")
 
             return None
 
         final = concatenate_videoclips(
+
             clips,
+
             method="compose"
+
         )
 
+        audio = None
+
         if (
+
             voice_file
+
             and
+
             os.path.exists(
+
                 voice_file
+
             )
+
         ):
 
             audio = AudioFileClip(
+
                 voice_file
+
             )
 
             final = final.set_audio(
+
                 audio
+
             )
 
         output = "output/ai_sales_video.mp4"
 
         final.write_videofile(
+
             output,
+
             codec="libx264",
+
             audio_codec="aac",
+
             fps=30,
+
             preset="medium",
+
             bitrate="3500k",
+
             logger=None
+
         )
 
-        # Cleanup
+        if audio:
 
-        try:
             audio.close()
-        except Exception:
-            pass
 
         for clip in clips:
 
-            try:
-                clip.close()
-            except Exception:
-                pass
+            clip.close()
 
-        try:
-            final.close()
-        except Exception:
-            pass
+        final.close()
 
         print("Rendering completed.")
 
