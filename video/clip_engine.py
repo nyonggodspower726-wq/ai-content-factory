@@ -1,42 +1,88 @@
 import os
+import glob
+
+from video.cache_engine import CacheEngine
+from video.asset_manager import AssetManager
 
 
 class ClipEngine:
 
     def __init__(self):
 
+        self.assets = AssetManager()
+
+        self.cache = CacheEngine()
+
+        self.clip_folder = self.assets.get_clip_folder()
+
         print("=" * 60)
         print("PROMPTPROHUB CLIP ENGINE")
         print("=" * 60)
 
-    def generate(self, prompts):
+    def generate(self, scenes):
 
-        clips = []
+        results = []
 
-        if prompts is None:
-            print("No prompts received.")
-            return clips
+        if not scenes:
 
-        if isinstance(prompts, str):
-            prompts = [prompts]
+            return results
 
-        for index, prompt in enumerate(prompts):
+        available = glob.glob(
 
-            scene = {
-                "id": index + 1,
-                "prompt": prompt,
-                "duration": 5,
-                "style": "cinematic",
-                "camera": "auto",
-                "transition": "fade",
-                "clip": None
-            }
+            os.path.join(
 
-            print(f"Scene {index + 1}")
-            print(f"Prompt: {prompt}")
+                self.clip_folder,
 
-            clips.append(scene)
+                "*.mp4"
 
-        print(f"Created {len(clips)} scenes.")
+            )
 
-        return clips
+        )
+
+        if len(available) == 0:
+
+            print("No local clips found.")
+
+        for scene in scenes:
+
+            prompt = scene["prompt"]
+
+            # Cache lookup
+            if self.cache.exists(prompt):
+
+                cached = self.cache.get(prompt)
+
+                if cached and os.path.exists(cached):
+
+                    scene["clip"] = cached
+
+                    results.append(scene)
+
+                    continue
+
+            # Local clip fallback
+            if available:
+
+                clip = available[
+                    len(results) % len(available)
+                ]
+
+                scene["clip"] = clip
+
+                self.cache.save(
+
+                    prompt,
+
+                    clip
+
+                )
+
+            else:
+
+                scene["clip"] = None
+
+            results.append(scene)
+
+        print(f"{len(results)} clips prepared.")
+
+        return results
