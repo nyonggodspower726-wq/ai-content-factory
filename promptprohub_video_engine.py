@@ -1,4 +1,4 @@
-from video.clip_engine import ClipEngine
+from from video.image_engine import ImageEngine
 from video.scene_engine import SceneEngine
 from video.timeline_engine import TimelineEngine
 from video.motion_engine import MotionEngine
