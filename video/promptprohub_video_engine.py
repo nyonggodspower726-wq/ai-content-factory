@@ -43,4 +43,37 @@ class PromptProHubVideoEngine:
         final = self.render(timeline)
 
         return final
+   def load_clips(self, prompts):
 
+    print("=" * 60)
+    print("PROMPTPROHUB CLIP ENGINE")
+    print("=" * 60)
+
+    clips = []
+
+    if prompts is None:
+        print("No prompts received.")
+        return clips
+
+    if isinstance(prompts, str):
+        prompts = [prompts]
+
+    for index, prompt in enumerate(prompts):
+
+        print(f"Scene {index + 1}")
+        print(f"Prompt: {prompt}")
+
+        scene = {
+            "id": index + 1,
+            "prompt": prompt,
+            "duration": 5,
+            "style": "cinematic",
+            "camera": "auto",
+            "transition": "fade"
+        }
+
+        clips.append(scene)
+
+    print(f"Scenes created: {len(clips)}")
+
+    return clips
