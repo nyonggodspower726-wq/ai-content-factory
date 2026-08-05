@@ -1,4 +1,4 @@
-from from video.image_engine import ImageEngine
+from video.image_engine import ImageEngine
 from video.scene_engine import SceneEngine
 from video.timeline_engine import TimelineEngine
 from video.motion_engine import MotionEngine
@@ -21,7 +21,7 @@ class PromptProHubVideoEngine:
         print("=" * 60)
 
         self.scene_engine = SceneEngine()
-        self.clip_engine = ClipEngine()
+        self.image_engine = ImageEngine()
         self.timeline_engine = TimelineEngine()
         self.motion_engine = MotionEngine()
         self.transition_engine = TransitionEngine()
@@ -48,13 +48,11 @@ class PromptProHubVideoEngine:
         if isinstance(script, dict):
 
             script_text = script.get("script", "")
-
             hook = script.get("hook", "")
 
         else:
 
             script_text = str(script)
-
             hook = script_text.split(".")[0]
 
         # -----------------------------
@@ -66,9 +64,9 @@ class PromptProHubVideoEngine:
         )
 
         # -----------------------------
-        # Clip Selection
+        # AI Image Generation
         # -----------------------------
-        clips = self.clip_engine.generate(
+        images = self.image_engine.generate(
             scenes
         )
 
@@ -76,7 +74,7 @@ class PromptProHubVideoEngine:
         # Timeline
         # -----------------------------
         timeline = self.timeline_engine.build(
-            clips
+            images
         )
 
         # -----------------------------
