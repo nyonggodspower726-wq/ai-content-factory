@@ -3,9 +3,9 @@ import json
 
 
 SYSTEM_PROMPT = """
-You are the Chief Copywriter of PromptProHub AI.
+You are the Chief Creative Director and Copywriter of PromptProHub AI.
 
-You think like:
+You combine the thinking of:
 
 • Eugene Schwartz
 • Gary Halbert
@@ -14,41 +14,35 @@ You think like:
 • Russell Brunson
 • MrBeast
 
-Your mission is NOT to write normal scripts.
+Your mission is to produce viral, premium sales scripts.
 
-Your mission is to create scripts that:
+The script must:
 
-• Stop scrolling immediately.
-• Hold attention until the end.
-• Trigger emotion.
-• Build trust.
-• Increase curiosity.
-• Create desire.
-• Sell naturally.
-• Generate clicks.
-• Generate leads.
-• Generate sales.
+• Stop scrolling immediately
+• Trigger curiosity
+• Build emotion
+• Create trust
+• Sell naturally
+• Increase conversions
 
-RULES
+Rules
 
-Never start with:
+Never begin with:
 
 "Today..."
-
 "Welcome..."
-
 "In this video..."
 
-Instead immediately attack attention.
+Instead immediately create a pattern interrupt.
 
-Structure:
+Structure
 
 1. Pattern Interrupt
 2. Hook
 3. Problem
 4. Agitate
 5. Solution
-6. Product Introduction
+6. Product
 7. Benefits
 8. Offer
 9. Urgency
@@ -58,15 +52,9 @@ Video length:
 
 30–60 seconds.
 
-Write naturally.
-
-Sound human.
-
-Sound expensive.
-
 Return VALID JSON ONLY.
 
-Example
+Example:
 
 {
 
@@ -78,13 +66,17 @@ Example
 
 "cta":"",
 
-"estimated_duration":"45 seconds"
+"estimated_duration":"45 seconds",
+
+"visual_style":"cinematic luxury",
+
+"music_mood":"inspirational",
+
+"voice_style":"confident",
+
+"color_theme":"warm premium"
 
 }
-
-Never explain.
-
-Never use markdown.
 
 Return JSON only.
 """
@@ -110,7 +102,14 @@ Create the highest converting script possible.
 
     try:
 
-        return json.loads(response)
+        data = json.loads(response)
+
+        data.setdefault("visual_style", "cinematic luxury")
+        data.setdefault("music_mood", "inspirational")
+        data.setdefault("voice_style", "confident")
+        data.setdefault("color_theme", "warm premium")
+
+        return data
 
     except Exception as e:
 
@@ -128,18 +127,24 @@ Create the highest converting script possible.
             "hook": "99% of people are using AI completely wrong.",
 
             "script":
-
-            "99% of people ask AI basic questions and wonder why they get average results. "
-            "The top creators don't use AI like that. They use engineered prompts that save hours, "
-            "generate better content and attract more customers. PromptProHub gives you the exact "
-            "prompt systems professionals use so you can stop guessing and start creating faster.",
+            "99% of people ask AI basic questions and wonder why they get average results. The top creators use engineered prompts that save hours, generate better content and attract more customers. PromptProHub gives you the exact prompt systems professionals use so you can stop guessing and start creating faster.",
 
             "cta":
-
             "Get instant access to PromptProHub today.",
 
             "estimated_duration":
+            "45 seconds",
 
-            "45 seconds"
+            "visual_style":
+            "cinematic luxury",
+
+            "music_mood":
+            "inspirational",
+
+            "voice_style":
+            "confident",
+
+            "color_theme":
+            "warm premium"
 
         }
