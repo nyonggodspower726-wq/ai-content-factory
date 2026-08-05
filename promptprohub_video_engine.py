@@ -14,173 +14,123 @@ from video.background_music import add_background_music
 
 class PromptProHubVideoEngine:
 
-
     def __init__(self):
 
         print("=" * 60)
         print("PROMPTPROHUB VIDEO ENGINE")
         print("=" * 60)
 
-
         self.scene_engine = SceneEngine()
-
         self.clip_engine = ClipEngine()
-
         self.timeline_engine = TimelineEngine()
-
         self.motion_engine = MotionEngine()
-
         self.transition_engine = TransitionEngine()
-
         self.effects_engine = EffectsEngine()
-
         self.renderer = Renderer()
-
         self.quality_engine = QualityEngine()
-
         self.branding_engine = BrandingEngine()
 
-
-
     def generate(
-
         self,
-
         prompts,
-
         script,
-
         voice_file,
-
         music_file=None
-
     ):
 
-
         print("=" * 60)
-
         print("STARTING VIDEO PRODUCTION")
-
         print("=" * 60)
 
+        # -----------------------------
+        # Extract script text
+        # -----------------------------
+        if isinstance(script, dict):
 
+            script_text = script.get("script", "")
 
-        # ===============================
-        # SCENE CREATION
-        # ===============================
+            hook = script.get("hook", "")
 
+        else:
+
+            script_text = str(script)
+
+            hook = script_text.split(".")[0]
+
+        # -----------------------------
+        # Scene Creation
+        # -----------------------------
         scenes = self.scene_engine.generate(
-
             prompts,
-
-            script
-
+            script_text
         )
 
-
-
-        # ===============================
-        # CLIP SELECTION
-        # ===============================
-
+        # -----------------------------
+        # Clip Selection
+        # -----------------------------
         clips = self.clip_engine.generate(
-
             scenes
-
         )
 
-
-
-        # ===============================
-        # TIMELINE
-        # ===============================
-
+        # -----------------------------
+        # Timeline
+        # -----------------------------
         timeline = self.timeline_engine.build(
-
             clips
-
         )
 
-
-
-        # ===============================
-        # MOTION
-        # ===============================
-
+        # -----------------------------
+        # Motion
+        # -----------------------------
         timeline = self.motion_engine.apply(
-
             timeline
-
         )
 
-
-
-        # ===============================
-        # CAMERA
-        # ===============================
-
+        # -----------------------------
+        # Camera
+        # -----------------------------
         timeline = apply_camera_effects(
-
             timeline
-
         )
 
-
-
-        # ===============================
-        # VISUAL EFFECTS
-        # ===============================
-
+        # -----------------------------
+        # Effects
+        # -----------------------------
         timeline = self.effects_engine.apply(
-
             timeline
-
         )
 
-
-
-        # ===============================
-        # TRANSITIONS
-        # ===============================
-
+        # -----------------------------
+        # Transitions
+        # -----------------------------
         timeline = self.transition_engine.apply(
-
             timeline
-
         )
 
-
-
-        # ===============================
-        # QUALITY
-        # ===============================
-
+        # -----------------------------
+        # Quality
+        # -----------------------------
         timeline = self.quality_engine.optimize(
-
             timeline
-
         )
 
-
-
-        # ===============================
-        # RENDER
-        # ===============================
-
+        # -----------------------------
+        # Render
+        # -----------------------------
         output = self.renderer.render(
-
             timeline,
-
             voice_file
-
         )
 
+        if output is None:
 
+            print("Renderer failed.")
 
-        # ===============================
-        # MUSIC
-        # ===============================
+            return None
 
+        # -----------------------------
+        # Background Music
+        # -----------------------------
         if music_file:
 
             from moviepy.editor import VideoFileClip
@@ -188,66 +138,38 @@ class PromptProHubVideoEngine:
             video = VideoFileClip(output)
 
             video = add_background_music(
-
                 video,
-
                 music_file
-
             )
 
             video.write_videofile(
-
                 "output/music_video.mp4",
-
                 codec="libx264",
-
                 audio_codec="aac",
-
                 fps=30,
-
                 logger=None
-
             )
 
             output = "output/music_video.mp4"
 
-
-
-        # ===============================
-        # SUBTITLES
-        # ===============================
-
+        # -----------------------------
+        # Subtitles
+        # -----------------------------
         output = add_subtitles(
-
             output,
-
-            script
-
+            script_text
         )
 
-
-
-        # ===============================
-        # BRANDING
-        # ===============================
-
-        hook = script.split(".")[0]
-
-
+        # -----------------------------
+        # Branding
+        # -----------------------------
         output = self.branding_engine.apply(
-
             output,
-
             hook
-
         )
 
-
         print("=" * 60)
-
         print("VIDEO PRODUCTION COMPLETED")
-
         print("=" * 60)
-
 
         return output
