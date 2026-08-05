@@ -33,23 +33,56 @@ class MotionEngine:
 
             return timeline
 
-        print("Applying cinematic motion...")
+        print("=" * 60)
+        print("Applying Motion Engine...")
+        print("=" * 60)
 
         for scene in timeline:
 
-            if scene.get("camera") == "auto":
+            camera = scene.get("camera", "auto")
 
-                scene["motion"] = random.choice(
+            # ---------------------------------
+            # Automatic camera movement
+            # ---------------------------------
+
+            if camera == "auto":
+
+                motion = random.choice(
+
                     self.movements
+
                 )
+
+            # ---------------------------------
+            # Manual camera movement
+            # ---------------------------------
 
             else:
 
-                scene["motion"] = scene["camera"]
+                motion = camera
+
+            scene["motion"] = motion
 
             print(
-                f"Scene {scene.get('scene_id', scene.get('id'))}: "
-                f"{scene['motion']}"
+
+                f"Scene {scene.get('scene_id', scene.get('id'))}"
+
             )
+
+            print(
+
+                f"Camera : {camera}"
+
+            )
+
+            print(
+
+                f"Motion : {motion}"
+
+            )
+
+            print("-" * 40)
+
+        print("Motion Engine completed.")
 
         return timeline
