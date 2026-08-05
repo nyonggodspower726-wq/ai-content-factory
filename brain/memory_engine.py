@@ -61,18 +61,61 @@ class MemoryEngine:
             )
 
     # ==========================================
-    # Compatibility with older modules
+    # Compatibility with old and new modules
     # ==========================================
-    def save(self, project):
+    def save(self, *args):
+
         """
-        Older parts of the project call:
+        Supports both:
 
             memory.save(project)
 
-        Redirect them to remember().
+        and
+
+            memory.save(key, value)
         """
 
-        return self.remember(project)
+        if len(args) == 1:
+
+            project = args[0]
+
+            if isinstance(project, dict):
+
+                return self.remember(project)
+
+            return
+
+        elif len(args) == 2:
+
+            key, value = args
+
+            memory = self.load()
+
+            memory.append({
+
+                "time": datetime.now().isoformat(),
+
+                str(key): value
+
+            })
+
+            memory = memory[-1000:]
+
+            with open(self.file, "w") as f:
+
+                json.dump(
+                    memory,
+                    f,
+                    indent=4
+                )
+
+            return
+
+        else:
+
+            raise TypeError(
+                "save() expects either 1 or 2 arguments."
+            )
 
     def latest(self, amount=5):
 
