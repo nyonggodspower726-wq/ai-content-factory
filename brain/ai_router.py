@@ -1,10 +1,12 @@
-from brain.failover_engine import failover
 from brain.provider_memory import provider_memory
 
 
 def ask_ai(prompt):
 
-    # Try the last successful provider first
+    # ==========================================
+    # Try last successful provider first
+    # ==========================================
+
     remembered = provider_memory.best_provider()
 
     if remembered:
@@ -16,19 +18,15 @@ def ask_ai(prompt):
             print("=" * 60)
 
             if remembered == "groq":
-                from ai.groq_client import ask
-                return ask(prompt)
 
-            elif remembered == "google":
-                from ai.google_client import ask
+                from ai.groq_client import ask
+
                 return ask(prompt)
 
             elif remembered == "nvidia":
-                from ai.nvidia_client import ask
-                return ask(prompt)
 
-            elif remembered == "openrouter":
-                from ai.openrouter_client import ask
+                from ai.nvidia_client import ask
+
                 return ask(prompt)
 
         except Exception as e:
@@ -38,8 +36,20 @@ def ask_ai(prompt):
 
             provider_memory.clear()
 
-    # Try providers in failover order
-    providers = failover.available()
+    # ==========================================
+    # Provider Priority
+    # ==========================================
+
+    providers = [
+
+        "groq",
+        "nvidia"
+
+    ]
+
+    # ==========================================
+    # Try Providers
+    # ==========================================
 
     for provider in providers:
 
@@ -52,27 +62,19 @@ def ask_ai(prompt):
             if provider == "groq":
 
                 from ai.groq_client import ask
-                result = ask(prompt)
 
-            elif provider == "google":
-
-                from ai.google_client import ask
                 result = ask(prompt)
 
             elif provider == "nvidia":
 
                 from ai.nvidia_client import ask
-                result = ask(prompt)
 
-            elif provider == "openrouter":
-
-                from ai.openrouter_client import ask
                 result = ask(prompt)
 
             else:
+
                 continue
 
-            # Remember the working provider
             provider_memory.remember(provider)
             provider_memory.success(provider)
 
