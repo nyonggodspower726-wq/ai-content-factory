@@ -1,3 +1,14 @@
+import PIL.Image
+
+# =====================================================
+# Pillow Compatibility Fix
+# =====================================================
+if not hasattr(PIL.Image, "ANTIALIAS"):
+    try:
+        PIL.Image.ANTIALIAS = PIL.Image.Resampling.LANCZOS
+    except AttributeError:
+        PIL.Image.ANTIALIAS = PIL.Image.LANCZOS
+
 import os
 
 from moviepy.editor import (
@@ -21,19 +32,13 @@ class Renderer:
         )
 
     def render(
-
         self,
-
         timeline,
-
         voice_file=None
-
     ):
 
         if not timeline:
-
             print("No timeline.")
-
             return None
 
         clips = []
@@ -43,11 +48,10 @@ class Renderer:
             path = scene.get("image")
 
             if not path:
-
                 continue
 
             if not os.path.exists(path):
-
+                print(f"Missing image: {path}")
                 continue
 
             try:
@@ -58,25 +62,16 @@ class Renderer:
                 )
 
                 clip = (
-
                     ImageClip(path)
-
                     .set_duration(duration)
-
                     .resize(height=1280)
-
                     .crop(
                         x_center=360,
                         y_center=640,
                         width=720,
                         height=1280
                     )
-
                 )
-
-                # ====================================
-                # Simple Cinematic Motion
-                # ====================================
 
                 motion = scene.get(
                     "motion",
@@ -100,18 +95,15 @@ class Renderer:
                     )
 
                 clip = clip.fadein(0.5)
-
                 clip = clip.fadeout(0.5)
 
                 scene["clip_object"] = clip
 
-                clips.append(
-                    clip
-                )
+                clips.append(clip)
 
             except Exception as e:
 
-                print(e)
+                print("Renderer Error:", e)
 
         if len(clips) == 0:
 
@@ -120,71 +112,46 @@ class Renderer:
             return None
 
         final = concatenate_videoclips(
-
             clips,
-
             method="compose"
-
         )
 
         audio = None
 
         if (
-
             voice_file
-
             and
-
-            os.path.exists(
-
-                voice_file
-
-            )
-
+            os.path.exists(voice_file)
         ):
 
             audio = AudioFileClip(
-
                 voice_file
-
             )
 
-            final = final.set_audio(
-
-                audio
-
-            )
+            final = final.set_audio(audio)
 
         output = "output/ai_sales_video.mp4"
 
         final.write_videofile(
-
             output,
-
             codec="libx264",
-
             audio_codec="aac",
-
             fps=30,
-
             preset="medium",
-
             bitrate="3500k",
-
             logger=None
-
         )
 
         if audio:
-
             audio.close()
 
         for clip in clips:
-
             clip.close()
 
         final.close()
 
+        print("=" * 60)
         print("Rendering completed.")
+        print("=" * 60)
 
         return output
