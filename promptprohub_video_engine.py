@@ -9,7 +9,7 @@ from video.renderer import Renderer
 from video.quality_engine import QualityEngine
 from video.branding import BrandingEngine
 from video.subtitles import add_subtitles
-from video.background_audio import add_background_music
+from video.background_music import add_background_music
 
 
 class PromptProHubVideoEngine:
