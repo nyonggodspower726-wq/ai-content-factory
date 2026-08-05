@@ -1,32 +1,120 @@
-import os
-import subprocess
-from moviepy.editor import VideoFileClip
-from moviepy.video.fx.all import resize
+from moviepy.editor import (
+    VideoFileClip,
+    CompositeVideoClip,
+    TextClip,
+    vfx
+)
 
 
-# ============================================================
-# CAMERA ENGINE
-# ============================================================
+class EffectsEngine:
 
-def apply_camera_effects(video_file):
+    def __init__(self):
 
-    print("=" * 60)
-    print("PROMPTPROHUB CAMERA ENGINE")
-    print("=" * 60)
+        print("=" * 60)
+        print("VISUAL EFFECTS ENGINE")
+        print("=" * 60)
 
-    output = "output/camera_scene.mp4"
+    def apply(self, timeline):
+
+        if not timeline:
+
+            return timeline
+
+        print("Applying cinematic effects...")
+
+        for scene in timeline:
+
+            clip = scene.get("clip_object")
+
+            if clip is None:
+                continue
+
+            try:
+
+                # Slight cinematic zoom
+                clip = clip.fx(
+                    vfx.resize,
+                    1.02
+                )
+
+                # Fade in
+                clip = clip.fadein(
+                    0.5
+                )
+
+                # Fade out
+                clip = clip.fadeout(
+                    0.5
+                )
+
+                scene["clip_object"] = clip
+
+                print(
+                    f"Effects applied to Scene {scene.get('scene_id')}"
+                )
+
+            except Exception as e:
+
+                print(e)
+
+        return timeline
+
+
+def add_hook(
+
+    video_path,
+
+    hook_text
+
+):
 
     try:
 
-        clip = VideoFileClip(video_file)
+        video = VideoFileClip(video_path)
 
-        # Smooth cinematic zoom
-        clip = clip.fx(
-            resize,
-            lambda t: 1 + (0.04 * (t / clip.duration))
+        hook = (
+
+            TextClip(
+
+                hook_text,
+
+                fontsize=65,
+
+                color="white",
+
+                stroke_color="black",
+
+                stroke_width=3,
+
+                method="caption",
+
+                size=(900, None),
+
+                align="center"
+
+            )
+
+            .set_duration(4)
+
+            .set_position(("center", 100))
+
         )
 
-        clip.write_videofile(
+        final = CompositeVideoClip(
+
+            [
+
+                video,
+
+                hook
+
+            ]
+
+        )
+
+        output = "output/hooked_video.mp4"
+
+        final.write_videofile(
 
             output,
 
@@ -34,167 +122,20 @@ def apply_camera_effects(video_file):
 
             audio_codec="aac",
 
-            fps=clip.fps,
-
-            preset="medium",
-
-            threads=4,
+            fps=30,
 
             logger=None
 
         )
 
-        clip.close()
+        video.close()
 
-        print("Camera effects completed.")
+        final.close()
 
         return output
 
     except Exception as e:
 
-        print("Camera Engine Error")
+        print(e)
 
-        print(str(e))
-
-        return video_file
-
-
-# ============================================================
-# ENDING BRANDING
-# ============================================================
-
-def add_hook(video_file, text):
-
-    print("Adding ending branding...")
-
-    os.makedirs("output", exist_ok=True)
-
-    output = "output/hook_video.mp4"
-
-    try:
-
-        duration = subprocess.check_output(
-
-            [
-
-                "ffprobe",
-
-                "-v",
-
-                "error",
-
-                "-show_entries",
-
-                "format=duration",
-
-                "-of",
-
-                "default=noprint_wrappers=1:nokey=1",
-
-                video_file,
-
-            ]
-
-        ).decode().strip()
-
-        duration = float(duration)
-
-    except Exception:
-
-        duration = 30
-
-    start_time = max(duration - 4, 0)
-
-    filter_complex = (
-
-        f"[0:v][1:v]overlay=(W-w)/2:(H-h)/2:"
-
-        f"enable='gte(t,{start_time})',"
-
-        f"drawtext=text='www.promptprohub.com':"
-
-        f"fontsize=42:"
-
-        f"fontcolor=white:"
-
-        f"borderw=3:"
-
-        f"bordercolor=black:"
-
-        f"x=(w-text_w)/2:"
-
-        f"y=H-180:"
-
-        f"enable='gte(t,{start_time})',"
-
-        f"drawtext=text='Get Premium AI Prompts':"
-
-        f"fontsize=55:"
-
-        f"fontcolor=yellow:"
-
-        f"borderw=3:"
-
-        f"bordercolor=black:"
-
-        f"x=(w-text_w)/2:"
-
-        f"y=H-110:"
-
-        f"enable='gte(t,{start_time})'"
-
-    )
-
-    command = [
-
-        "ffmpeg",
-
-        "-y",
-
-        "-i",
-
-        video_file,
-
-        "-i",
-
-        "assets/logo.png",
-
-        "-filter_complex",
-
-        filter_complex,
-
-        "-c:v",
-
-        "libx264",
-
-        "-preset",
-
-        "medium",
-
-        "-crf",
-
-        "20",
-
-        "-c:a",
-
-        "copy",
-
-        output,
-
-    ]
-
-    try:
-
-        subprocess.run(command, check=True)
-
-        print("Ending branding added successfully.")
-
-        return output
-
-    except Exception as e:
-
-        print("Branding failed:")
-
-        print(str(e))
-
-        return video_file
+        return video_path
