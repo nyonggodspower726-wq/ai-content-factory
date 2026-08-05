@@ -21,6 +21,7 @@ class BrandingEngine:
         print("BRANDING ENGINE READY")
         print("=" * 60)
 
+
     def apply(
 
         self,
@@ -31,126 +32,235 @@ class BrandingEngine:
 
     ):
 
+        if not video_path:
+
+            print("No video received.")
+
+            return video_path
+
+
         if not os.path.exists(video_path):
 
             print("Video not found.")
 
             return video_path
 
-        video = VideoFileClip(video_path)
 
-        clips = [video]
+        video = None
+        final = None
 
-        # -------------------------------------
-        # Hook Text
-        # -------------------------------------
 
-        if hook_text:
+        try:
 
-            hook = (
+            video = VideoFileClip(
+                video_path
+            )
 
-                TextClip(
 
-                    hook_text,
+            clips = [
 
-                    fontsize=70,
+                video
 
-                    color="white",
+            ]
 
-                    stroke_color="black",
 
-                    stroke_width=3,
+            # -------------------------------------
+            # Hook Text
+            # -------------------------------------
 
-                    method="caption",
+            if hook_text:
 
-                    size=(900, None),
+                hook = (
 
-                    align="center"
+                    TextClip(
+
+                        hook_text,
+
+                        fontsize=70,
+
+                        color="white",
+
+                        stroke_color="black",
+
+                        stroke_width=3,
+
+                        method="caption",
+
+                        size=(900, None),
+
+                        align="center"
+
+                    )
+
+                    .set_position(
+
+                        ("center", 120)
+
+                    )
+
+                    .set_duration(
+
+                        min(
+
+                            5,
+
+                            video.duration
+
+                        )
+
+                    )
 
                 )
 
-                .set_position(("center", 120))
 
-                .set_duration(5)
+                clips.append(
+                    hook
+                )
 
-            )
 
-            clips.append(hook)
+            # -------------------------------------
+            # Brand Watermark
+            # -------------------------------------
 
-        # -------------------------------------
-        # Watermark
-        # -------------------------------------
+            watermark = (
 
-        watermark = (
+                TextClip(
 
-            TextClip(
+                    self.brand_name,
 
-                self.brand_name,
+                    fontsize=35,
 
-                fontsize=35,
+                    color="white",
 
-                color="white",
+                    method="label"
 
-                method="label"
+                )
 
-            )
+                .set_position(
 
-            .set_position(("right", "bottom"))
+                    ("right", "bottom")
 
-            .set_duration(video.duration)
+                )
 
-        )
+                .set_duration(
 
-        clips.append(watermark)
+                    video.duration
 
-        # -------------------------------------
-        # Website
-        # -------------------------------------
-
-        website = (
-
-            TextClip(
-
-                self.website,
-
-                fontsize=28,
-
-                color="yellow",
-
-                method="label"
+                )
 
             )
 
-            .set_position(("center", "bottom"))
 
-            .set_duration(video.duration)
+            clips.append(
+                watermark
+            )
 
-        )
 
-        clips.append(website)
+            # -------------------------------------
+            # Website
+            # -------------------------------------
 
-        final = CompositeVideoClip(clips)
+            website = (
 
-        output = "output/branded_video.mp4"
+                TextClip(
 
-        final.write_videofile(
+                    self.website,
 
-            output,
+                    fontsize=28,
 
-            codec="libx264",
+                    color="yellow",
 
-            audio_codec="aac",
+                    method="label"
 
-            fps=30,
+                )
 
-            logger=None
+                .set_position(
 
-        )
+                    ("center", "bottom")
 
-        video.close()
+                )
 
-        final.close()
+                .set_duration(
 
-        print("Branding applied.")
+                    video.duration
 
-        return output
+                )
+
+            )
+
+
+            clips.append(
+                website
+            )
+
+
+            final = CompositeVideoClip(
+
+                clips
+
+            )
+
+
+            output = (
+                "output/branded_video.mp4"
+            )
+
+
+            final.write_videofile(
+
+                output,
+
+                codec="libx264",
+
+                audio_codec="aac",
+
+                fps=30,
+
+                logger=None
+
+            )
+
+
+            print(
+                "Branding applied successfully."
+            )
+
+
+            return output
+
+
+
+        except Exception as e:
+
+            print(
+
+                f"Branding Engine Error: {e}"
+
+            )
+
+            return video_path
+
+
+
+        finally:
+
+            try:
+
+                if video:
+
+                    video.close()
+
+            except Exception:
+
+                pass
+
+
+            try:
+
+                if final:
+
+                    final.close()
+
+            except Exception:
+
+                pass
