@@ -5,62 +5,95 @@ import edge_tts
 from voice.emotion_engine import build_emotional_script
 
 
-VOICE = "en-US-BrianMultilingualNeural"
+VOICE_MAP = {
+
+    "professional": "en-US-BrianMultilingualNeural",
+
+    "confident": "en-US-BrianMultilingualNeural",
+
+    "motivational": "en-US-AndrewMultilingualNeural",
+
+    "friendly": "en-US-EricNeural",
+
+    "female": "en-US-AvaMultilingualNeural",
+
+    "luxury": "en-US-BrianMultilingualNeural"
+
+}
 
 
-async def create_voice(text, output_file):
+async def create_voice(text, output_file, voice):
 
     communicate = edge_tts.Communicate(
+
         text=text,
-        voice=VOICE
+
+        voice=voice
+
     )
 
     await communicate.save(output_file)
 
 
-
 def generate_voice(script, voice_profile="professional"):
 
     print("=" * 60)
-    print("AI VOICE DIRECTOR")
+    print("PROMPTPROHUB AI VOICE DIRECTOR")
     print("=" * 60)
 
+    voice = VOICE_MAP.get(
+
+        voice_profile.lower(),
+
+        VOICE_MAP["professional"]
+
+    )
 
     emotional_script = build_emotional_script(
-        script,
-        voice_profile
-    )
 
+        script,
+
+        voice_profile
+
+    )
 
     os.makedirs(
+
         "output",
+
         exist_ok=True
+
     )
 
-
     voice_file = "output/voice.mp3"
-
 
     try:
 
         asyncio.run(
-            create_voice(
-                emotional_script,
-                voice_file
-            )
-        )
 
+            create_voice(
+
+                emotional_script,
+
+                voice_file,
+
+                voice
+
+            )
+
+        )
 
         print("Professional AI Voice Created")
 
+        print("Voice:", voice)
 
         return voice_file
 
-
     except Exception as e:
 
-        print("VOICE ERROR")
-
-        print(str(e))
+        print("=" * 60)
+        print("VOICE ENGINE FAILED")
+        print("=" * 60)
+        print(e)
 
         return None
