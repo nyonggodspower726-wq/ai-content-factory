@@ -6,15 +6,22 @@ class QualityEngine:
         print("QUALITY ENGINE")
         print("=" * 60)
 
+
     def optimize(self, timeline):
 
         if not timeline:
 
-            print("No timeline to optimize.")
+            print(
+                "No timeline to optimize."
+            )
 
             return timeline
 
-        print("Optimizing video quality...")
+
+        print("=" * 60)
+        print("Optimizing Video Quality...")
+        print("=" * 60)
+
 
         for scene in timeline:
 
@@ -34,12 +41,17 @@ class QualityEngine:
 
             }
 
+
             print(
 
                 f"Scene {scene.get('scene_id', scene.get('id'))} optimized."
 
             )
 
-        print("Quality optimization completed.")
+
+        print(
+            "Quality optimization completed."
+        )
+
 
         return timeline
