@@ -43,37 +43,82 @@ class PromptProHubVideoEngine:
         final = self.render(timeline)
 
         return final
-   def load_clips(self, prompts):
 
-    print("=" * 60)
-    print("PROMPTPROHUB CLIP ENGINE")
-    print("=" * 60)
+    def load_clips(self, prompts):
 
-    clips = []
+        print("=" * 60)
+        print("PROMPTPROHUB CLIP ENGINE")
+        print("=" * 60)
 
-    if prompts is None:
-        print("No prompts received.")
+        clips = []
+
+        if prompts is None:
+            print("No prompts received.")
+            return clips
+
+        if isinstance(prompts, str):
+            prompts = [prompts]
+
+        for index, prompt in enumerate(prompts):
+
+            print(f"Scene {index + 1}")
+            print(f"Prompt: {prompt}")
+
+            scene = {
+                "id": index + 1,
+                "prompt": prompt,
+                "duration": 5,
+                "style": "cinematic",
+                "camera": "auto",
+                "transition": "fade"
+            }
+
+            clips.append(scene)
+
+        print(f"Scenes created: {len(clips)}")
+
         return clips
 
-    if isinstance(prompts, str):
-        prompts = [prompts]
+    def build_timeline(self, clips):
 
-    for index, prompt in enumerate(prompts):
+        print("Building timeline...")
 
-        print(f"Scene {index + 1}")
-        print(f"Prompt: {prompt}")
+        return clips
 
-        scene = {
-            "id": index + 1,
-            "prompt": prompt,
-            "duration": 5,
-            "style": "cinematic",
-            "camera": "auto",
-            "transition": "fade"
-        }
+    def camera_engine(self, timeline):
 
-        clips.append(scene)
+        print("Camera Engine...")
 
-    print(f"Scenes created: {len(clips)}")
+        return timeline
 
-    return clips
+    def effects_engine(
+        self,
+        timeline,
+        script
+    ):
+
+        print("Effects Engine...")
+
+        return timeline
+
+    def music_engine(self, timeline):
+
+        print("Music Engine...")
+
+        return timeline
+
+    def subtitle_engine(
+        self,
+        timeline,
+        script
+    ):
+
+        print("Subtitle Engine...")
+
+        return timeline
+
+    def render(self, timeline):
+
+        print("Rendering...")
+
+        return timeline
