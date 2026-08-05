@@ -20,29 +20,41 @@ class EffectsEngine:
 
             return timeline
 
-        print("Applying cinematic effects...")
+        print("=" * 60)
+        print("Applying Visual Effects...")
+        print("=" * 60)
 
         for scene in timeline:
 
             clip = scene.get("clip_object")
 
             if clip is None:
+
                 continue
 
             try:
 
-                # Slight cinematic zoom
+                # ---------------------------------
+                # Slight Cinematic Zoom
+                # ---------------------------------
+
                 clip = clip.fx(
                     vfx.resize,
                     1.02
                 )
 
-                # Fade in
+                # ---------------------------------
+                # Fade In
+                # ---------------------------------
+
                 clip = clip.fadein(
                     0.5
                 )
 
-                # Fade out
+                # ---------------------------------
+                # Fade Out
+                # ---------------------------------
+
                 clip = clip.fadeout(
                     0.5
                 )
@@ -50,15 +62,27 @@ class EffectsEngine:
                 scene["clip_object"] = clip
 
                 print(
-                    f"Effects applied to Scene {scene.get('scene_id')}"
+
+                    f"Scene {scene.get('scene_id', scene.get('id'))} enhanced."
+
                 )
 
             except Exception as e:
 
-                print(e)
+                print(
+
+                    f"Effects Engine Error: {e}"
+
+                )
+
+        print("Visual Effects completed.")
 
         return timeline
 
+
+# =====================================================
+# Branding Hook
+# =====================================================
 
 def add_hook(
 
@@ -70,7 +94,11 @@ def add_hook(
 
     try:
 
-        video = VideoFileClip(video_path)
+        video = VideoFileClip(
+
+            video_path
+
+        )
 
         hook = (
 
@@ -96,7 +124,11 @@ def add_hook(
 
             .set_duration(4)
 
-            .set_position(("center", 100))
+            .set_position(
+
+                ("center", 100)
+
+            )
 
         )
 
@@ -132,10 +164,16 @@ def add_hook(
 
         final.close()
 
+        print("Branding Hook Added.")
+
         return output
 
     except Exception as e:
 
-        print(e)
+        print(
+
+            f"Branding Error: {e}"
+
+        )
 
         return video_path
