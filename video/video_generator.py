@@ -1,4 +1,4 @@
-from video.promptprohub_video_engine import PromptProHubVideoEngine
+from promptprohub_video_engine import PromptProHubVideoEngine
 
 engine = PromptProHubVideoEngine()
 
