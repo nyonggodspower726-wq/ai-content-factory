@@ -1,24 +1,43 @@
-from moviepy.editor import TextClip, CompositeVideoClip, VideoFileClip
 import os
 
+from moviepy.editor import (
+    TextClip,
+    CompositeVideoClip,
+    VideoFileClip
+)
 
-def add_subtitles(video_file, script):
+
+def add_subtitles(
+
+    video_file,
+
+    script
+
+):
 
     print("=" * 60)
     print("PROMPTPROHUB SUBTITLE ENGINE")
     print("=" * 60)
 
+    video = None
+    final = None
+
     try:
 
-        video = VideoFileClip(video_file)
+        video = VideoFileClip(
+            video_file
+        )
 
         # ---------------------------------------
-        # Accept JSON script or plain string
+        # Accept JSON script or normal text
         # ---------------------------------------
 
         if isinstance(script, dict):
 
-            text = script.get("script", "")
+            text = script.get(
+                "script",
+                ""
+            )
 
         else:
 
@@ -28,9 +47,12 @@ def add_subtitles(video_file, script):
 
         if len(words) == 0:
 
-            print("No subtitle text found.")
+            print(
+                "No subtitle text found."
+            )
 
             return video_file
+
 
         subtitles = []
 
@@ -48,13 +70,14 @@ def add_subtitles(video_file, script):
 
         chunk_duration = duration / total_chunks
 
+
         for i in range(total_chunks):
 
-            subtitle = " ".join(
+            subtitle_text = " ".join(
 
                 words[
 
-                    i * chunk_size:
+                    i * chunk_size :
 
                     (i + 1) * chunk_size
 
@@ -62,11 +85,12 @@ def add_subtitles(video_file, script):
 
             )
 
+
             caption = (
 
                 TextClip(
 
-                    subtitle,
+                    subtitle_text,
 
                     fontsize=60,
 
@@ -102,13 +126,22 @@ def add_subtitles(video_file, script):
 
             )
 
-            subtitles.append(caption)
+
+            subtitles.append(
+                caption
+            )
+
 
         final = CompositeVideoClip(
 
-            [video] + subtitles
+            [
+
+                video
+
+            ] + subtitles
 
         )
+
 
         os.makedirs(
 
@@ -118,7 +151,9 @@ def add_subtitles(video_file, script):
 
         )
 
+
         output = "output/subtitled_video.mp4"
+
 
         final.write_videofile(
 
@@ -128,7 +163,7 @@ def add_subtitles(video_file, script):
 
             audio_codec="aac",
 
-            fps=video.fps,
+            fps=video.fps or 30,
 
             preset="medium",
 
@@ -138,13 +173,14 @@ def add_subtitles(video_file, script):
 
         )
 
-        video.close()
 
-        final.close()
+        print(
+            "Subtitles completed successfully."
+        )
 
-        print("Subtitles completed successfully.")
 
         return output
+
 
     except Exception as e:
 
@@ -152,6 +188,30 @@ def add_subtitles(video_file, script):
         print("SUBTITLE ENGINE FAILED")
         print("=" * 60)
 
-        print(str(e))
+        print(e)
 
         return video_file
+
+
+    finally:
+
+        try:
+
+            if video:
+
+                video.close()
+
+        except Exception:
+
+            pass
+
+
+        try:
+
+            if final:
+
+                final.close()
+
+        except Exception:
+
+            pass
