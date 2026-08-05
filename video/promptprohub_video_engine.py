@@ -1,124 +1,173 @@
 import os
 
+from video.clip_engine import ClipEngine
+from video.scene_engine import SceneEngine
+from video.timeline_engine import TimelineEngine
+from video.motion_engine import MotionEngine
+from video.transition_engine import TransitionEngine
 from video.camera_engine import apply_camera_effects
 from video.effects import add_hook
 from video.subtitles import add_subtitles
+from video.renderer import Renderer
+from video.quality_engine import QualityEngine
+
 from audio.music import get_music
 
 
 class PromptProHubVideoEngine:
 
     def __init__(self):
+
         print("=" * 60)
         print("PROMPTPROHUB VIDEO ENGINE")
         print("=" * 60)
 
+        self.scene_engine = SceneEngine()
+
+        self.clip_engine = ClipEngine()
+
+        self.timeline_engine = TimelineEngine()
+
+        self.motion_engine = MotionEngine()
+
+        self.transition_engine = TransitionEngine()
+
+        self.renderer = Renderer()
+
+        self.quality_engine = QualityEngine()
+
     def generate(
+
         self,
+
         prompts,
+
         script,
+
         voice_file
+
     ):
-
-        print("Receiving Brain Engine data...")
-
-        clips = self.load_clips(prompts)
-
-        timeline = self.build_timeline(clips)
-
-        timeline = self.camera_engine(timeline)
-
-        timeline = self.effects_engine(
-            timeline,
-            script
-        )
-
-        timeline = self.music_engine(timeline)
-
-        timeline = self.subtitle_engine(
-            timeline,
-            script
-        )
-
-        final = self.render(timeline)
-
-        return final
-
-    def load_clips(self, prompts):
 
         print("=" * 60)
-        print("PROMPTPROHUB CLIP ENGINE")
+
+        print("STARTING VIDEO PRODUCTION")
+
         print("=" * 60)
 
-        clips = []
+        # ---------------------------------
+        # Build scenes
+        # ---------------------------------
 
-        if prompts is None:
-            print("No prompts received.")
-            return clips
+        scenes = self.scene_engine.generate(
 
-        if isinstance(prompts, str):
-            prompts = [prompts]
+            prompts,
 
-        for index, prompt in enumerate(prompts):
+            script
 
-            print(f"Scene {index + 1}")
-            print(f"Prompt: {prompt}")
+        )
 
-            scene = {
-                "id": index + 1,
-                "prompt": prompt,
-                "duration": 5,
-                "style": "cinematic",
-                "camera": "auto",
-                "transition": "fade"
-            }
+        # ---------------------------------
+        # Load clips
+        # ---------------------------------
 
-            clips.append(scene)
+        clips = self.clip_engine.generate(
 
-        print(f"Scenes created: {len(clips)}")
+            scenes
 
-        return clips
+        )
 
-    def build_timeline(self, clips):
+        # ---------------------------------
+        # Build timeline
+        # ---------------------------------
 
-        print("Building timeline...")
+        timeline = self.timeline_engine.build(
 
-        return clips
+            clips
 
-    def camera_engine(self, timeline):
+        )
 
-        print("Camera Engine...")
+        # ---------------------------------
+        # Camera Engine
+        # ---------------------------------
 
-        return timeline
+        timeline = apply_camera_effects(
 
-    def effects_engine(
-        self,
-        timeline,
-        script
-    ):
+            timeline
 
-        print("Effects Engine...")
+        )
 
-        return timeline
+        # ---------------------------------
+        # Motion Engine
+        # ---------------------------------
 
-    def music_engine(self, timeline):
+        timeline = self.motion_engine.apply(
 
-        print("Music Engine...")
+            timeline
 
-        return timeline
+        )
 
-    def subtitle_engine(
-        self,
-        timeline,
-        script
-    ):
+        # ---------------------------------
+        # Transition Engine
+        # ---------------------------------
 
-        print("Subtitle Engine...")
+        timeline = self.transition_engine.apply(
 
-        return timeline
+            timeline
 
-    def render(self, timeline):
+        )
 
-        print("Rendering...")
+        # ---------------------------------
+        # Quality Optimizer
+        # ---------------------------------
 
-        return timeline
+        timeline = self.quality_engine.optimize(
+
+            timeline
+
+        )
+
+        # ---------------------------------
+        # Render
+        # ---------------------------------
+
+        output = self.renderer.render(
+
+            timeline,
+
+            voice_file
+
+        )
+
+        # ---------------------------------
+        # Subtitles
+        # ---------------------------------
+
+        output = add_subtitles(
+
+            output,
+
+            script
+
+        )
+
+        # ---------------------------------
+        # Branding
+        # ---------------------------------
+
+        hook = script.split(".")[0]
+
+        output = add_hook(
+
+            output,
+
+            hook
+
+        )
+
+        print("=" * 60)
+
+        print("VIDEO COMPLETED")
+
+        print("=" * 60)
+
+        return output
