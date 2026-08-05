@@ -23,13 +23,11 @@ class MemoryEngine:
 
                 json.dump([], f)
 
-
     def load(self):
 
         with open(self.file, "r") as f:
 
             return json.load(f)
-
 
     def remember(self, project):
 
@@ -51,7 +49,7 @@ class MemoryEngine:
 
         })
 
-        # Keep only the latest 1000 memories
+        # Keep only latest 1000 memories
         memory = memory[-1000:]
 
         with open(self.file, "w") as f:
@@ -62,13 +60,25 @@ class MemoryEngine:
                 indent=4
             )
 
+    # ==========================================
+    # Compatibility with older modules
+    # ==========================================
+    def save(self, project):
+        """
+        Older parts of the project call:
+
+            memory.save(project)
+
+        Redirect them to remember().
+        """
+
+        return self.remember(project)
 
     def latest(self, amount=5):
 
         memory = self.load()
 
         return memory[-amount:]
-
 
     def search(self, keyword):
 
@@ -88,11 +98,9 @@ class MemoryEngine:
 
         return results
 
-
     def total(self):
 
         return len(self.load())
-
 
     def clear(self):
 
