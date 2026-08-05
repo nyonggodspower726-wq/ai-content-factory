@@ -35,30 +35,59 @@ class TransitionEngine:
 
             return timeline
 
-        print("Applying transitions...")
+        print("=" * 60)
+        print("Applying Transition Engine...")
+        print("=" * 60)
 
         total = len(timeline)
 
         for index, scene in enumerate(timeline):
 
-            # Last scene doesn't need a transition
+            transition = scene.get(
+                "transition",
+                "auto"
+            )
+
+            # -----------------------------
+            # Last scene
+            # -----------------------------
+
             if index == total - 1:
 
-                scene["transition"] = "none"
+                transition = "none"
 
-            elif scene.get("transition") == "auto":
+            # -----------------------------
+            # Automatic transition
+            # -----------------------------
 
-                scene["transition"] = random.choice(
+            elif transition == "auto":
+
+                transition = random.choice(
+
                     self.transitions[:-1]
+
                 )
 
-            elif "transition" not in scene:
+            # -----------------------------
+            # Save transition
+            # -----------------------------
 
-                scene["transition"] = "fade"
+            scene["transition"] = transition
 
             print(
-                f"Scene {scene.get('scene_id', scene.get('id'))}: "
-                f"{scene['transition']}"
+
+                f"Scene {scene.get('scene_id', scene.get('id'))}"
+
             )
+
+            print(
+
+                f"Transition : {transition}"
+
+            )
+
+            print("-" * 40)
+
+        print("Transition Engine completed.")
 
         return timeline
