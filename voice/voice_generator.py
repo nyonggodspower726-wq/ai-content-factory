@@ -35,7 +35,13 @@ async def create_voice(text, output_file, voice):
     await communicate.save(output_file)
 
 
-def generate_voice(script, voice_profile="professional"):
+def generate_voice(
+
+    script,
+
+    voice_profile="professional"
+
+):
 
     print("=" * 60)
     print("PROMPTPROHUB AI VOICE DIRECTOR")
@@ -83,9 +89,34 @@ def generate_voice(script, voice_profile="professional"):
 
         )
 
-        print("Professional AI Voice Created")
+        # -----------------------------------------
+        # Verify voice file exists
+        # -----------------------------------------
 
-        print("Voice:", voice)
+        if not os.path.exists(voice_file):
+
+            raise Exception(
+
+                "Voice file was not created."
+
+            )
+
+        if os.path.getsize(voice_file) == 0:
+
+            raise Exception(
+
+                "Voice file is empty."
+
+            )
+
+        print("=" * 60)
+        print("PROFESSIONAL AI VOICE CREATED")
+        print("=" * 60)
+        print("Voice :", voice)
+        print("File  :", voice_file)
+        print(
+            f"Size  : {os.path.getsize(voice_file)} bytes"
+        )
 
         return voice_file
 
