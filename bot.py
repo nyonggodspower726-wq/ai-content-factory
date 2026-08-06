@@ -3,8 +3,7 @@ import os
 from brain.production_manager import production
 from brain.seo_engine import generate_seo
 
-from brain.topic_diversity_engine import choose_topic
-from brain.trend_brain import generate_trending_ideas
+from brain.trend_brain import choose_trending_topic
 from brain.viral_angle_engine import choose_best_angle
 from brain.curiosity_engine import choose_curiosity
 from brain.hook_engine import choose_hook
@@ -38,34 +37,17 @@ def main(topic=None):
             "ACTIVATING NEW CONTENT BRAIN..."
         )
 
+        log(
+            "Running Trend Intelligence Engine..."
+        )
 
         if topic is None:
 
-            topic = choose_topic()
-
-
+            topic = choose_trending_topic()
 
         log(
-            f"Generated Topic: {topic}"
+            f"Selected Viral Topic: {topic}"
         )
-
-
-
-        # TREND BRAIN
-
-        log(
-            "Running Trend Brain..."
-        )
-
-
-        trend_ideas = generate_trending_ideas(
-            topic
-        )
-
-
-        if trend_ideas:
-
-            topic = trend_ideas[0]
 
 
 
@@ -427,3 +409,4 @@ def main(topic=None):
 if __name__ == "__main__":
 
     main()
+        
