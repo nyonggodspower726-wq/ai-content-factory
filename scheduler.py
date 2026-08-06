@@ -5,8 +5,8 @@ from zoneinfo import ZoneInfo
 from bot import main
 
 
-# Nigeria time (24-hour format)
-TEST_TIME = "22:54"
+# Nigeria time (24-hourformat)
+TEST_TIME = "08:04"
 
 
 def run_bot():
