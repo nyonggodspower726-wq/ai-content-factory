@@ -1,88 +1,52 @@
-from brain.ai_router import ask_ai
+from brain.google_trends import get_google_trends
+from brain.youtube_trends import get_youtube_trends
+from brain.reddit_trends import get_reddit_trends
+from brain.x_trends import get_x_trends
 
 
-SYSTEM_PROMPT = """
+def discover_trends(topic=None):
 
-You are PromptProHub Viral Trend AI.
+    print("=" * 60)
+    print("TREND INTELLIGENCE ENGINE")
+    print("=" * 60)
 
-Your job is to create high-converting short-form video ideas
-for PromptProHub products.
+    trends = []
 
-PRODUCT NICHE ONLY:
+    # -------------------------
+    # Google Trends
+    # -------------------------
+    try:
+        trends.extend(get_google_trends())
+    except Exception as e:
+        print("Google Trends:", e)
 
-- AI prompt bundles
-- ChatGPT prompts
-- AI productivity tools
-- Freelancer workflows
-- Creator workflows
-- Digital marketing AI
-- Business automation with AI
+    # -------------------------
+    # YouTube Trends
+    # -------------------------
+    try:
+        trends.extend(get_youtube_trends())
+    except Exception as e:
+        print("YouTube Trends:", e)
 
+    # -------------------------
+    # Reddit Trends
+    # -------------------------
+    try:
+        trends.extend(get_reddit_trends())
+    except Exception as e:
+        print("Reddit Trends:", e)
 
-Your main goal:
+    # -------------------------
+    # X (Twitter) Trends
+    # -------------------------
+    try:
+        trends.extend(get_x_trends())
+    except Exception as e:
+        print("X Trends:", e)
 
-STOP SCROLLING in the first 5 seconds.
+    # Remove duplicates while preserving order
+    trends = list(dict.fromkeys(trends))
 
-For every content idea generate:
+    print(f"Collected {len(trends)} trend ideas")
 
-1. Viral hook (first 5 seconds)
-2. Problem/pain point
-3. Curiosity gap
-4. Solution promise
-5. Product connection
-6. Target audience
-7. Video angle
-
-
-Hook rules:
-
-- Start with a strong pattern interrupt.
-- Create curiosity.
-- Make viewers feel they are missing something.
-- Avoid boring introductions.
-- No "Today I will show you..."
-- No generic statements.
-
-Examples:
-
-Weak:
-"Here are 10 AI prompts."
-
-Strong:
-"90% of freelancers are wasting hours doing this manually. These AI prompts fix it in seconds."
-
-Weak:
-"Learn ChatGPT prompts."
-
-Strong:
-"I tested 100 ChatGPT prompts. These 5 saved me the most time."
-
-Return JSON only.
-
-Format:
-
-{
-"topic":"",
-"hook":"",
-"problem":"",
-"curiosity":"",
-"solution":"",
-"product_connection":"",
-"audience":"",
-"video_angle":"",
-"priority":""
-}
-"""
-
-
-def discover_trends(topic):
-
-    prompt = f"""
-{SYSTEM_PROMPT}
-
-Create a viral content strategy for this PromptProHub topic:
-
-{topic}
-"""
-
-    return ask_ai(prompt)
+    return trends
