@@ -1,6 +1,5 @@
 import os
 import asyncio
-import re
 import edge_tts
 
 from voice.emotion_engine import build_emotional_script
@@ -8,120 +7,33 @@ from voice.emotion_engine import build_emotional_script
 
 VOICE_MAP = {
 
-    "professional": "en-US-BrianMultilingualNeural",
-
-    "confident": "en-US-BrianMultilingualNeural",
-
-    "motivational": "en-US-AndrewMultilingualNeural",
-
-    "friendly": "en-US-EricNeural",
+    "male": "en-US-BrianMultilingualNeural",
 
     "female": "en-US-AvaMultilingualNeural",
 
-    "luxury": "en-US-BrianMultilingualNeural"
+    "professional": "en-US-BrianMultilingualNeural",
+
+    "motivational": "en-US-AndrewMultilingualNeural",
+
+    "friendly": "en-US-EricNeural"
 
 }
 
 
-
-def clean_voice_text(text):
-
-    if not text:
-        return ""
-
-
-    # Remove emotion instructions
-    remove_patterns = [
-
-        r"\[.*?\]",
-
-        r"\(.*?pause.*?\)",
-
-        r"\(.*?emphasis.*?\)",
-
-        r"pause",
-
-        r"emphasis",
-
-        r"whisper",
-
-        r"excited",
-
-        r"urgency",
-
-        r"smile"
-
-    ]
-
-
-    for pattern in remove_patterns:
-
-        text = re.sub(
-            pattern,
-            "",
-            text,
-            flags=re.IGNORECASE
-        )
-
-
-    # Brand pronunciation fixes
-
-    replacements = {
-
-        "PromptProHub":
-        "Prompt Pro Hub",
-
-        "ChatGPT":
-        "Chat G P T",
-
-        "OpenAI":
-        "Open A I",
-
-        "AI":
-        "A I",
-
-        "CRT":
-        "C R T"
-
-    }
-
-
-    for old, new in replacements.items():
-
-        text = text.replace(
-            old,
-            new
-        )
-
-
-    return text.strip()
-
-
-
 async def create_voice(text, output_file, voice):
 
-
     communicate = edge_tts.Communicate(
-
         text=text,
-
         voice=voice
-
     )
 
-
-    await communicate.save(
-        output_file
-    )
+    await communicate.save(output_file)
 
 
 
 def generate_voice(
-
     script,
-
     voice_profile="professional"
-
 ):
 
 
@@ -130,10 +42,31 @@ def generate_voice(
     print("=" * 60)
 
 
+    # FIX DICTIONARY ERROR
+    if isinstance(voice_profile, dict):
+
+        gender = voice_profile.get(
+            "gender",
+            "male"
+        )
+
+        if gender.lower() == "female":
+            voice_profile = "female"
+
+        else:
+            voice_profile = "male"
+
+
+
+    voice_profile = str(
+        voice_profile
+    ).lower()
+
+
 
     voice = VOICE_MAP.get(
 
-        voice_profile.lower(),
+        voice_profile,
 
         VOICE_MAP["professional"]
 
@@ -150,26 +83,10 @@ def generate_voice(
     )
 
 
-    # FINAL CLEAN BEFORE AUDIO
-
-    emotional_script = clean_voice_text(
-
-        emotional_script
-
-    )
-
-
-    print("FINAL VOICE TEXT:")
-    print(emotional_script[:500])
-
-
 
     os.makedirs(
-
         "output",
-
         exist_ok=True
-
     )
 
 
@@ -196,29 +113,20 @@ def generate_voice(
 
 
 
-        if not os.path.exists(voice_file):
+        if not os.path.exists(
+            voice_file
+        ):
 
             raise Exception(
-                "Voice file was not created."
+                "Voice file missing"
             )
 
 
 
-        if os.path.getsize(voice_file) == 0:
-
-            raise Exception(
-                "Voice file is empty."
-            )
-
-
-
-        print("=" * 60)
-        print("PROFESSIONAL AI VOICE CREATED")
-        print("=" * 60)
-
-        print("Voice :", voice)
-
-        print("File :", voice_file)
+        print(
+            "VOICE CREATED:",
+            voice
+        )
 
 
         return voice_file
@@ -228,11 +136,10 @@ def generate_voice(
     except Exception as e:
 
 
-        print("=" * 60)
-        print("VOICE ENGINE FAILED")
-        print("=" * 60)
-
-        print(e)
+        print(
+            "VOICE ENGINE FAILED:",
+            e
+        )
 
 
         return None
