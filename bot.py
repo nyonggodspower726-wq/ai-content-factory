@@ -3,7 +3,7 @@ import os
 from brain.production_manager import production
 from brain.seo_engine import generate_seo
 
-from brain.topic_engine import choose_topic
+from from brain.topic_diversity_engine import choose_topic
 from brain.trend_brain import generate_trending_ideas
 from brain.viral_angle_engine import choose_best_angle
 from brain.curiosity_engine import choose_curiosity
