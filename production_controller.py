@@ -34,13 +34,12 @@ class ProductionController:
         print("=" * 60)
 
 
-
         # ==========================
         # BRAIN SYSTEM
         # ==========================
 
         print(
-            "RUNNING BRAIN SYSTEM"
+            "RUNNING PRODUCTION BRAIN SYSTEM"
         )
 
 
@@ -64,7 +63,7 @@ class ProductionController:
 
 
         # ==========================
-        # VOICE
+        # VOICE ENGINE
         # ==========================
 
         print("=" * 60)
@@ -89,7 +88,7 @@ class ProductionController:
 
 
         # ==========================
-        # VIDEO
+        # VIDEO ENGINE
         # ==========================
 
         print("=" * 60)
@@ -124,9 +123,9 @@ class ProductionController:
         # DATABASE
         # ==========================
 
-        print(
-            "Saving project..."
-        )
+        print("=" * 60)
+        print("DATABASE ENGINE")
+        print("=" * 60)
 
 
         database.save(
@@ -136,8 +135,13 @@ class ProductionController:
 
 
         # ==========================
-        # MEMORY
+        # MEMORY ENGINE
         # ==========================
+
+        print("=" * 60)
+        print("MEMORY ENGINE")
+        print("=" * 60)
+
 
         memory.save(
 
@@ -152,6 +156,13 @@ class ProductionController:
                 project.get(
                     "decision",
                     {}
+                ),
+
+                "hook":
+
+                project.get(
+                    "hook",
+                    ""
                 )
 
             }
@@ -161,8 +172,13 @@ class ProductionController:
 
 
         # ==========================
-        # QUEUE
+        # QUEUE ENGINE
         # ==========================
+
+        print("=" * 60)
+        print("QUEUE ENGINE")
+        print("=" * 60)
+
 
         queue_manager.complete(
             topic
@@ -171,15 +187,16 @@ class ProductionController:
 
 
         # ==========================
-        # LEARNING
+        # LEARNING ENGINE
         # ==========================
+
+        print("=" * 60)
+        print("LEARNING ENGINE")
+        print("=" * 60)
+
 
         report = learning.recommend()
 
-
-        print("=" * 60)
-        print("LEARNING REPORT")
-        print("=" * 60)
 
         print(report)
 
@@ -188,7 +205,6 @@ class ProductionController:
         print("=" * 60)
         print("PRODUCTION COMPLETE")
         print("=" * 60)
-
 
 
         return project
