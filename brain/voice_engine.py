@@ -1,17 +1,37 @@
 from brain.ai_router import ask_ai
+import json
 
 
 SYSTEM_PROMPT = """
+
 You are PromptProHub AI Voice Director.
 
-You NEVER narrate.
+Your job is ONLY to create voice settings.
 
-You DIRECT narration.
+You DO NOT write narration.
+You DO NOT create spoken sentences.
+You DO NOT put instructions inside the script.
 
-Your goal is to make the voice sound as human,
-emotional and engaging as possible.
+Return JSON only.
 
-For every script determine:
+The narration text must stay separate from voice directions.
+
+Never output:
+
+[pause]
+
+[emphasis]
+
+(pause)
+
+(emphasis)
+
+"say slowly"
+
+"say loudly"
+
+
+Create:
 
 1. Voice Gender
 2. Voice Age
@@ -20,27 +40,24 @@ For every script determine:
 5. Emotion Curve
 6. Speaking Speed
 7. Speaking Rhythm
-8. Pause Positions
+8. Pause Locations
 9. Emphasis Words
-10. Whisper Moments
-11. Excitement Moments
-12. Curiosity Moments
-13. Urgency Moments
-14. Smile Moments
-15. CTA Delivery Style
+10. CTA Style
+11. Pronunciation Dictionary
 
-Return JSON only.
 
 Example:
 
 {
 "gender":"Male",
+
 "age":"Young Adult",
-"personality":"Confident Mentor",
+
+"personality":"Confident AI Expert",
+
 "emotion":"Curious",
 
 "emotion_curve":[
-"Shock",
 "Curiosity",
 "Excitement",
 "Trust",
@@ -53,54 +70,127 @@ Example:
 "cta":"Slow"
 },
 
-"rhythm":"Dynamic",
+"rhythm":"Natural",
 
-"pause_points":[
-"After Hook",
-"Before Reveal",
+"pause_locations":[
+"After the first sentence",
+"Before the reveal",
 "Before CTA"
 ],
 
-"emphasis":[
-"FREE",
-"SECRET",
-"TODAY",
-"LIMITED"
+"emphasis_words":[
+"AI prompts",
+"automation",
+"save time",
+"business"
 ],
 
-"whisper":[
-"Here's the secret..."
-],
+"cta_style":
+"Friendly persuasive",
 
-"excitement":[
-"This changes everything!"
-],
+"pronunciation":{
 
-"curiosity":[
-"But there's one problem..."
-],
+"PromptProHub":
+"Prompt Pro Hub",
 
-"urgency":[
-"Don't wait."
-],
+"ChatGPT":
+"Chat G P T",
 
-"smile":[
-"Imagine finishing work in minutes."
-],
+"OpenAI":
+"Open A I",
 
-"cta_style":"Friendly but persuasive"
+"AI":
+"A I",
+
+"CRT":
+"C R T"
+
 }
+
+}
+
 """
 
 
 def generate_voice(project):
 
+
     prompt = f"""
+
 {SYSTEM_PROMPT}
+
 
 Project:
 
 {project}
+
 """
 
-    return ask_ai(prompt)
+
+    try:
+
+        response = ask_ai(
+            prompt
+        )
+
+
+        response = (
+            response
+            .replace("```json","")
+            .replace("```","")
+            .strip()
+        )
+
+
+        return json.loads(
+            response
+        )
+
+
+    except Exception as e:
+
+
+        print(
+            "Voice Director Error:",
+            e
+        )
+
+
+        return {
+
+            "gender":"Male",
+
+            "age":"Young Adult",
+
+            "personality":
+            "Confident Mentor",
+
+            "emotion":
+            "Curious",
+
+            "speed":{
+                "hook":"Fast",
+                "body":"Medium",
+                "cta":"Slow"
+            },
+
+            "pronunciation":{
+
+                "PromptProHub":
+                "Prompt Pro Hub",
+
+                "ChatGPT":
+                "Chat G P T",
+
+                "OpenAI":
+                "Open A I",
+
+                "AI":
+                "A I",
+
+                "CRT":
+                "C R T"
+
+            }
+
+        }
