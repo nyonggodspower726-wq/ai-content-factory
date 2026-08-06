@@ -1,4 +1,5 @@
-from brain.youtube_api import youtube
+import requests
+from bs4 import BeautifulSoup
 
 
 AI_KEYWORDS = [
@@ -32,53 +33,95 @@ def get_youtube_trends():
 
     results = []
 
+
     try:
 
         for keyword in AI_KEYWORDS:
 
-            response = youtube.search().list(
 
-                q=keyword,
-
-                part="snippet",
-
-                maxResults=10,
-
-                order="viewCount",
-
-                type="video"
-
-            ).execute()
+            url = (
+                "https://www.youtube.com/results?search_query="
+                + keyword.replace(" ", "+")
+            )
 
 
-            for item in response.get("items", []):
+            headers = {
 
-                title = item["snippet"]["title"]
+                "User-Agent":
+                "Mozilla/5.0"
 
-                results.append(title)
+            }
+
+
+            response = requests.get(
+                url,
+                headers=headers,
+                timeout=10
+            )
+
+
+            soup = BeautifulSoup(
+                response.text,
+                "html.parser"
+            )
+
+
+            text = soup.get_text(
+                " "
+            )
+
+
+            # Extract useful titles around keyword
+            words = text.split("\n")
+
+
+            for item in words:
+
+                item = item.strip()
+
+                if (
+                    len(item) > 20
+                    and keyword.lower() not in item.lower()
+                ):
+
+                    results.append(item)
+
+
 
     except Exception as e:
 
-        print("YouTube API Error:", e)
+        print(
+            "YouTube Trend Error:",
+            e
+        )
 
-    results = list(dict.fromkeys(results))
 
-    print(f"Collected {len(results)} YouTube trends")
 
-    if len(results) == 0:
+    results = list(
+        dict.fromkeys(results)
+    )
+
+
+    print(
+        f"Collected {len(results)} YouTube trends"
+    )
+
+
+    if not results:
 
         results = [
 
-            "Best ChatGPT prompts",
+            "ChatGPT prompts that save hours",
 
             "AI prompts for business",
 
-            "Prompt engineering tutorial",
+            "Prompt engineering secrets",
 
-            "ChatGPT automation",
+            "AI automation workflows",
 
-            "AI workflow"
+            "How creators use ChatGPT"
 
         ]
+
 
     return results
