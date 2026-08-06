@@ -1,20 +1,3 @@
-from brain.ai_router import ask_ai
-
-from brain.topic_diversity_engine import choose_topic
-
-from brain.trend_brain import generate_trending_ideas
-
-from brain.viral_angle_engine import choose_best_angle
-
-from brain.curiosity_engine import choose_curiosity
-
-from brain.hook_engine import choose_hook
-
-from brain.retention_engine import choose_retention
-
-from brain.cta_engine import choose_cta
-
-
 from brain.ceo_engine import ceo
 from brain.brand_engine import brand
 from brain.trend_engine import discover_trends
@@ -28,6 +11,8 @@ from brain.director import create_director_plan
 from brain.storyboard import create_storyboard
 from brain.prompt_engine import generate_scene_prompts
 from brain.script_engine import generate_script
+from brain.retention_engine import choose_retention
+from brain.cta_engine import choose_cta
 from brain.viral_engine import evaluate_video
 from brain.decision_engine import final_decision
 
@@ -73,31 +58,13 @@ class BrainController:
 
     def build(
         self,
-        topic=None
+        topic
     ):
-
 
         print("=" * 60)
         print("BUILDING AI CAMPAIGN")
         print("=" * 60)
 
-
-
-        # =====================================
-        # CREATIVE BRAIN LAYER
-        # =====================================
-
-
-        if not topic:
-
-
-            topic = self.safe_run(
-
-                "Topic Diversity Engine",
-
-                choose_topic
-
-            )
 
 
         project = {
@@ -107,75 +74,22 @@ class BrainController:
         }
 
 
+
         print(
-            "FINAL SELECTED TOPIC:",
+            "FINAL CREATIVE TOPIC:",
             topic
         )
-
-
-
-        project["trend_ideas"] = self.safe_run(
-
-            "Trend Brain",
-
-            generate_trending_ideas,
-
-            topic
-
-        )
-
-
-
-        project["viral_angle"] = self.safe_run(
-
-            "Viral Angle Engine",
-
-            choose_best_angle,
-
-            topic
-
-        )
-
-
-
-        project["curiosity"] = self.safe_run(
-
-            "Curiosity Engine",
-
-            choose_curiosity,
-
-            topic
-
-        )
-
-
-
-        project["hook"] = self.safe_run(
-
-            "Hook Engine",
-
-            choose_hook,
-
-            topic,
-
-            project["viral_angle"],
-
-            project["curiosity"]
-
-        )
-
 
 
 
         # =====================================
-        # OLD BRAIN SYSTEM
+        # PRODUCTION BRAIN
         # =====================================
-
 
 
         project["product"] = self.safe_run(
 
-            "Product",
+            "Product Engine",
 
             recommend_product,
 
@@ -187,7 +101,7 @@ class BrainController:
 
         project["ceo"] = self.safe_run(
 
-            "CEO",
+            "CEO Engine",
 
             ceo.review,
 
@@ -201,7 +115,7 @@ class BrainController:
 
         project["brand"] = self.safe_run(
 
-            "Brand",
+            "Brand Engine",
 
             brand.get_brand
 
@@ -211,7 +125,7 @@ class BrainController:
 
         project["trend"] = self.safe_run(
 
-            "Trend Engine",
+            "Market Trend Engine",
 
             discover_trends,
 
@@ -223,7 +137,7 @@ class BrainController:
 
         project["audience"] = self.safe_run(
 
-            "Audience",
+            "Audience Engine",
 
             audience_plan,
 
@@ -235,7 +149,7 @@ class BrainController:
 
         project["offer"] = self.safe_run(
 
-            "Offer",
+            "Offer Engine",
 
             create_offer,
 
@@ -249,7 +163,7 @@ class BrainController:
 
         project["thinking"] = self.safe_run(
 
-            "Thinking",
+            "Thinking Engine",
 
             think,
 
@@ -263,7 +177,7 @@ class BrainController:
 
         project["marketing"] = self.safe_run(
 
-            "Marketing",
+            "Marketing Engine",
 
             marketing_plan,
 
@@ -275,7 +189,7 @@ class BrainController:
 
         project["psychology"] = self.safe_run(
 
-            "Psychology",
+            "Psychology Engine",
 
             psychology_plan,
 
@@ -287,7 +201,7 @@ class BrainController:
 
         project["director"] = self.safe_run(
 
-            "Director",
+            "Director Engine",
 
             create_director_plan,
 
@@ -299,7 +213,7 @@ class BrainController:
 
         project["storyboard"] = self.safe_run(
 
-            "Storyboard",
+            "Storyboard Engine",
 
             create_storyboard,
 
@@ -311,7 +225,7 @@ class BrainController:
 
         project["scene_prompts"] = self.safe_run(
 
-            "Scene Prompts",
+            "Scene Prompt Engine",
 
             generate_scene_prompts,
 
@@ -323,7 +237,7 @@ class BrainController:
 
         project["script"] = self.safe_run(
 
-            "Script",
+            "Script Engine",
 
             generate_script,
 
@@ -334,7 +248,7 @@ class BrainController:
 
 
         # =====================================
-        # RETENTION + CONVERSION LAYER
+        # WATCH TIME OPTIMIZATION
         # =====================================
 
 
@@ -350,21 +264,14 @@ class BrainController:
 
 
 
-        project["cta"] = self.safe_run(
-
-            "CTA Engine",
-
-            choose_cta,
-
-            topic
-
-        )
-
+        # =====================================
+        # VIRAL CHECK
+        # =====================================
 
 
         project["viral"] = self.safe_run(
 
-            "Viral Analysis",
+            "Viral Analysis Engine",
 
             evaluate_video,
 
@@ -376,11 +283,28 @@ class BrainController:
 
         project["decision"] = self.safe_run(
 
-            "Final Decision",
+            "Final Decision Engine",
 
             final_decision,
 
             project
+
+        )
+
+
+
+        # =====================================
+        # CONVERSION LAST
+        # =====================================
+
+
+        project["cta"] = self.safe_run(
+
+            "CTA Engine",
+
+            choose_cta,
+
+            topic
 
         )
 
