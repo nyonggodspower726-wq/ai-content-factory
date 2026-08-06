@@ -15,6 +15,7 @@ def create_srt(script):
 
     srt_file = "output/subtitles.srt"
 
+
     if isinstance(script, dict):
 
         script = script.get(
@@ -22,7 +23,9 @@ def create_srt(script):
             ""
         )
 
+
     words = str(script).split()
+
 
     if not words:
 
@@ -40,6 +43,7 @@ def create_srt(script):
         encoding="utf-8"
     ) as f:
 
+
         index = 1
 
         start = 0.0
@@ -51,10 +55,9 @@ def create_srt(script):
             chunk_size
         ):
 
+
             text = " ".join(
-
                 words[i:i + chunk_size]
-
             )
 
 
@@ -65,9 +68,11 @@ def create_srt(script):
                 f"{index}\n"
             )
 
+
             f.write(
                 f"{format_time(start)} --> {format_time(end)}\n"
             )
+
 
             f.write(
                 text + "\n\n"
@@ -117,19 +122,27 @@ def format_time(seconds):
 # ==========================================
 
 def add_subtitles(
-
     video_file,
-
     script
-
 ):
+
+
+    if not os.path.exists(video_file):
+
+        print(
+            "Subtitle input video missing."
+        )
+
+        return None
+
+
 
     srt_file = create_srt(
         script
     )
 
 
-    if srt_file is None:
+    if not srt_file:
 
         print(
             "No subtitle generated."
@@ -141,6 +154,12 @@ def add_subtitles(
 
     output = (
         "output/subtitled_video.mp4"
+    )
+
+
+    srt_path = (
+        srt_file
+        .replace("\\","/")
     )
 
 
@@ -157,7 +176,7 @@ def add_subtitles(
         "-vf",
 
         (
-            f"subtitles={srt_file}:"
+            f"subtitles='{srt_path}':"
             "force_style="
             "'Fontsize=20,"
             "PrimaryColour=&HFFFFFF&,"
@@ -169,9 +188,16 @@ def add_subtitles(
             "MarginV=80'"
         ),
 
+
+        "-c:v",
+
+        "libx264",
+
+
         "-c:a",
 
-        "copy",
+        "aac",
+
 
         output
 
@@ -198,19 +224,32 @@ def add_subtitles(
         )
 
 
+        if os.path.exists(output):
+
+            print(
+                "Subtitle video created:",
+                output
+            )
+
+            return output
+
+
+
         print(
-            "Subtitles completed."
+            "Subtitle output missing, keeping original."
         )
 
 
-        return output
+        return video_file
 
 
 
     except Exception as e:
 
+
         print(
-            f"Subtitle Engine Error: {e}"
+            "Subtitle Engine Error:",
+            e
         )
 
 
