@@ -1,15 +1,13 @@
 from brain.ai_router import ask_ai
 import json
+import random
+
 
 
 SYSTEM_PROMPT = """
-You are PromptProHub Trend Brain.
+You are PromptProHub Trend Intelligence Engine.
 
-Your only job is to generate HIGHLY CLICKABLE video ideas.
-
-Never generate boring topics.
-
-Never generate generic titles.
+Your job is to discover fresh viral content opportunities.
 
 Think like:
 
@@ -18,122 +16,154 @@ Think like:
 • Ali Abdaal
 • Iman Gadzhi
 
-The goal is to maximize:
+Generate topics people would stop scrolling to watch.
 
-- Curiosity
-- Clicks
-- Shares
-- Watch time
+Focus on:
 
-Rules:
+- New trends
+- AI breakthroughs
+- Creator economy
+- Online business
+- Digital products
+- Marketing
+- Productivity
+- Money opportunities
+- Future technology
 
-Generate 20 UNIQUE video ideas.
+Avoid boring titles.
 
-Every title should create curiosity.
-
-Avoid:
+Never use:
 
 Top 10...
-
 Best...
-
 Guide...
-
 Tutorial...
-
 Welcome...
 
-Instead use patterns like:
+Use curiosity patterns:
 
-"I tried..."
-
-"This mistake..."
-
-"Nobody knows..."
-
-"Stop doing..."
-
-"You're wasting..."
-
+"I tested..."
+"Nobody is talking about..."
 "The truth about..."
-
-"What happened when..."
+"This changed..."
+"Why everyone is..."
+"I tried..."
+"The mistake..."
 
 Return ONLY valid JSON.
 
-Example:
+Format:
 
 {
-    "ideas":[
-        "I tested 100 AI prompts so you don't have to",
-        "You're wasting ChatGPT if you still do this",
-        "Nobody told freelancers this AI trick",
-        "The prompt that replaced 5 hours of work"
-    ]
+ "topics":[
+    "topic one",
+    "topic two",
+    "topic three"
+ ]
 }
 """
 
 
-def generate_trending_ideas(topic):
+
+def discover_trending_topics():
+
 
     prompt = f"""
 {SYSTEM_PROMPT}
 
-Main topic:
-
-{topic}
+Find 20 viral topics right now.
 """
 
-    response = ask_ai(prompt)
-
-    response = response.replace("```json", "")
-    response = response.replace("```", "")
-    response = response.strip()
 
     try:
 
+        response = ask_ai(prompt)
+
+
+        response = (
+            response
+            .replace("```json","")
+            .replace("```","")
+            .strip()
+        )
+
+
         data = json.loads(response)
 
-        ideas = data.get("ideas", [])
 
-        if ideas:
+        topics = data.get(
+            "topics",
+            []
+        )
+
+
+        if topics:
+
 
             print("=" * 60)
-            print("TREND BRAIN")
+            print("TREND INTELLIGENCE ENGINE")
             print("=" * 60)
-            print(f"Generated {len(ideas)} viral ideas.")
+            print(
+                f"Generated {len(topics)} fresh topics"
+            )
             print("=" * 60)
 
-            return ideas
 
-    except Exception:
+            return topics
 
-        pass
+
+
+    except Exception as e:
+
+        print(
+            "Trend discovery failed:",
+            e
+        )
+
+
 
     print("=" * 60)
-    print("Trend Brain fallback")
+    print("Using trend fallback")
     print("=" * 60)
+
+
 
     return [
 
-        "I tested 100 AI prompts so you don't have to",
+        "The AI tool replacing expensive software",
 
-        "The ChatGPT trick nobody tells freelancers",
+        "The hidden ChatGPT feature creators ignore",
 
-        "You're wasting AI if you still do this",
+        "How AI is changing online businesses",
 
-        "The AI prompt that replaced five hours of work",
+        "The mistake killing freelancer growth",
 
-        "This AI workflow changed everything",
+        "The future of AI content creation",
 
-        "Most creators use ChatGPT the wrong way",
-
-        "Stop asking ChatGPT basic questions",
-
-        "The secret prompt professionals actually use",
-
-        "I wish I knew this AI trick earlier",
-
-        "The AI prompt that made me more productive"
+        "Why creators are switching to AI automation"
 
     ]
+
+
+
+
+
+def choose_trending_topic():
+
+
+    topics = discover_trending_topics()
+
+
+    topic = random.choice(
+        topics
+    )
+
+
+    print("=" * 60)
+    print("SELECTED VIRAL TOPIC")
+    print("=" * 60)
+    print(topic)
+    print("=" * 60)
+
+
+    return topic
