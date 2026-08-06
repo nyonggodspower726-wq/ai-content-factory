@@ -1,23 +1,21 @@
 import os
 import requests
+import urllib.parse
 from PIL import Image, ImageDraw, ImageFont
 
-from config import HF_API_TOKEN
 
+# ==========================================================
+# PROMPTPROHUB POLLINATIONS IMAGE PROVIDER
+# ==========================================================
 
-# ==========================================
-# PROMPTPROHUB IMAGE PROVIDER
-# ==========================================
-
-HF_IMAGE_API = (
-    "https://api-inference.huggingface.co/models/"
-    "black-forest-labs/FLUX.1-dev"
-)
+POLLINATIONS_URL = "https://image.pollinations.ai/prompt/"
 
 
 def create_fallback_image(prompt, output_path):
 
-    print("Creating fallback cinematic image...")
+    print("=" * 60)
+    print("CREATING FALLBACK IMAGE")
+    print("=" * 60)
 
     width = 1080
     height = 1920
@@ -25,171 +23,171 @@ def create_fallback_image(prompt, output_path):
     image = Image.new(
         "RGB",
         (width, height),
-        (20, 20, 20)
+        (18, 18, 18)
     )
 
     draw = ImageDraw.Draw(image)
 
     text = (
         "PromptProHub AI\n\n"
-        + prompt[:150]
+        + prompt[:180]
     )
 
     try:
 
         font = ImageFont.truetype(
             "DejaVuSans.ttf",
-            55
+            52
         )
 
-    except:
+    except Exception:
 
-        font = None
-
+        font = ImageFont.load_default()
 
     draw.multiline_text(
-        (80, 700),
+
+        (80, 650),
+
         text,
-        fill=(255,255,255),
+
+        fill=(255, 255, 255),
+
         font=font,
-        spacing=20
+
+        spacing=18
+
     )
 
+    image.save(output_path)
 
-    image.save(
-        output_path
-    )
-
-
-    print(
-        "Fallback image saved:",
-        output_path
-    )
-
+    print("Fallback image saved.")
 
     return output_path
 
 
-
 def generate_ai_image(
+
     prompt,
+
     output_folder="assets/images"
+
 ):
 
     os.makedirs(
-        output_folder,
-        exist_ok=True
-    )
 
+        output_folder,
+
+        exist_ok=True
+
+    )
 
     filename = (
-        prompt[:40]
-        .replace(" ", "_")
-        .replace("/", "_")
-        .replace("\\", "_")
-    )
 
+        prompt[:40]
+
+        .replace(" ", "_")
+
+        .replace("/", "_")
+
+        .replace("\\", "_")
+
+        .replace(":", "_")
+
+    )
 
     image_path = os.path.join(
+
         output_folder,
+
         f"{filename}.png"
+
     )
 
+    # -------------------------------
+    # Cache
+    # -------------------------------
 
     if os.path.exists(image_path):
 
         print(
+
             f"Using cached image: {image_path}"
+
         )
 
         return image_path
-
-
 
     print("=" * 60)
     print("GENERATING AI IMAGE")
     print("=" * 60)
 
+    cinematic_prompt = (
 
-    headers = {
+        prompt +
 
-        "Authorization":
-        f"Bearer {HF_API_TOKEN}"
+        ", ultra realistic, masterpiece, cinematic lighting, "
 
-    }
+        "professional photography, volumetric light, "
 
+        "high detail, 8k, HDR, sharp focus, "
 
-    payload = {
+        "vertical composition"
 
-        "inputs": prompt
+    )
 
-    }
+    url = (
 
+        POLLINATIONS_URL +
+
+        urllib.parse.quote(cinematic_prompt)
+
+    )
 
     try:
 
-        response = requests.post(
+        response = requests.get(
 
-            HF_IMAGE_API,
-
-            headers=headers,
-
-            json=payload,
+            url,
 
             timeout=300
 
         )
 
-
         response.raise_for_status()
 
-
-        content_type = response.headers.get(
-            "content-type",
-            ""
-        )
-
-
-        if "image" not in content_type:
-
-            raise Exception(
-                "HuggingFace did not return image data"
-            )
-
-
         with open(
-            image_path,
-            "wb"
-        ) as file:
 
-            file.write(
+            image_path,
+
+            "wb"
+
+        ) as f:
+
+            f.write(
+
                 response.content
+
             )
 
+        print("=" * 60)
+        print("POLLINATIONS SUCCESS")
+        print("=" * 60)
 
-        print(
-            "AI image saved:",
-            image_path
-        )
-
+        print(image_path)
 
         return image_path
 
-
-
     except Exception as e:
 
-
         print("=" * 60)
-        print("HUGGINGFACE FAILED")
+        print("POLLINATIONS FAILED")
+        print("=" * 60)
         print(e)
-        print("=" * 60)
-
-
-        # Never return None
-        # Renderer always receives an image
 
         return create_fallback_image(
+
             prompt,
+
             image_path
+
     )
