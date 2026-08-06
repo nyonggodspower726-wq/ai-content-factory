@@ -3,32 +3,16 @@ import requests
 import urllib.parse
 from PIL import Image, ImageDraw, ImageFont
 
+from video.visual_style import PROMPTPROHUB_VISUAL_STYLE
+
 
 POLLINATIONS_URL = "https://image.pollinations.ai/prompt/"
 
 
 
-NEGATIVE_STYLE = """
-
-Avoid:
-anime,
-cartoon,
-illustration,
-comic style,
-3D render,
-digital painting,
-game character,
-avatar,
-fantasy,
-unrealistic face,
-plastic skin,
-robot human,
-fictional character.
-
-"""
-
-
 def create_fallback_image(prompt, output_path):
+
+    print("CREATING FALLBACK IMAGE")
 
     width = 1080
     height = 1920
@@ -39,15 +23,12 @@ def create_fallback_image(prompt, output_path):
         (18,18,18)
     )
 
-
     draw = ImageDraw.Draw(image)
-
 
     text = (
         "PromptProHub AI\n\n"
         + prompt[:180]
     )
-
 
     try:
 
@@ -61,7 +42,6 @@ def create_fallback_image(prompt, output_path):
         font = ImageFont.load_default()
 
 
-
     draw.multiline_text(
         (80,650),
         text,
@@ -71,10 +51,7 @@ def create_fallback_image(prompt, output_path):
     )
 
 
-    image.save(
-        output_path
-    )
-
+    image.save(output_path)
 
     return output_path
 
@@ -85,7 +62,6 @@ def generate_ai_image(
     output_folder="assets/images"
 ):
 
-
     os.makedirs(
         output_folder,
         exist_ok=True
@@ -93,11 +69,8 @@ def generate_ai_image(
 
 
     filename = (
-
         str(abs(hash(prompt)))
-
         + ".png"
-
     )
 
 
@@ -105,7 +78,6 @@ def generate_ai_image(
         output_folder,
         filename
     )
-
 
 
     if os.path.exists(image_path):
@@ -120,61 +92,33 @@ def generate_ai_image(
 
 
     print("="*60)
-    print("GENERATING REALISTIC BUSINESS IMAGE")
+    print("GENERATING PROMPTPROHUB REALISTIC IMAGE")
     print("="*60)
 
 
 
     final_prompt = f"""
 
-Real human photography.
+{PROMPTPROHUB_VISUAL_STYLE}
+
+
+SCENE:
 
 {prompt}
-
-
-Requirements:
-
-A real person.
-Natural face.
-Natural skin texture.
-Real office environment.
-Real laptop computer.
-Professional workspace.
-Entrepreneur or creator working.
-
-Style:
-
-Business documentary photography.
-Apple commercial style.
-Forbes magazine photography.
-DSLR camera.
-Natural lighting.
-Realistic depth of field.
-Premium advertisement quality.
-Vertical 9:16.
-
-
-{NEGATIVE_STYLE}
 
 """
 
 
     url = (
-
         POLLINATIONS_URL
-
         +
-
         urllib.parse.quote(
             final_prompt
         )
-
     )
 
 
-
     try:
-
 
         response = requests.get(
             url,
@@ -183,7 +127,6 @@ Vertical 9:16.
 
 
         response.raise_for_status()
-
 
 
         with open(
@@ -208,9 +151,8 @@ Vertical 9:16.
 
     except Exception as e:
 
-
         print(
-            "IMAGE GENERATION FAILED:",
+            "POLLINATIONS FAILED:",
             e
         )
 
@@ -218,4 +160,4 @@ Vertical 9:16.
         return create_fallback_image(
             prompt,
             image_path
-    )
+)
