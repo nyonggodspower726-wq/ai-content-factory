@@ -7,7 +7,9 @@ You are PromptProHub Audience AI.
 
 Your job is to identify the perfect audience.
 
-Return JSON only.
+Return ONLY valid JSON.
+No markdown.
+No explanations.
 
 Determine:
 
@@ -21,7 +23,7 @@ Determine:
 8. Content style
 9. Best platform
 
-Example:
+Format:
 
 {
 "primary_audience":"Freelancers",
@@ -37,6 +39,26 @@ Example:
 """
 
 
+def clean_json(text):
+
+    text = (
+        text
+        .replace("```json", "")
+        .replace("```", "")
+        .strip()
+    )
+
+    start = text.find("{")
+    end = text.rfind("}")
+
+    if start != -1 and end != -1:
+
+        text = text[start:end + 1]
+
+    return text
+
+
+
 def audience_plan(topic):
 
     prompt = f"""
@@ -47,21 +69,33 @@ Analyse the audience for:
 {topic}
 """
 
-    response = ask_ai(prompt)
-
-    response = response.replace("```json", "")
-    response = response.replace("```", "")
-    response = response.strip()
-
 
     try:
 
-        return json.loads(response)
+        response = ask_ai(prompt)
+
+        response = clean_json(
+            response
+        )
+
+
+        return json.loads(
+            response
+        )
+
 
     except Exception as e:
 
-        print("Audience JSON error:")
+
+        print("=" * 60)
+        print("AUDIENCE JSON ERROR")
+        print("=" * 60)
+
         print(e)
+
+
+        print("Using fallback audience")
+
 
         return {
 
@@ -71,9 +105,9 @@ Analyse the audience for:
 
             "experience": "Beginner",
 
-            "pain": "Low productivity",
+            "pain": "Low productivity and lack of AI skills",
 
-            "desire": "Save time using AI",
+            "desire": "Save time and grow faster",
 
             "buying_intent": "Medium",
 
@@ -81,6 +115,6 @@ Analyse the audience for:
 
             "content_style": "Educational",
 
-            "platform": "Short form video"
+            "platform": "YouTube Shorts"
 
         }
