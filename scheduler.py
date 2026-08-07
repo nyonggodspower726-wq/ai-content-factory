@@ -6,7 +6,7 @@ from bot import main
 
 
 # Nigeria 24-hourformat (24-hourformat)
-TEST_TIME = "21:00"
+TEST_TIME = "22:36"
 
 
 def run_bot():
