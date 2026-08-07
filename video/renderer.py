@@ -19,6 +19,7 @@ from moviepy.editor import (
     CompositeAudioClip,
     concatenate_videoclips
 )
+from video.end_card import EndCard
 
 
 class Renderer:
@@ -244,6 +245,18 @@ class Renderer:
 
             )
 
+            try:
+                end_card = EndCard().create()
+                final = concatenate_videoclips(
+                    [final, end_card],
+                    method="compose"
+                )
+            except Exception as e:
+                print("="*60)
+                print("END CARD ERROR")
+                print("="*60)
+                print(e)
+
 
         except Exception as e:
 
@@ -468,3 +481,4 @@ class Renderer:
 
 
         return output
+            
