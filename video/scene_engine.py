@@ -1,3 +1,6 @@
+from brain.story_splitter import split_story
+
+
 class SceneEngine:
 
     def __init__(self):
@@ -6,54 +9,47 @@ class SceneEngine:
         print("PROMPTPROHUB SCENE ENGINE")
         print("=" * 60)
 
-
     def generate(
+
         self,
+
         prompts,
+
         script
+
     ):
+
+        print("Creating visual storyboard...")
+
+        storyboard = split_story(script)
 
         scenes = []
 
-        if not prompts:
+        for item in storyboard:
 
-            prompts = script.split(".")
+            description = item.get(
 
+                "description",
 
-        if isinstance(prompts, dict):
+                ""
 
-            prompts = prompts.get(
-                "scenes",
-                []
-            )
+            ).strip()
 
+            if not description:
 
-        if isinstance(prompts, str):
-
-            prompts = [prompts]
-
-
-        for index, prompt in enumerate(prompts):
-
-            if isinstance(prompt, dict):
-
-                prompt = prompt.get(
-                    "prompt",
-                    ""
-                )
-
-            prompt = str(prompt).strip()
-
-            if not prompt:
                 continue
-
-            search_prompt = self.optimize_prompt(prompt)
 
             scene = {
 
-                "scene_id": index + 1,
+                "scene_id": item.get(
 
-                "prompt": search_prompt,
+                    "scene",
+
+                    len(scenes) + 1
+
+                ),
+
+                "prompt": description,
 
                 "duration": 5,
 
@@ -61,51 +57,14 @@ class SceneEngine:
 
                 "transition": "fade",
 
-                "effect": "documentary"
+                "effect": "ken_burns"
 
             }
 
             scenes.append(scene)
 
-        print(f"{len(scenes)} scenes generated.")
+        print("=" * 60)
+        print(f"{len(scenes)} cinematic scenes created.")
+        print("=" * 60)
 
         return scenes
-
-
-    def optimize_prompt(self, prompt):
-
-        prompt = prompt.lower()
-
-        if "chatgpt" in prompt or "ai prompt" in prompt:
-
-            return "young entrepreneur using laptop in modern office"
-
-        if "business" in prompt:
-
-            return "business owner working in modern office"
-
-        if "marketing" in prompt:
-
-            return "digital marketer working on laptop"
-
-        if "freelancer" in prompt:
-
-            return "freelancer working from home office"
-
-        if "content" in prompt:
-
-            return "content creator at computer desk"
-
-        if "automation" in prompt:
-
-            return "professional using AI software on laptop"
-
-        if "money" in prompt:
-
-            return "successful entrepreneur office workspace"
-
-        if "website" in prompt:
-
-            return "web designer working on laptop"
-
-        return "professional working on laptop in modern office"
