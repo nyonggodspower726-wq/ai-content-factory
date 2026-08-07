@@ -1,28 +1,19 @@
 from pytrends.request import TrendReq
-
-pytrends = TrendReq(hl="en-US", tz=0)
+import time
+import random
 
 
 PROMPT_KEYWORDS = [
 
     "ChatGPT prompts",
-
     "AI prompts",
-
     "Prompt engineering",
-
     "ChatGPT for business",
-
     "ChatGPT for freelancers",
-
     "AI automation",
-
     "AI workflow",
-
     "Prompt templates",
-
     "AI productivity",
-
     "OpenAI"
 
 ]
@@ -34,22 +25,43 @@ def get_google_trends():
     print("GOOGLE TRENDS ENGINE")
     print("=" * 60)
 
+
+    pytrends = TrendReq(
+        hl="en-US",
+        tz=0,
+        retries=2,
+        backoff_factor=1
+    )
+
+
     results = []
+
 
     for keyword in PROMPT_KEYWORDS:
 
         try:
+
+            print(
+                f"Searching: {keyword}"
+            )
+
 
             pytrends.build_payload(
                 [keyword],
                 timeframe="now 7-d"
             )
 
+
             related = pytrends.related_queries()
 
-            if keyword in related:
 
-                top = related[keyword].get("top")
+            data = related.get(keyword)
+
+
+            if data:
+
+                top = data.get("top")
+
 
                 if top is not None:
 
@@ -57,39 +69,57 @@ def get_google_trends():
 
                         results.append(value)
 
+
+
+            # slow down requests
+            time.sleep(
+                random.randint(5,10)
+            )
+
+
         except Exception as e:
 
-            print(f"{keyword}: {e}")
+            print(
+                f"{keyword}: Google blocked request"
+            )
 
-    # Remove duplicates
-    results = list(dict.fromkeys(results))
+            print(e)
 
-    print(f"Collected {len(results)} Google trends")
+            time.sleep(15)
 
-    if len(results) == 0:
+
+
+    results = list(
+        dict.fromkeys(results)
+    )
+
+
+    print(
+        f"Collected {len(results)} Google trends"
+    )
+
+
+    if not results:
+
+        print(
+            "Using fallback trends"
+        )
+
 
         results = [
 
             "Best ChatGPT prompts",
-
             "AI prompts",
-
             "Prompt engineering",
-
             "ChatGPT workflow",
-
             "Prompt templates",
-
             "AI automation",
-
             "Freelancer AI",
-
             "Business AI",
-
             "OpenAI",
-
             "ChatGPT productivity"
 
         ]
+
 
     return results
