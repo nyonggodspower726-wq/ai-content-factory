@@ -18,6 +18,7 @@ TARGET AUDIENCE
 • Digital Marketers
 • AI Users
 
+
 STYLE
 
 Think:
@@ -28,8 +29,10 @@ Think:
 • National Geographic Documentary
 • Luxury Brand Advertisement
 
+
 EVERY IMAGE MUST LOOK LIKE
 REAL DSLR PHOTOGRAPHY
+
 
 Use:
 
@@ -47,6 +50,7 @@ HDR,
 sharp focus,
 vertical 9:16.
 
+
 REAL PEOPLE ONLY
 
 Never create:
@@ -62,6 +66,7 @@ fantasy human,
 robot,
 plastic skin,
 fake face.
+
 
 CREATE VARIETY
 
@@ -89,6 +94,7 @@ luxury home office,
 creator editing content,
 productivity workspace.
 
+
 CAMERA ANGLES
 
 Randomly use:
@@ -102,6 +108,7 @@ top-down desk shot,
 side profile,
 cinematic wide shot.
 
+
 LIGHTING
 
 Randomly use:
@@ -112,6 +119,7 @@ studio lighting,
 moody office lighting,
 blue hour,
 warm indoor lighting.
+
 
 EMOTION
 
@@ -124,6 +132,7 @@ determined,
 creative,
 ambitious.
 
+
 Return ONLY valid JSON.
 
 Maximum 8 scenes.
@@ -131,10 +140,10 @@ Maximum 8 scenes.
 Format:
 
 [
-{
-"scene":1,
-"prompt":"..."
-}
+ {
+  "scene":1,
+  "prompt":"..."
+ }
 ]
 """
 
@@ -144,6 +153,7 @@ def generate_scene_prompts(storyboard):
     prompt = f"""
 {SYSTEM_PROMPT}
 
+
 Storyboard:
 
 {storyboard}
@@ -152,7 +162,22 @@ Storyboard:
 
     try:
 
+        print("=" * 60)
+        print("PROMPT ENGINE")
+        print("=" * 60)
+
+
         response = ask_ai(prompt)
+
+
+        # Check empty AI response
+
+        if not response:
+
+            raise Exception(
+                "AI returned empty response"
+            )
+
 
         response = (
             response
@@ -162,17 +187,47 @@ Storyboard:
         )
 
 
-        scenes = json.loads(response)
+        if not response:
+
+            raise Exception(
+                "AI response empty after cleaning"
+            )
 
 
-        if not isinstance(scenes, list):
+        scenes = json.loads(
+            response
+        )
+
+
+        if not isinstance(
+            scenes,
+            list
+        ):
 
             raise Exception(
                 "AI response is not a list"
             )
 
 
+        print(
+            f"Generated {len(scenes)} scenes"
+        )
+
+
         return scenes[:8]
+
+
+
+    except json.JSONDecodeError as e:
+
+        print("=" * 60)
+        print("PROMPT JSON ERROR")
+        print("=" * 60)
+        print(e)
+
+
+        return fallback_scene()
+
 
 
     except Exception as e:
@@ -183,10 +238,30 @@ Storyboard:
         print(e)
 
 
-        return [
-            {
-                "scene": 1,
-                "prompt":
-                "Ultra realistic DSLR photograph of a real entrepreneur working on a laptop inside a modern office, cinematic lighting, professional commercial photography, natural skin texture, vertical 9:16."
-            }
-      ]
+        return fallback_scene()
+
+
+
+def fallback_scene():
+
+    print(
+        "Using Prompt Engine fallback"
+    )
+
+
+    return [
+
+        {
+            "scene": 1,
+
+            "prompt":
+            """
+Ultra realistic DSLR photograph of a real entrepreneur
+working on a laptop inside a modern premium office,
+cinematic lighting, professional commercial photography,
+natural skin texture, 85mm lens, shallow depth of field,
+HDR, 8K, sharp focus, vertical 9:16.
+"""
+        }
+
+    ]
