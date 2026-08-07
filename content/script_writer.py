@@ -21,9 +21,10 @@ Requirements:
 - Use very simple English.
 - Sound natural and conversational.
 - Mention {BRAND_NAME} naturally if appropriate.
+
 - End with this exact call to action:
 
-Visit nyonggodspower726-wq.github.io/promptprohub to download premium AI prompt templates that save you hours of work.
+Click the link in my bio to download premium AI prompt templates that save you hours of work.
 
 Rules:
 
