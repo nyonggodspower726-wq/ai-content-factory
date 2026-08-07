@@ -12,9 +12,7 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 HF_API_TOKEN = os.getenv("HF_API_TOKEN")
 
-AI_VIDEO_API_URL = os.getenv("AI_VIDEO_API_URL")
-
-AI_VIDEO_API_KEY = os.getenv("AI_VIDEO_API_KEY")
+PEXELS_API_KEY = os.getenv("PEXELS_API_KEY")
 
 
 # =====================================
@@ -106,13 +104,11 @@ YOUTUBE_REFRESH_TOKEN = os.getenv(
 )
 
 
-
 # =====================================
 # CONTENT SETTINGS
 # =====================================
 
 VIDEOS_PER_DAY = 3
-
 
 POSTING_TIMES = [
 
@@ -124,9 +120,7 @@ POSTING_TIMES = [
 
 ]
 
-
 VIDEO_LENGTH = 30
-
 
 
 # =====================================
@@ -142,7 +136,6 @@ AUDIO_FOLDER = "output/audio"
 IMAGE_FOLDER = "output/images"
 
 
-
 # =====================================
 # VIDEO ASSETS
 # =====================================
@@ -150,7 +143,6 @@ IMAGE_FOLDER = "output/images"
 CLIP_FOLDER = "assets/clips"
 
 CACHE_FOLDER = "assets/cache"
-
 
 
 # =====================================
@@ -162,7 +154,6 @@ DEFAULT_ASPECT_RATIO = "9:16"
 DEFAULT_VIDEO_QUALITY = "cinematic"
 
 DEFAULT_VIDEO_DURATION = 5
-
 
 
 # =====================================
