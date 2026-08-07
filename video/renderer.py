@@ -224,3 +224,247 @@ class Renderer:
                     "Renderer Error:",
                     e
                     )
+        if not clips:
+
+            print(
+                "No images loaded."
+            )
+
+            return None
+
+
+
+        try:
+
+            final = concatenate_videoclips(
+
+                clips,
+
+                method="compose"
+
+            )
+
+
+        except Exception as e:
+
+
+            print(
+                "Concatenation Error:",
+                e
+            )
+
+            return None
+
+
+
+        voice = None
+
+        music = None
+
+        tracks = []
+
+
+
+        # -------------------------------------------------
+        # Voice Track
+        # -------------------------------------------------
+
+        if voice_file and os.path.exists(
+            voice_file
+        ):
+
+
+            voice = AudioFileClip(
+                voice_file
+            )
+
+            tracks.append(
+                voice
+            )
+
+
+
+        # -------------------------------------------------
+        # Background Music
+        # -------------------------------------------------
+
+        music_file = self.get_background_music()
+
+
+
+        if music_file:
+
+
+            try:
+
+
+                music = AudioFileClip(
+                    music_file
+                )
+
+
+
+                if music.duration < final.duration:
+
+
+                    music = music.loop(
+
+                        duration=final.duration
+
+                    )
+
+
+                else:
+
+
+                    music = music.subclip(
+
+                        0,
+
+                        final.duration
+
+                    )
+
+
+
+                # Professional music mixing
+
+                music = (
+
+                    music
+
+                    .volumex(0.12)
+
+                    .audio_fadein(1.5)
+
+                    .audio_fadeout(2)
+
+                )
+
+
+
+                tracks.append(
+                    music
+                )
+
+
+
+                print(
+                    f"Using background music: {music_file}"
+                )
+
+
+
+            except Exception as e:
+
+
+                print(
+                    "Music Error:",
+                    e
+                )
+
+
+
+        # -------------------------------------------------
+        # Combine Audio
+        # -------------------------------------------------
+
+        if tracks:
+
+
+            final = final.set_audio(
+
+                CompositeAudioClip(
+                    tracks
+                )
+
+            )
+
+
+
+        output = "output/ai_sales_video.mp4"
+
+
+
+        print("=" * 60)
+
+        print(
+            "Rendering Final Video..."
+        )
+
+        print("=" * 60)
+
+
+
+        final.write_videofile(
+
+            output,
+
+            codec="libx264",
+
+            audio_codec="aac",
+
+            fps=24,
+
+            preset="ultrafast",
+
+            bitrate="2000k",
+
+            threads=1,
+
+            logger=None
+
+        )
+
+
+
+        # -------------------------------------------------
+        # Cleanup
+        # -------------------------------------------------
+
+        if voice:
+
+            voice.close()
+
+
+
+        if music:
+
+            music.close()
+
+
+
+        for clip in clips:
+
+            clip.close()
+
+
+
+        final.close()
+
+
+
+        del clips
+
+        del final
+
+
+        gc.collect()
+
+
+
+        print("=" * 60)
+
+        print(
+            "Rendering completed."
+        )
+
+        print(
+            output
+        )
+
+        print("=" * 60)
+
+
+
+        return output
