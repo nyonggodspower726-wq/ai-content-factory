@@ -202,3 +202,278 @@ class PromptProHubVideoEngine:
             )
 
             return None
+        # =============================
+        # MOTION
+        # =============================
+
+        print("MOTION ENGINE")
+
+
+        timeline = self.motion_engine.apply(
+
+            timeline
+
+        )
+
+
+
+        # =============================
+        # CAMERA
+        # =============================
+
+        print("CAMERA ENGINE")
+
+
+        timeline = apply_camera_effects(
+
+            timeline
+
+        )
+
+
+
+        # =============================
+        # EFFECTS
+        # =============================
+
+        print("EFFECT ENGINE")
+
+
+        timeline = self.effects_engine.apply(
+
+            timeline
+
+        )
+
+
+
+        # =============================
+        # TRANSITIONS
+        # =============================
+
+        print("TRANSITION ENGINE")
+
+
+        timeline = self.transition_engine.apply(
+
+            timeline
+
+        )
+
+
+
+        # =============================
+        # QUALITY
+        # =============================
+
+        print("QUALITY ENGINE")
+
+
+        timeline = self.quality_engine.optimize(
+
+            timeline
+
+        )
+
+
+
+        # =============================
+        # RENDER
+        # =============================
+
+        print("RENDER ENGINE")
+
+
+        output = self.renderer.render(
+
+            timeline,
+
+            voice_file
+
+        )
+
+
+        if not self.check_file(
+
+            output,
+
+            "Rendered video"
+
+        ):
+
+            return None
+
+
+
+        # =============================
+        # WATERMARK
+        # =============================
+
+        print(
+            "WATERMARK ENGINE"
+        )
+
+
+        output = self.watermark_engine.apply(
+
+            output
+
+        )
+
+
+        if not self.check_file(
+
+            output,
+
+            "Watermarked video"
+
+        ):
+
+            return None
+
+
+
+        # =============================
+        # MUSIC
+        # =============================
+
+        if music_file:
+
+
+            print(
+                "ADDING BACKGROUND MUSIC"
+            )
+
+
+            from moviepy.editor import VideoFileClip
+
+
+            video = VideoFileClip(
+
+                output
+
+            )
+
+
+            video = add_background_music(
+
+                video,
+
+                music_file
+
+            )
+
+
+            music_output = (
+
+                "output/music_video.mp4"
+
+            )
+
+
+            video.write_videofile(
+
+                music_output,
+
+                codec="libx264",
+
+                audio_codec="aac",
+
+                fps=30,
+
+                logger=None
+
+            )
+
+
+            video.close()
+
+
+            output = music_output
+
+
+
+            if not self.check_file(
+
+                output,
+
+                "Music video"
+
+            ):
+
+                return None
+
+
+
+
+        # =============================
+        # SUBTITLES
+        # =============================
+
+        print(
+            "SUBTITLE ENGINE"
+        )
+
+
+        output = add_subtitles(
+
+            output,
+
+            script_text
+
+        )
+
+
+
+        if not self.check_file(
+
+            output,
+
+            "Subtitle video"
+
+        ):
+
+            return None
+
+
+
+
+        # =============================
+        # BRANDING
+        # =============================
+
+        print(
+            "BRANDING ENGINE"
+        )
+
+
+        output = self.branding_engine.apply(
+
+            output,
+
+            hook
+
+        )
+
+
+
+        if not self.check_file(
+
+            output,
+
+            "Final branded video"
+
+        ):
+
+            return None
+
+
+
+
+        print("=" * 60)
+        print("FINAL VIDEO READY")
+        print(output)
+        print("=" * 60)
+
+
+        return output
