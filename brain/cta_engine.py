@@ -4,46 +4,66 @@ import random
 
 
 SYSTEM_PROMPT = """
-You are PromptProHub CTA Engine.
+You are PromptProHub AI Conversion Director.
 
 Your ONLY job is to create HIGH-CONVERTING Call-To-Actions.
 
-Think like:
+The CTA must sound like the ending of a premium YouTube documentary.
 
-• Alex Hormozi
-• Russell Brunson
-• Apple
-• MrBeast
+Audience:
+- Freelancers
+- Business Owners
+- Content Creators
+- Digital Marketers
+- AI Users
 
-Rules:
+Every CTA should naturally mention PromptProHub.
 
-Never use boring CTAs.
+Whenever appropriate, naturally mention:
+
+PromptProHub.com
+
+Never force it.
+
+Never sound salesy.
+
+Psychology:
+
+• Curiosity
+• Authority
+• Emotion
+• FOMO
+• Scarcity
+• Future pacing
 
 Avoid:
 
-Like and Subscribe...
+Like and Subscribe
+Comment Below
+Thanks For Watching
+Generic YouTube endings
 
-Thanks for watching...
+Generate 15 DIFFERENT CTAs.
 
-Comment below...
+Each CTA should feel unique.
 
-Instead create CTAs that feel natural.
+Examples:
 
-Generate 15 CTAs.
+"If you're serious about using AI to grow faster, PromptProHub has everything you need. Visit PromptProHub.com and start today."
+
+"The difference between watching and succeeding is taking action. Explore PromptProHub.com before your competitors do."
+
+"One prompt can save hours of work. Imagine what hundreds can do. Discover PromptProHub today."
 
 Return ONLY JSON.
 
-Example
-
 {
     "cta":[
-        "If you're serious about growing, save this video because you'll need it later.",
-        "The people who act first always win.",
-        "Everything starts with one decision."
+        "...",
+        "...",
+        "..."
     ]
 }
-
-Return JSON only.
 """
 
 
@@ -75,42 +95,45 @@ Topic:
         if ideas:
 
             print("=" * 60)
-            print("CTA ENGINE")
+            print("PROMPTPROHUB CTA ENGINE")
             print("=" * 60)
-            print(f"Generated {len(ideas)} CTAs.")
+            print(f"Generated {len(ideas)} AI CTAs")
             print("=" * 60)
 
             return ideas
 
     except Exception as e:
 
+        print("=" * 60)
+        print("CTA ENGINE FAILED")
+        print("=" * 60)
         print(e)
 
     print("=" * 60)
-    print("Using CTA fallback")
+    print("USING CTA FALLBACK")
     print("=" * 60)
 
     return [
 
-        "If you're serious about growing, don't ignore what you've just learned.",
+        "Ready to work smarter instead of harder? Visit PromptProHub.com and unlock AI tools built for creators.",
 
-        "The people who succeed are the ones who take action today.",
+        "Every expert started with one decision. Make yours today at PromptProHub.com.",
 
-        "Save this because you'll want to come back to it later.",
+        "Don't let your competitors discover these AI tools before you do. Visit PromptProHub.com.",
 
-        "Start applying this today and thank yourself later.",
+        "One great prompt can save hours. Imagine having hundreds. Explore PromptProHub today.",
 
-        "Small actions today create massive results tomorrow.",
+        "If you're serious about growing with AI, PromptProHub was built for you.",
 
-        "The next move is yours.",
+        "The future belongs to creators who use AI. Become one of them with PromptProHub.",
 
-        "Success always starts with one decision.",
+        "Your next breakthrough could start with a single prompt. Visit PromptProHub.com today.",
 
-        "Don't just watch... use this.",
+        "Work faster. Create better. Grow bigger. Start with PromptProHub.",
 
-        "Turn this knowledge into results.",
+        "The smartest creators don't work harder—they work smarter with AI. Join them at PromptProHub.",
 
-        "If this helped you, imagine what happens when you apply it."
+        "This is only the beginning. Discover what's possible at PromptProHub.com."
 
     ]
 
