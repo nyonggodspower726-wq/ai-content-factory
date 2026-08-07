@@ -1,8 +1,5 @@
 import PIL.Image
 
-# =====================================================
-# Pillow Compatibility Fix
-# =====================================================
 if not hasattr(PIL.Image, "ANTIALIAS"):
     try:
         PIL.Image.ANTIALIAS = PIL.Image.Resampling.LANCZOS
@@ -11,10 +8,12 @@ if not hasattr(PIL.Image, "ANTIALIAS"):
 
 import os
 import gc
+import random
 
 from moviepy.editor import (
     ImageClip,
     AudioFileClip,
+    CompositeAudioClip,
     concatenate_videoclips
 )
 
@@ -24,23 +23,46 @@ class Renderer:
     def __init__(self):
 
         print("=" * 60)
-        print("PROMPTPROHUB LIGHTWEIGHT RENDER ENGINE")
+        print("PROMPTPROHUB CINEMATIC RENDER ENGINE")
         print("=" * 60)
 
-        os.makedirs(
-            "output",
-            exist_ok=True
-        )
+        os.makedirs("output", exist_ok=True)
+
+        self.music_folder = "assets/music"
+
+    def get_background_music(self):
+
+        if not os.path.exists(self.music_folder):
+
+            return None
+
+        music = [
+
+            os.path.join(self.music_folder, f)
+
+            for f in os.listdir(self.music_folder)
+
+            if f.lower().endswith(".mp3")
+
+        ]
+
+        if not music:
+
+            return None
+
+        return random.choice(music)
 
     def render(
+
         self,
+
         timeline,
+
         voice_file=None
+
     ):
 
         if not timeline:
-
-            print("No timeline.")
 
             return None
 
@@ -56,86 +78,123 @@ class Renderer:
 
             if not os.path.exists(path):
 
-                print(f"Missing image: {path}")
-
                 continue
 
-            try:
+            duration = scene.get(
 
-                duration = scene.get(
-                    "duration",
-                    5
-                )
+                "duration",
 
-                clip = (
-                    ImageClip(path)
-                    .set_duration(duration)
-                    .resize((720, 1280))
-                )
+                5
 
-                motion = scene.get(
-                    "motion",
-                    "slow_zoom"
-                )
+            )
 
-                if motion == "slow_zoom":
+            clip = (
 
-                    clip = clip.resize(
-                        lambda t: 1 + (
-                            0.03 * t / duration
-                        )
+                ImageClip(path)
+
+                .set_duration(duration)
+
+                .resize((720, 1280))
+
+            )
+
+            motion = random.choice([
+
+                "zoom_in",
+
+                "zoom_out",
+
+                "slow_zoom"
+
+            ])
+
+            if motion == "zoom_in":
+
+                clip = clip.resize(
+
+                    lambda t: 1 + (
+
+                        0.05 * t / duration
+
                     )
 
-                elif motion == "zoom_out":
+                )
 
-                    clip = clip.resize(
-                        lambda t: 1.03 - (
-                            0.03 * t / duration
-                        )
+            elif motion == "zoom_out":
+
+                clip = clip.resize(
+
+                    lambda t: 1.05 - (
+
+                        0.05 * t / duration
+
                     )
 
-                clip = clip.fadein(0.3)
-                clip = clip.fadeout(0.3)
+                )
 
-                clips.append(clip)
+            else:
 
-            except Exception as e:
+                clip = clip.resize(
 
-                print("Renderer Error:", e)
+                    lambda t: 1 + (
 
-        if not clips:
+                        0.03 * t / duration
 
-            print("No images loaded.")
+                    )
 
-            return None
+                )
 
-        try:
+            clip = clip.fadein(0.4)
 
-            final = concatenate_videoclips(
-                clips,
-                method="chain"
+            clip = clip.fadeout(0.4)
+
+            clips.append(clip)
+
+        final = concatenate_videoclips(
+
+            clips,
+
+            method="compose"
+
+        )
+
+        voice = None
+
+        music = None
+
+        tracks = []
+
+        if voice_file and os.path.exists(voice_file):
+
+            voice = AudioFileClip(voice_file)
+
+            tracks.append(voice)
+
+        music_file = self.get_background_music()
+
+        if music_file:
+
+            music = AudioFileClip(music_file)
+
+            music = music.volumex(0.15)
+
+            if music.duration < final.duration:
+
+                music = music.loop(duration=final.duration)
+
+            else:
+
+                music = music.subclip(0, final.duration)
+
+            tracks.append(music)
+
+        if tracks:
+
+            final = final.set_audio(
+
+                CompositeAudioClip(tracks)
+
             )
-
-        except Exception:
-
-            final = concatenate_videoclips(
-                clips,
-                method="compose"
-            )
-
-        audio = None
-
-        if (
-            voice_file
-            and
-            os.path.exists(voice_file)
-        ):
-
-            audio = AudioFileClip(
-                voice_file
-            )
-
-            final = final.set_audio(audio)
 
         output = "output/ai_sales_video.mp4"
 
@@ -163,18 +222,19 @@ class Renderer:
 
         )
 
-        if audio:
+        if voice:
 
-            audio.close()
+            voice.close()
+
+        if music:
+
+            music.close()
 
         for clip in clips:
 
             clip.close()
 
         final.close()
-
-        del clips
-        del final
 
         gc.collect()
 
