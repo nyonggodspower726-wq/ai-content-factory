@@ -415,3 +415,123 @@ def upload_to_youtube(
 
 
         response = None
+        # ====================================================
+        # UPLOAD PROGRESS
+        # ====================================================
+
+        while response is None:
+
+            status, response = (
+                request.next_chunk()
+            )
+
+
+            if status:
+
+                progress = int(
+                    status.progress() * 100
+                )
+
+                print(
+                    f"Uploading... {progress}%"
+                )
+
+
+        # ====================================================
+        # SUCCESS
+        # ====================================================
+
+        video_id = response.get(
+            "id"
+        )
+
+
+        if not video_id:
+
+            print(
+                "YouTube did not return a video ID."
+            )
+
+            return False
+
+
+        print("=" * 60)
+        print("YOUTUBE SHORT UPLOAD SUCCESSFUL")
+        print("=" * 60)
+
+
+        print(
+            "Video ID:",
+            video_id
+        )
+
+
+        print(
+            "Video URL:",
+            f"https://youtu.be/{video_id}"
+        )
+
+
+        print("=" * 60)
+
+
+        # ====================================================
+        # IMPORTANT
+        # ====================================================
+        #
+        # DO NOT CALL:
+        #
+        # youtube.thumbnails().set(...)
+        #
+        # The previous code did that and produced:
+        #
+        # HTTP 403
+        # youtube.thumbnail
+        # forbidden
+        #
+        # We intentionally skip it for Shorts.
+        # ====================================================
+
+
+        print("=" * 60)
+        print(
+            "CUSTOM SHORTS THUMBNAIL API SKIPPED"
+        )
+
+        print(
+            "Video upload completed successfully."
+        )
+
+        print("=" * 60)
+
+
+        return video_id
+
+
+    # ========================================================
+    # ERROR HANDLER
+    # ========================================================
+
+    except Exception as e:
+
+        print("=" * 60)
+        print("YOUTUBE UPLOAD FAILED")
+        print("=" * 60)
+
+
+        print(
+            "Error type:",
+            type(e).__name__
+        )
+
+
+        print(
+            "Error:",
+            str(e)
+        )
+
+
+        print("=" * 60)
+
+
+        return False
