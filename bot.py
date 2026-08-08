@@ -307,3 +307,146 @@ def main(topic=None):
         print("VIDEO CREATED SUCCESSFULLY")
         print(video)
         print("=" * 60)
+        # =========================
+        # SOCIAL UPLOAD
+        # =========================
+
+        try:
+
+            log(
+                "Uploading TikTok..."
+            )
+
+
+            upload_to_tiktok(
+                video
+            )
+
+
+        except Exception as e:
+
+            log(
+                f"TikTok upload failed: {e}"
+            )
+
+
+        # =========================
+        # YOUTUBE SHORTS
+        # =========================
+
+        try:
+
+            log(
+                "Uploading YouTube Shorts..."
+            )
+
+
+            # =========================
+            # EXTRACT SEO DATA
+            # =========================
+
+            if isinstance(seo, dict):
+
+                youtube_title = seo.get(
+                    "click_title",
+                    seo.get(
+                        "title",
+                        topic
+                    )
+                )
+
+
+                youtube_description = seo.get(
+                    "description",
+                    ""
+                )
+
+
+            else:
+
+                youtube_title = topic
+
+                youtube_description = str(
+                    seo
+                )
+
+
+            # =========================
+            # THUMBNAIL PATH
+            # =========================
+
+            thumbnail_path = (
+                "assets/hook_images/"
+                "promptprohub_hook.jpg"
+            )
+
+
+            # =========================
+            # CHECK THUMBNAIL
+            # =========================
+
+            if os.path.exists(
+                thumbnail_path
+            ):
+
+                log(
+                    f"YouTube thumbnail found: "
+                    f"{thumbnail_path}"
+                )
+
+            else:
+
+                log(
+                    "YouTube thumbnail not found."
+                )
+
+                thumbnail_path = None
+
+
+            # =========================
+            # UPLOAD TO YOUTUBE
+            # =========================
+
+            upload_to_youtube(
+
+                video,
+
+                youtube_title,
+
+                youtube_description,
+
+                thumbnail_path
+
+            )
+
+
+        except Exception as e:
+
+            log(
+                f"YouTube upload failed: {e}"
+            )
+
+
+        # =========================
+        # COMPLETE
+        # =========================
+
+        log(
+            "Production completed successfully."
+        )
+
+
+    except Exception as e:
+
+        log(
+            f"BOT FAILED: {e}"
+        )
+
+
+# =========================
+# START BOT
+# =========================
+
+if __name__ == "__main__":
+
+    main()
