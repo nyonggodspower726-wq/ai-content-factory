@@ -3,12 +3,12 @@ from brain.pipeline import pipeline
 from brain.script_engine import generate_script
 from brain.voice_engine import generate_voice as create_voice_profile
 
+from brain.cta_engine import choose_cta
+
 from video.voice_generator import generate_voice as create_audio
 
 
-
 class ProductionManager:
-
 
     def __init__(self):
 
@@ -53,7 +53,6 @@ class ProductionManager:
                 return None
 
 
-
             # ==========================
             # SCRIPT
             # ==========================
@@ -68,6 +67,86 @@ class ProductionManager:
             )
 
 
+            # ==========================
+            # CTA
+            # ==========================
+
+            print(
+                "Generating Conversion CTA..."
+            )
+
+
+            cta = choose_cta(
+                topic
+            )
+
+
+            if not cta:
+
+                cta = (
+                    "If you want to use AI to work "
+                    "smarter, click the link in bio "
+                    "to explore PromptProHub, and "
+                    "follow for more AI tools and strategies."
+                )
+
+
+            print("=" * 60)
+            print("SELECTED CTA")
+            print("=" * 60)
+
+            print(
+                cta
+            )
+
+            print("=" * 60)
+
+
+            # ==========================
+            # ADD CTA TO SCRIPT
+            # ==========================
+
+            if isinstance(script, dict):
+
+                existing_script = script.get(
+                    "script",
+                    ""
+                )
+
+                if not existing_script:
+
+                    existing_script = str(
+                        script
+                    )
+
+
+                script["cta"] = cta
+
+
+                script["script"] = (
+                    existing_script.strip()
+                    +
+                    "\n\n"
+                    +
+                    cta
+                )
+
+
+            else:
+
+                script = (
+                    str(script).strip()
+                    +
+                    "\n\n"
+                    +
+                    cta
+                )
+
+
+            print(
+                "CTA successfully added to script."
+            )
+
 
             # ==========================
             # VOICE PROFILE
@@ -81,7 +160,6 @@ class ProductionManager:
             voice_profile = create_voice_profile(
                 project
             )
-
 
 
             # ==========================
@@ -102,6 +180,9 @@ class ProductionManager:
             )
 
 
+            # ==========================
+            # RESULT
+            # ==========================
 
             result = {
 
@@ -110,6 +191,8 @@ class ProductionManager:
                 "project": project,
 
                 "script": script,
+
+                "cta": cta,
 
                 "voice_profile": voice_profile,
 
@@ -121,31 +204,41 @@ class ProductionManager:
 
 
             print("=" * 60)
+
             print(
                 "PRODUCTION PLAN READY"
             )
+
+            print(
+                "CTA INCLUDED:",
+                cta
+            )
+
             print("=" * 60)
 
 
             return result
 
 
-
         except Exception as e:
 
-
             print("=" * 60)
+
             print(
                 "PRODUCTION MANAGER FAILED"
             )
+
+            print(
+                type(e).__name__
+            )
+
+            print(
+                str(e)
+            )
+
             print("=" * 60)
 
-            print(e)
-
-
             return None
-
-
 
 
 production = ProductionManager()
