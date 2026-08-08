@@ -1,4 +1,5 @@
 import os
+import json
 
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
@@ -16,6 +17,137 @@ SCOPES = [
 ]
 
 
+# ============================================================
+# SEO DATA NORMALIZER
+# ============================================================
+
+def normalize_seo(title, description):
+
+    """
+    Accepts normal strings, dictionaries, or JSON strings.
+
+    This allows bot.py to safely pass the SEO object directly.
+    """
+
+    seo_data = None
+
+    # ----------------------------------------
+    # TITLE MAY ACTUALLY BE SEO DATA
+    # ----------------------------------------
+
+    if isinstance(title, dict):
+
+        seo_data = title
+
+    elif isinstance(title, str):
+
+        cleaned = title.strip()
+
+        if cleaned.startswith("{"):
+
+            try:
+
+                parsed = json.loads(cleaned)
+
+                if isinstance(parsed, dict):
+
+                    seo_data = parsed
+
+            except Exception:
+
+                seo_data = None
+
+
+    # ----------------------------------------
+    # EXTRACT SEO TITLE
+    # ----------------------------------------
+
+    if seo_data:
+
+        selected_title = (
+
+            seo_data.get("click_title")
+
+            or seo_data.get("title")
+
+            or seo_data.get("seo_title")
+
+            or "AI Tools That Save You Hours of Work"
+
+        )
+
+        # Prefer generated description
+        selected_description = (
+
+            seo_data.get("description")
+
+            or description
+
+            or "Discover powerful AI tools and productivity systems."
+
+        )
+
+        # Add hashtags when available
+        hashtags = seo_data.get(
+            "hashtags",
+            []
+        )
+
+        if isinstance(hashtags, list) and hashtags:
+
+            hashtag_text = " ".join(
+                str(tag)
+                for tag in hashtags
+            )
+
+            if hashtag_text not in str(
+                selected_description
+            ):
+
+                selected_description = (
+                    str(selected_description)
+                    + "\n\n"
+                    + hashtag_text
+                )
+
+        return (
+            str(selected_title),
+            str(selected_description)
+        )
+
+
+    # ----------------------------------------
+    # NORMAL STRING TITLE
+    # ----------------------------------------
+
+    selected_title = str(
+        title
+        if title
+        else "AI Tools That Save You Hours of Work"
+    )
+
+
+    selected_description = str(
+
+        description
+
+        if description
+
+        else "Discover powerful AI tools and productivity systems."
+
+    )
+
+
+    return (
+        selected_title,
+        selected_description
+    )
+
+
+# ============================================================
+# YOUTUBE SHORTS UPLOADER
+# ============================================================
+
 def upload_to_youtube(
     video_path,
     title,
@@ -23,7 +155,14 @@ def upload_to_youtube(
     thumbnail_path=None
 ):
 
-    print("===== YOUTUBE DEBUG =====")
+    print("=" * 60)
+    print("PROMPTPROHUB YOUTUBE SHORTS UPLOADER")
+    print("=" * 60)
+
+
+    # ========================================================
+    # DEBUG
+    # ========================================================
 
     print(
         "CLIENT ID:",
@@ -51,23 +190,44 @@ def upload_to_youtube(
     )
 
     print(
-        "TITLE:",
+        "RAW TITLE:",
         repr(title)
     )
 
     print(
-        "DESCRIPTION:",
+        "RAW DESCRIPTION:",
         repr(description)
     )
 
-    print("=========================")
+    print("=" * 60)
 
 
-    # =====================================
-    # FALLBACK METADATA
-    # =====================================
+    # ========================================================
+    # NORMALIZE SEO
+    # ========================================================
 
-    if not title or not str(title).strip():
+    title, description = normalize_seo(
+        title,
+        description
+    )
+
+
+    print(
+        "FINAL YOUTUBE TITLE:",
+        title
+    )
+
+    print(
+        "FINAL DESCRIPTION:",
+        description
+    )
+
+
+    # ========================================================
+    # FALLBACK TITLE
+    # ========================================================
+
+    if not title.strip():
 
         title = (
             "AI Tools That Save You "
@@ -75,19 +235,31 @@ def upload_to_youtube(
         )
 
 
-    if not description or not str(
-        description
-    ).strip():
+    # ========================================================
+    # FALLBACK DESCRIPTION
+    # ========================================================
+
+    if not description.strip():
 
         description = (
-            "Discover powerful AI tools "
-            "and productivity systems."
+            "Discover powerful AI tools, "
+            "prompts and productivity systems "
+            "from PromptProHub."
         )
 
 
-    # =====================================
+    # ========================================================
     # CHECK VIDEO
-    # =====================================
+    # ========================================================
+
+    if not video_path:
+
+        print(
+            "No video path supplied."
+        )
+
+        return False
+
 
     if not os.path.exists(video_path):
 
@@ -99,29 +271,42 @@ def upload_to_youtube(
         return False
 
 
-    # =====================================
-    # CHECK THUMBNAIL
-    # =====================================
+    # ========================================================
+    # THUMBNAIL NOTICE
+    # ========================================================
 
     if thumbnail_path:
 
-        if not os.path.exists(
-            thumbnail_path
-        ):
+        if os.path.exists(thumbnail_path):
+
+            print("=" * 60)
+            print(
+                "THUMBNAIL DETECTED"
+            )
+            print(
+                "This uploader is configured for YouTube Shorts."
+            )
+            print(
+                "The custom-thumbnail API call is intentionally skipped."
+            )
+            print(
+                "The thumbnail will NOT be uploaded through the API."
+            )
+            print("=" * 60)
+
+        else:
 
             print(
-                "Thumbnail not found:",
+                "Thumbnail file not found:",
                 thumbnail_path
             )
-
-            thumbnail_path = None
 
 
     try:
 
-        # =================================
+        # ====================================================
         # GOOGLE CREDENTIALS
-        # =================================
+        # ====================================================
 
         credentials = Credentials(
 
@@ -148,9 +333,9 @@ def upload_to_youtube(
         )
 
 
-        # =================================
+        # ====================================================
         # YOUTUBE CLIENT
-        # =================================
+        # ====================================================
 
         youtube = build(
 
@@ -163,9 +348,9 @@ def upload_to_youtube(
         )
 
 
-        # =================================
+        # ====================================================
         # VIDEO METADATA
-        # =================================
+        # ====================================================
 
         body = {
 
@@ -192,9 +377,9 @@ def upload_to_youtube(
         }
 
 
-        # =================================
+        # ====================================================
         # VIDEO FILE
-        # =================================
+        # ====================================================
 
         media = MediaFileUpload(
 
@@ -209,9 +394,14 @@ def upload_to_youtube(
         )
 
 
-        # =================================
-        # UPLOAD VIDEO
-        # =================================
+        # ====================================================
+        # UPLOAD
+        # ====================================================
+
+        print("=" * 60)
+        print("UPLOADING YOUTUBE SHORT...")
+        print("=" * 60)
+
 
         request = youtube.videos().insert(
 
@@ -225,159 +415,3 @@ def upload_to_youtube(
 
 
         response = None
-
-
-        while response is None:
-
-            status, response = (
-                request.next_chunk()
-            )
-
-
-            if status:
-
-                print(
-                    "Uploading...",
-                    int(
-                        status.progress() * 100
-                    ),
-                    "%"
-                )
-
-
-        # =================================
-        # VIDEO UPLOADED
-        # =================================
-
-        video_id = response["id"]
-
-
-        print("=" * 60)
-
-        print(
-            "YouTube Upload Successful!"
-        )
-
-        print(
-            "Video ID:",
-            video_id
-        )
-
-        print(
-            "Video URL:",
-            f"https://youtu.be/{video_id}"
-        )
-
-        print("=" * 60)
-
-
-        # =================================
-        # CUSTOM THUMBNAIL
-        # =================================
-
-        if thumbnail_path:
-
-            try:
-
-                print("=" * 60)
-
-                print(
-                    "SETTING YOUTUBE THUMBNAIL..."
-                )
-
-                print(
-                    "Thumbnail:",
-                    thumbnail_path
-                )
-
-                print("=" * 60)
-
-
-                thumbnail_media = (
-                    MediaFileUpload(
-
-                        thumbnail_path,
-
-                        mimetype="image/jpeg",
-
-                        resumable=False
-
-                    )
-                )
-
-
-                thumbnail_request = (
-                    youtube.thumbnails().set(
-
-                        videoId=video_id,
-
-                        media_body=(
-                            thumbnail_media
-                        )
-
-                    )
-                )
-
-
-                thumbnail_response = (
-                    thumbnail_request.execute()
-                )
-
-
-                print("=" * 60)
-
-                print(
-                    "YOUTUBE THUMBNAIL SET SUCCESSFULLY"
-                )
-
-                print("=" * 60)
-
-
-            except Exception as e:
-
-                print("=" * 60)
-
-                print(
-                    "THUMBNAIL FAILED"
-                )
-
-                print(
-                    type(e).__name__
-                )
-
-                print(
-                    str(e)
-                )
-
-                print("=" * 60)
-
-
-        else:
-
-            print(
-                "No custom thumbnail supplied."
-            )
-
-
-        return video_id
-
-
-    except Exception as e:
-
-        print("=" * 60)
-
-        print(
-            "YOUTUBE ERROR"
-        )
-
-        print(
-            type(e).__name__
-        )
-
-        print(
-            str(e)
-        )
-
-        print("=" * 60)
-
-        return False
