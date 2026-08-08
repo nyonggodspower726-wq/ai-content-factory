@@ -18,16 +18,13 @@ from file_manager import save_text
 from logger import log
 
 
-
 def main(topic=None):
 
     print("=" * 60)
     print("PROMPTPROHUB AI STUDIO ONLINE")
     print("=" * 60)
 
-
     try:
-
 
         # =========================
         # NEW CREATIVE BRAIN
@@ -50,24 +47,27 @@ def main(topic=None):
         )
 
 
-
+        # =========================
         # VIRAL ANGLE
+        # =========================
 
         angle = choose_best_angle(
             topic
         )
 
 
-
+        # =========================
         # CURIOSITY
+        # =========================
 
         curiosity = choose_curiosity(
             topic
         )
 
 
-
+        # =========================
         # HOOK
+        # =========================
 
         hook = choose_hook(
             topic,
@@ -76,32 +76,29 @@ def main(topic=None):
         )
 
 
-
+        # =========================
         # RETENTION
+        # =========================
 
         retention = choose_retention(
             topic
         )
 
 
+        # =========================
+        # SAVE CREATIVE BRAIN
+        # =========================
 
         save_text(
             "creative_brain.json",
             {
-
                 "topic": topic,
-
                 "angle": angle,
-
                 "curiosity": curiosity,
-
                 "hook": hook,
-
                 "retention": retention
-
             }
         )
-
 
 
         log(
@@ -121,21 +118,17 @@ def main(topic=None):
         )
 
 
-
         # =========================
         # BRAIN PRODUCTION
         # =========================
-
 
         log(
             f"Starting campaign: {topic}"
         )
 
-
         log(
             "Running AI production brain..."
         )
-
 
 
         production_plan = production.produce(
@@ -143,17 +136,13 @@ def main(topic=None):
         )
 
 
-
         if not production_plan:
-
 
             log(
                 "Production brain returned nothing"
             )
 
-
             return
-
 
 
         project = production_plan.get(
@@ -173,12 +162,14 @@ def main(topic=None):
         )
 
 
+        # =========================
+        # SAVE SCRIPT
+        # =========================
 
         save_text(
             "script.json",
             script
         )
-
 
 
         save_text(
@@ -190,11 +181,9 @@ def main(topic=None):
         )
 
 
-
         # =========================
         # SEO
         # =========================
-
 
         log(
             "Generating SEO..."
@@ -212,16 +201,13 @@ def main(topic=None):
         )
 
 
-
         # =========================
         # DEBUG
         # =========================
 
-
         print("=" * 60)
         print("DEBUG INFORMATION")
         print("=" * 60)
-
 
 
         scene_prompts = project.get(
@@ -230,28 +216,27 @@ def main(topic=None):
         )
 
 
-
         print(
             "Voice File :",
             voice_file
         )
 
 
-
         print(
             "Voice Exists :",
             bool(
-                voice_file and os.path.exists(voice_file)
+                voice_file
+                and os.path.exists(
+                    voice_file
+                )
             )
         )
-
 
 
         print(
             "Scene Prompts :",
             len(scene_prompts)
         )
-
 
 
         if scene_prompts:
@@ -262,14 +247,12 @@ def main(topic=None):
             )
 
 
-
         if isinstance(script, dict):
 
             print(
                 "Script Keys :",
                 list(script.keys())
             )
-
 
         else:
 
@@ -282,16 +265,13 @@ def main(topic=None):
         print("=" * 60)
 
 
-
         # =========================
         # VIDEO
         # =========================
 
-
         log(
             "Rendering AI sales video..."
         )
-
 
 
         video = create_video(
@@ -305,108 +285,25 @@ def main(topic=None):
         )
 
 
-
         if not video:
-
 
             log(
                 "Video generation failed."
             )
 
-
             return
 
 
-
         if not os.path.exists(video):
-
 
             log(
                 f"Rendered video not found: {video}"
             )
 
-
             return
-
 
 
         print("=" * 60)
         print("VIDEO CREATED SUCCESSFULLY")
         print(video)
         print("=" * 60)
-
-
-
-        # =========================
-        # SOCIAL UPLOAD
-        # =========================
-
-
-        try:
-
-            log(
-                "Uploading TikTok..."
-            )
-
-
-            upload_to_tiktok(
-                video
-            )
-
-
-        except Exception as e:
-
-            log(
-                f"TikTok upload failed: {e}"
-            )
-
-
-
-        try:
-
-
-            log(
-                "Uploading YouTube Shorts..."
-            )
-
-
-            upload_to_youtube(
-
-                video,
-
-                seo,
-
-                topic
-
-            )
-
-
-        except Exception as e:
-
-
-            log(
-                f"YouTube upload failed: {e}"
-            )
-
-
-
-        log(
-            "Production completed successfully."
-        )
-
-
-
-    except Exception as e:
-
-
-        log(
-            f"BOT FAILED: {e}"
-        )
-
-
-
-
-if __name__ == "__main__":
-
-    main()
-        
