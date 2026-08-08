@@ -46,19 +46,28 @@ def main(topic=None):
             f"Selected Viral Topic: {topic}"
         )
 
+
+        # =========================
         # VIRAL ANGLE
+        # =========================
 
         angle = choose_best_angle(
             topic
         )
 
+
+        # =========================
         # CURIOSITY
+        # =========================
 
         curiosity = choose_curiosity(
             topic
         )
 
+
+        # =========================
         # HOOK
+        # =========================
 
         hook = choose_hook(
             topic,
@@ -66,11 +75,19 @@ def main(topic=None):
             curiosity
         )
 
+
+        # =========================
         # RETENTION
+        # =========================
 
         retention = choose_retention(
             topic
         )
+
+
+        # =========================
+        # SAVE CREATIVE BRAIN
+        # =========================
 
         save_text(
             "creative_brain.json",
@@ -82,6 +99,7 @@ def main(topic=None):
                 "retention": retention
             }
         )
+
 
         log(
             f"Selected Topic: {topic}"
@@ -99,6 +117,7 @@ def main(topic=None):
             f"Retention: {retention}"
         )
 
+
         # =========================
         # BRAIN PRODUCTION
         # =========================
@@ -111,9 +130,11 @@ def main(topic=None):
             "Running AI production brain..."
         )
 
+
         production_plan = production.produce(
             topic
         )
+
 
         if not production_plan:
 
@@ -123,24 +144,33 @@ def main(topic=None):
 
             return
 
+
         project = production_plan.get(
             "project",
             {}
         )
+
 
         script = production_plan.get(
             "script",
             {}
         )
 
+
         voice_file = production_plan.get(
             "voice"
         )
+
+
+        # =========================
+        # SAVE SCRIPT
+        # =========================
 
         save_text(
             "script.json",
             script
         )
+
 
         save_text(
             "voice.json",
@@ -150,6 +180,7 @@ def main(topic=None):
             )
         )
 
+
         # =========================
         # SEO
         # =========================
@@ -158,14 +189,17 @@ def main(topic=None):
             "Generating SEO..."
         )
 
+
         seo = generate_seo(
             topic
         )
+
 
         save_text(
             "seo.json",
             seo
         )
+
 
         # =========================
         # DEBUG
@@ -175,27 +209,35 @@ def main(topic=None):
         print("DEBUG INFORMATION")
         print("=" * 60)
 
+
         scene_prompts = project.get(
             "scene_prompts",
             []
         )
+
 
         print(
             "Voice File :",
             voice_file
         )
 
+
         print(
             "Voice Exists :",
             bool(
-                voice_file and os.path.exists(voice_file)
+                voice_file
+                and os.path.exists(
+                    voice_file
+                )
             )
         )
+
 
         print(
             "Scene Prompts :",
             len(scene_prompts)
         )
+
 
         if scene_prompts:
 
@@ -203,6 +245,7 @@ def main(topic=None):
                 "First Scene :",
                 scene_prompts[0]
             )
+
 
         if isinstance(script, dict):
 
@@ -218,7 +261,10 @@ def main(topic=None):
                 type(script)
             )
 
+
         print("=" * 60)
+
+
         # =========================
         # VIDEO
         # =========================
@@ -226,6 +272,7 @@ def main(topic=None):
         log(
             "Rendering AI sales video..."
         )
+
 
         video = create_video(
 
@@ -237,6 +284,7 @@ def main(topic=None):
 
         )
 
+
         if not video:
 
             log(
@@ -244,6 +292,7 @@ def main(topic=None):
             )
 
             return
+
 
         if not os.path.exists(video):
 
@@ -253,10 +302,12 @@ def main(topic=None):
 
             return
 
+
         print("=" * 60)
         print("VIDEO CREATED SUCCESSFULLY")
         print(video)
         print("=" * 60)
+
 
         # =========================
         # THUMBNAIL
@@ -267,12 +318,16 @@ def main(topic=None):
             "promptprohub_hook.jpg"
         )
 
-        if os.path.exists(thumbnail_path):
+
+        if os.path.exists(
+            thumbnail_path
+        ):
 
             print("=" * 60)
             print("YOUTUBE THUMBNAIL READY")
             print(thumbnail_path)
             print("=" * 60)
+
 
         else:
 
@@ -283,8 +338,9 @@ def main(topic=None):
 
             thumbnail_path = None
 
+
         # =========================
-        # SOCIAL UPLOAD
+        # TIKTOK UPLOAD
         # =========================
 
         try:
@@ -293,9 +349,11 @@ def main(topic=None):
                 "Uploading TikTok..."
             )
 
+
             upload_to_tiktok(
                 video
             )
+
 
         except Exception as e:
 
@@ -303,23 +361,73 @@ def main(topic=None):
                 f"TikTok upload failed: {e}"
             )
 
+
+        # =========================
+        # YOUTUBE UPLOAD
+        # =========================
+
         try:
 
             log(
                 "Uploading YouTube Shorts..."
             )
 
+
+            # =========================
+            # EXTRACT SEO DATA
+            # =========================
+
+            if isinstance(
+                seo,
+                dict
+            ):
+
+                youtube_title = seo.get(
+
+                    "click_title",
+
+                    seo.get(
+                        "title",
+                        topic
+                    )
+
+                )
+
+
+                youtube_description = seo.get(
+
+                    "description",
+
+                    ""
+
+                )
+
+
+            else:
+
+                youtube_title = topic
+
+                youtube_description = str(
+                    seo
+                )
+
+
+            # =========================
+            # UPLOAD
+            # =========================
+
             upload_to_youtube(
 
                 video,
 
-                seo,
+                youtube_title,
 
-                topic,
+                youtube_description,
 
                 thumbnail_path
 
             )
+
 
         except Exception as e:
 
@@ -327,15 +435,26 @@ def main(topic=None):
                 f"YouTube upload failed: {e}"
             )
 
+
+        # =========================
+        # COMPLETE
+        # =========================
+
         log(
             "Production completed successfully."
         )
+
+
     except Exception as e:
 
         log(
             f"BOT FAILED: {e}"
         )
 
+
+# =========================
+# START BOT
+# =========================
 
 if __name__ == "__main__":
 
