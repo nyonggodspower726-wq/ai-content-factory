@@ -1,461 +1,588 @@
 import os
 
-from brain.production_manager import production
-from brain.seo_engine import generate_seo
+from PIL import Image, ImageDraw, ImageFont
 
-from brain.trend_brain import choose_trending_topic
-from brain.viral_angle_engine import choose_best_angle
-from brain.curiosity_engine import choose_curiosity
-from brain.hook_engine import choose_hook
-from brain.retention_engine import choose_retention
+from video.pexels_provider import generate_ai_image
 
-from video.video_generator import create_video
 
-from social.tiktok_uploader import upload_to_tiktok
-from social.youtube_shorts import upload_to_youtube
+class BrandingEngine:
 
-from file_manager import save_text
-from logger import log
+    def __init__(self):
 
+        self.brand_name = "PromptProHub"
 
-def main(topic=None):
-
-    print("=" * 60)
-    print("PROMPTPROHUB AI STUDIO ONLINE")
-    print("=" * 60)
-
-    try:
-
-        # =========================
-        # NEW CREATIVE BRAIN
-        # =========================
-
-        log(
-            "ACTIVATING NEW CONTENT BRAIN..."
-        )
-
-        log(
-            "Running Trend Intelligence Engine..."
-        )
-
-        if topic is None:
-
-            topic = choose_trending_topic()
-
-        log(
-            f"Selected Viral Topic: {topic}"
-        )
-
-
-        # =========================
-        # VIRAL ANGLE
-        # =========================
-
-        angle = choose_best_angle(
-            topic
-        )
-
-
-        # =========================
-        # CURIOSITY
-        # =========================
-
-        curiosity = choose_curiosity(
-            topic
-        )
-
-
-        # =========================
-        # HOOK
-        # =========================
-
-        hook = choose_hook(
-            topic,
-            angle,
-            curiosity
-        )
-
-
-        # =========================
-        # RETENTION
-        # =========================
-
-        retention = choose_retention(
-            topic
-        )
-
-
-        # =========================
-        # SAVE CREATIVE BRAIN
-        # =========================
-
-        save_text(
-            "creative_brain.json",
-            {
-                "topic": topic,
-                "angle": angle,
-                "curiosity": curiosity,
-                "hook": hook,
-                "retention": retention
-            }
-        )
-
-
-        log(
-            f"Selected Topic: {topic}"
-        )
-
-        log(
-            f"Hook: {hook}"
-        )
-
-        log(
-            f"Curiosity: {curiosity}"
-        )
-
-        log(
-            f"Retention: {retention}"
-        )
-
-
-        # =========================
-        # BRAIN PRODUCTION
-        # =========================
-
-        log(
-            f"Starting campaign: {topic}"
-        )
-
-        log(
-            "Running AI production brain..."
-        )
-
-
-        production_plan = production.produce(
-            topic
-        )
-
-
-        if not production_plan:
-
-            log(
-                "Production brain returned nothing"
-            )
-
-            return
-
-
-        project = production_plan.get(
-            "project",
-            {}
-        )
-
-
-        script = production_plan.get(
-            "script",
-            {}
-        )
-
-
-        voice_file = production_plan.get(
-            "voice"
-        )
-
-
-        # =========================
-        # SAVE SCRIPT
-        # =========================
-
-        save_text(
-            "script.json",
-            script
-        )
-
-
-        save_text(
-            "voice.json",
-            production_plan.get(
-                "voice_profile",
-                {}
-            )
-        )
-
-
-        # =========================
-        # SEO
-        # =========================
-
-        log(
-            "Generating SEO..."
-        )
-
-
-        seo = generate_seo(
-            topic
-        )
-
-
-        save_text(
-            "seo.json",
-            seo
-        )
-
-
-        # =========================
-        # DEBUG
-        # =========================
+        self.width = 720
+        self.height = 1280
 
         print("=" * 60)
-        print("DEBUG INFORMATION")
+        print("PROMPTPROHUB BRANDING / THUMBNAIL ENGINE READY")
         print("=" * 60)
 
+    # =========================================
+    # FONT
+    # =========================================
 
-        scene_prompts = project.get(
-            "scene_prompts",
-            []
+    def get_font(self, size):
+
+        possible_fonts = [
+
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+
+            "/usr/share/fonts/truetype/liberation2/LiberationSans-Bold.ttf"
+
+        ]
+
+        for font_path in possible_fonts:
+
+            if os.path.exists(font_path):
+
+                return ImageFont.truetype(
+                    font_path,
+                    size
+                )
+
+        return ImageFont.load_default()
+
+    # =========================================
+    # PEXELS SEARCH
+    # =========================================
+
+    def build_image_search(self, hook):
+
+        hook_lower = str(hook).lower()
+
+        if "chatgpt" in hook_lower:
+
+            return "man working laptop technology"
+
+        if "prompt" in hook_lower:
+
+            return "man working laptop office"
+
+        if "ai" in hook_lower:
+
+            return "artificial intelligence laptop technology"
+
+        if "business" in hook_lower:
+
+            return "business man laptop office"
+
+        if "freelanc" in hook_lower:
+
+            return "freelancer working laptop"
+
+        if "creator" in hook_lower:
+
+            return "content creator laptop workspace"
+
+        if "marketing" in hook_lower:
+
+            return "digital marketer laptop office"
+
+        if "sales" in hook_lower:
+
+            return "business man laptop computer"
+
+        return "man working laptop modern office"
+
+    # =========================================
+    # CREATE THUMBNAIL
+    # =========================================
+
+    def create_hook_image(self, hook):
+
+        print("=" * 60)
+        print("CREATING YOUTUBE THUMBNAIL")
+        print("=" * 60)
+
+        search_query = self.build_image_search(
+            hook
         )
 
-
         print(
-            "Voice File :",
-            voice_file
+            "Pexels search:",
+            search_query
         )
 
+        image_path = generate_ai_image(
 
-        print(
-            "Voice Exists :",
-            bool(
-                voice_file
-                and os.path.exists(
-                    voice_file
+            search_query,
+
+            output_folder="assets/hook_images"
+
+        )
+
+        if not image_path:
+
+            print(
+                "Pexels thumbnail image failed."
+            )
+
+            return None
+
+        if not os.path.exists(image_path):
+
+            print(
+                "Thumbnail image missing:",
+                image_path
+            )
+
+            return None
+
+        try:
+
+            image = Image.open(
+                image_path
+            ).convert("RGB")
+
+            # =================================
+            # RESIZE TO 9:16
+            # =================================
+
+            target_ratio = (
+                self.width /
+                self.height
+            )
+
+            image_ratio = (
+                image.width /
+                image.height
+            )
+
+            if image_ratio > target_ratio:
+
+                new_height = image.height
+
+                new_width = int(
+                    new_height *
+                    target_ratio
+                )
+
+            else:
+
+                new_width = image.width
+
+                new_height = int(
+                    new_width /
+                    target_ratio
+                )
+
+            image = image.resize(
+                (
+                    new_width,
+                    new_height
                 )
             )
-        )
 
+            # =================================
+            # CENTER CROP
+            # =================================
 
-        print(
-            "Scene Prompts :",
-            len(scene_prompts)
-        )
-
-
-        if scene_prompts:
-
-            print(
-                "First Scene :",
-                scene_prompts[0]
+            left = max(
+                0,
+                (new_width - self.width) // 2
             )
 
-
-        if isinstance(script, dict):
-
-            print(
-                "Script Keys :",
-                list(script.keys())
+            top = max(
+                0,
+                (new_height - self.height) // 2
             )
 
-        else:
-
-            print(
-                "Script Type :",
-                type(script)
+            image = image.crop(
+                (
+                    left,
+                    top,
+                    left + self.width,
+                    top + self.height
+                )
             )
 
+            # =================================
+            # DARK OVERLAY
+            # =================================
 
-        print("=" * 60)
-
-
-        # =========================
-        # VIDEO
-        # =========================
-
-        log(
-            "Rendering AI sales video..."
-        )
-
-
-        video = create_video(
-
-            scene_prompts,
-
-            script,
-
-            voice_file
-
-        )
-
-
-        if not video:
-
-            log(
-                "Video generation failed."
+            overlay = Image.new(
+                "RGBA",
+                image.size,
+                (0, 0, 0, 75)
             )
 
-            return
-
-
-        if not os.path.exists(video):
-
-            log(
-                f"Rendered video not found: {video}"
+            image = Image.alpha_composite(
+                image.convert("RGBA"),
+                overlay
             )
 
-            return
-
-
-        print("=" * 60)
-        print("VIDEO CREATED SUCCESSFULLY")
-        print(video)
-        print("=" * 60)
-
-
-        # =========================
-        # THUMBNAIL
-        # =========================
-
-        thumbnail_path = (
-            "assets/hook_images/"
-            "promptprohub_hook.jpg"
-        )
-
-
-        if os.path.exists(
-            thumbnail_path
-        ):
-
-            print("=" * 60)
-            print("YOUTUBE THUMBNAIL READY")
-            print(thumbnail_path)
-            print("=" * 60)
-
-
-        else:
-
-            print("=" * 60)
-            print("YOUTUBE THUMBNAIL NOT FOUND")
-            print(thumbnail_path)
-            print("=" * 60)
-
-            thumbnail_path = None
-
-
-        # =========================
-        # TIKTOK UPLOAD
-        # =========================
-
-        try:
-
-            log(
-                "Uploading TikTok..."
+            draw = ImageDraw.Draw(
+                image
             )
 
+            # =================================
+            # FONTS
+            # =================================
 
-            upload_to_tiktok(
-                video
+            hook_font = self.get_font(
+                58
             )
 
-
-        except Exception as e:
-
-            log(
-                f"TikTok upload failed: {e}"
+            brand_font = self.get_font(
+                28
             )
 
+            # =================================
+            # CLEAN HOOK TEXT
+            # =================================
 
-        # =========================
-        # YOUTUBE UPLOAD
-        # =========================
+            hook = str(
+                hook
+            ).strip()
 
-        try:
+            if not hook:
 
-            log(
-                "Uploading YouTube Shorts..."
+                hook = (
+                    "AI CAN SAVE YOU HOURS"
+                )
+
+            # =================================
+            # WRAP HOOK
+            # =================================
+
+            words = hook.split()
+
+            lines = []
+
+            current = ""
+
+            for word in words:
+
+                test = (
+                    current +
+                    " " +
+                    word
+                ).strip()
+
+                bbox = draw.textbbox(
+                    (0, 0),
+                    test,
+                    font=hook_font
+                )
+
+                text_width = (
+                    bbox[2] -
+                    bbox[0]
+                )
+
+                if text_width <= 620:
+
+                    current = test
+
+                else:
+
+                    if current:
+
+                        lines.append(
+                            current
+                        )
+
+                    current = word
+
+            if current:
+
+                lines.append(
+                    current
+                )
+
+            # Maximum five lines
+
+            lines = lines[:5]
+
+            # =================================
+            # POSITION
+            # =================================
+
+            line_height = 72
+
+            total_height = (
+                len(lines) *
+                line_height
             )
 
+            start_y = (
+                self.height // 2
+                -
+                total_height // 2
+            )
 
-            # =========================
-            # EXTRACT SEO DATA
-            # =========================
+            # =================================
+            # DRAW HOOK
+            # =================================
 
-            if isinstance(
-                seo,
-                dict
+            for index, line in enumerate(
+                lines
             ):
 
-                youtube_title = seo.get(
+                bbox = draw.textbbox(
+                    (0, 0),
+                    line,
+                    font=hook_font
+                )
 
-                    "click_title",
+                text_width = (
+                    bbox[2] -
+                    bbox[0]
+                )
 
-                    seo.get(
-                        "title",
-                        topic
+                x = (
+                    self.width -
+                    text_width
+                ) // 2
+
+                y = (
+                    start_y +
+                    index *
+                    line_height
+                )
+
+                # Shadow
+
+                draw.text(
+
+                    (
+                        x + 4,
+                        y + 4
+                    ),
+
+                    line,
+
+                    font=hook_font,
+
+                    fill=(
+                        0,
+                        0,
+                        0,
+                        210
                     )
 
                 )
 
+                # Main text
 
-                youtube_description = seo.get(
+                draw.text(
 
-                    "description",
+                    (
+                        x,
+                        y
+                    ),
 
-                    ""
+                    line,
+
+                    font=hook_font,
+
+                    fill=(
+                        255,
+                        255,
+                        255,
+                        255
+                    )
 
                 )
 
+            # =================================
+            # BRAND NAME
+            # =================================
 
-            else:
+            brand_text = self.brand_name
 
-                youtube_title = topic
+            bbox = draw.textbbox(
 
-                youtube_description = str(
-                    seo
-                )
+                (0, 0),
 
+                brand_text,
 
-            # =========================
-            # UPLOAD
-            # =========================
-
-            upload_to_youtube(
-
-                video,
-
-                youtube_title,
-
-                youtube_description,
-
-                thumbnail_path
+                font=brand_font
 
             )
 
+            brand_width = (
+                bbox[2] -
+                bbox[0]
+            )
+
+            brand_x = (
+                self.width -
+                brand_width
+            ) // 2
+
+            draw.text(
+
+                (
+                    brand_x,
+                    self.height - 90
+                ),
+
+                brand_text,
+
+                font=brand_font,
+
+                fill=(
+                    255,
+                    255,
+                    255,
+                    230
+                )
+
+            )
+
+            # =================================
+            # SAVE THUMBNAIL
+            # =================================
+
+            os.makedirs(
+                "assets/hook_images",
+                exist_ok=True
+            )
+
+            output_path = (
+                "assets/hook_images/"
+                "promptprohub_hook.jpg"
+            )
+
+            image.convert(
+                "RGB"
+            ).save(
+
+                output_path,
+
+                "JPEG",
+
+                quality=95,
+
+                optimize=True
+
+            )
+
+            print(
+                "YouTube thumbnail created:",
+                output_path
+            )
+
+            print("=" * 60)
+
+            return output_path
 
         except Exception as e:
 
-            log(
-                f"YouTube upload failed: {e}"
+            print("=" * 60)
+            print("THUMBNAIL CREATION FAILED")
+            print("=" * 60)
+
+            print(
+                type(e).__name__
             )
 
+            print(
+                str(e)
+            )
 
-        # =========================
-        # COMPLETE
-        # =========================
+            return None
 
-        log(
-            "Production completed successfully."
+    # =========================================
+    # APPLY BRANDING
+    # =========================================
+
+    def apply(
+        self,
+        video_path,
+        hook_text=None
+    ):
+
+        if not video_path:
+
+            print(
+                "No video received."
+            )
+
+            return None
+
+        if not os.path.exists(
+            video_path
+        ):
+
+            print(
+                "Video not found:",
+                video_path
+            )
+
+            return None
+
+        # =====================================
+        # HOOK FALLBACK
+        # =====================================
+
+        if not hook_text:
+
+            hook_text = (
+                "AI CAN SAVE YOU HOURS "
+                "OF WORK"
+            )
+
+        hook_text = str(
+            hook_text
+        ).strip()
+
+        print("=" * 60)
+        print("PROMPTPROHUB THUMBNAIL ENGINE")
+        print("=" * 60)
+
+        print(
+            "Hook:",
+            hook_text
         )
 
+        # =====================================
+        # CREATE SEPARATE THUMBNAIL
+        # =====================================
 
-    except Exception as e:
-
-        log(
-            f"BOT FAILED: {e}"
+        thumbnail = self.create_hook_image(
+            hook_text
         )
 
+        if thumbnail:
 
-# =========================
-# START BOT
-# =========================
+            print(
+                "Thumbnail ready:",
+                thumbnail
+            )
 
-if __name__ == "__main__":
+        else:
 
-    main()
+            print(
+                "Thumbnail could not be created."
+            )
+
+        # =====================================
+        # IMPORTANT
+        # =====================================
+        #
+        # DO NOT modify the video.
+        #
+        # DO NOT add an opening frame.
+        #
+        # DO NOT concatenate clips.
+        #
+        # DO NOT render the video again.
+        #
+        # The thumbnail is a separate JPEG.
+        #
+
+        print("=" * 60)
+        print(
+            "VIDEO LEFT UNCHANGED"
+        )
+        print(
+            "Thumbnail generated separately."
+        )
+        print("=" * 60)
+
+        return video_path
