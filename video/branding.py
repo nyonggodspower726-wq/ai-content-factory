@@ -219,3 +219,114 @@ def main(topic=None):
             )
 
         print("=" * 60)
+        # =========================
+        # VIDEO
+        # =========================
+
+        log(
+            "Rendering AI sales video..."
+        )
+
+        video = create_video(
+
+            scene_prompts,
+
+            script,
+
+            voice_file
+
+        )
+
+        if not video:
+
+            log(
+                "Video generation failed."
+            )
+
+            return
+
+        if not os.path.exists(video):
+
+            log(
+                f"Rendered video not found: {video}"
+            )
+
+            return
+
+        print("=" * 60)
+        print("VIDEO CREATED SUCCESSFULLY")
+        print(video)
+        print("=" * 60)
+
+        # =========================
+        # THUMBNAIL
+        # =========================
+
+        thumbnail_path = (
+            "assets/hook_images/"
+            "promptprohub_hook.jpg"
+        )
+
+        if os.path.exists(thumbnail_path):
+
+            print("=" * 60)
+            print("YOUTUBE THUMBNAIL READY")
+            print(thumbnail_path)
+            print("=" * 60)
+
+        else:
+
+            print("=" * 60)
+            print("YOUTUBE THUMBNAIL NOT FOUND")
+            print(thumbnail_path)
+            print("=" * 60)
+
+            thumbnail_path = None
+
+        # =========================
+        # SOCIAL UPLOAD
+        # =========================
+
+        try:
+
+            log(
+                "Uploading TikTok..."
+            )
+
+            upload_to_tiktok(
+                video
+            )
+
+        except Exception as e:
+
+            log(
+                f"TikTok upload failed: {e}"
+            )
+
+        try:
+
+            log(
+                "Uploading YouTube Shorts..."
+            )
+
+            upload_to_youtube(
+
+                video,
+
+                seo,
+
+                topic,
+
+                thumbnail_path
+
+            )
+
+        except Exception as e:
+
+            log(
+                f"YouTube upload failed: {e}"
+            )
+
+        log(
+            "Production completed successfully."
+        )
