@@ -479,3 +479,249 @@ class BrandingEngine:
                     )
 
         )
+            # =================================
+            # BRAND NAME
+            # =================================
+
+            brand_text = self.brand_name
+
+
+            bbox = draw.textbbox(
+
+                (0, 0),
+
+                brand_text,
+
+                font=brand_font
+
+            )
+
+
+            brand_width = (
+
+                bbox[2] -
+                bbox[0]
+
+            )
+
+
+            brand_x = (
+
+                self.width -
+                brand_width
+
+            ) // 2
+
+
+            draw.text(
+
+                (
+                    brand_x,
+                    self.height - 55
+                ),
+
+                brand_text,
+
+                font=brand_font,
+
+                fill=(
+                    255,
+                    255,
+                    255,
+                    235
+                )
+
+            )
+
+
+            # =================================
+            # SAVE THUMBNAIL
+            # =================================
+
+            os.makedirs(
+
+                "assets/hook_images",
+
+                exist_ok=True
+
+            )
+
+
+            output_path = (
+
+                "assets/hook_images/"
+                "promptprohub_hook.jpg"
+
+            )
+
+
+            image.convert(
+                "RGB"
+            ).save(
+
+                output_path,
+
+                "JPEG",
+
+                quality=95,
+
+                optimize=True
+
+            )
+
+
+            print(
+                "YouTube thumbnail created:",
+                output_path
+            )
+
+
+            print(
+                "Thumbnail size:",
+                f"{self.width}x{self.height}"
+            )
+
+
+            print("=" * 60)
+
+            return output_path
+
+
+        except Exception as e:
+
+            print("=" * 60)
+            print("THUMBNAIL CREATION FAILED")
+            print("=" * 60)
+
+            print(
+                type(e).__name__
+            )
+
+            print(
+                str(e)
+            )
+
+            return None
+
+
+    # =========================================
+    # APPLY BRANDING
+    # =========================================
+
+    def apply(
+        self,
+        video_path,
+        hook_text=None
+    ):
+
+        if not video_path:
+
+            print(
+                "No video received."
+            )
+
+            return None
+
+
+        if not os.path.exists(
+            video_path
+        ):
+
+            print(
+                "Video not found:",
+                video_path
+            )
+
+            return None
+
+
+        # =====================================
+        # HOOK FALLBACK
+        # =====================================
+
+        if not hook_text:
+
+            hook_text = (
+
+                "AI CAN SAVE YOU HOURS "
+                "OF WORK"
+
+            )
+
+
+        hook_text = str(
+            hook_text
+        ).strip()
+
+
+        print("=" * 60)
+        print("PROMPTPROHUB THUMBNAIL ENGINE")
+        print("=" * 60)
+
+
+        print(
+            "Hook:",
+            hook_text
+        )
+
+
+        # =====================================
+        # CREATE SEPARATE THUMBNAIL
+        # =====================================
+
+        thumbnail = self.create_hook_image(
+
+            hook_text
+
+        )
+
+
+        if thumbnail:
+
+            print(
+                "Thumbnail ready:",
+                thumbnail
+            )
+
+        else:
+
+            print(
+                "Thumbnail could not be created."
+            )
+
+
+        # =====================================
+        # IMPORTANT
+        # =====================================
+        #
+        # The video itself is NOT modified.
+        #
+        # No opening image.
+        # No 2-second hook frame.
+        # No concatenate_videoclips().
+        # No second video render.
+        #
+        # The thumbnail is saved separately
+        # for the YouTube uploader.
+        # =====================================
+
+
+        print("=" * 60)
+
+        print(
+            "VIDEO LEFT UNCHANGED"
+        )
+
+        print(
+            "SEPARATE YOUTUBE THUMBNAIL READY"
+        )
+
+        print(
+            "Thumbnail:",
+            thumbnail
+        )
+
+        print("=" * 60)
+
+
+        return video_path
