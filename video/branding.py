@@ -330,3 +330,13 @@ def main(topic=None):
         log(
             "Production completed successfully."
         )
+    except Exception as e:
+
+        log(
+            f"BOT FAILED: {e}"
+        )
+
+
+if __name__ == "__main__":
+
+    main()
