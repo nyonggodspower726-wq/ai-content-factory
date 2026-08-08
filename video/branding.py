@@ -1,12 +1,6 @@
 import os
-import textwrap
 
 from PIL import Image, ImageDraw, ImageFont
-from moviepy.editor import (
-    VideoFileClip,
-    ImageClip,
-    concatenate_videoclips
-)
 
 from video.pexels_provider import generate_ai_image
 
@@ -21,7 +15,7 @@ class BrandingEngine:
         self.height = 1280
 
         print("=" * 60)
-        print("BRANDING ENGINE READY")
+        print("PROMPTPROHUB BRANDING / THUMBNAIL ENGINE READY")
         print("=" * 60)
 
     # =========================================
@@ -52,12 +46,12 @@ class BrandingEngine:
         return ImageFont.load_default()
 
     # =========================================
-    # CREATE PEXELS SEARCH
+    # PEXELS SEARCH
     # =========================================
 
     def build_image_search(self, hook):
 
-        hook_lower = hook.lower()
+        hook_lower = str(hook).lower()
 
         if "chatgpt" in hook_lower:
 
@@ -83,19 +77,24 @@ class BrandingEngine:
 
             return "content creator laptop workspace"
 
+        if "marketing" in hook_lower:
+
+            return "digital marketer laptop office"
+
+        if "sales" in hook_lower:
+
+            return "business man laptop computer"
+
         return "man working laptop modern office"
 
     # =========================================
-    # CREATE OPENING IMAGE
+    # CREATE THUMBNAIL
     # =========================================
 
-    def create_hook_image(
-        self,
-        hook
-    ):
+    def create_hook_image(self, hook):
 
         print("=" * 60)
-        print("CREATING VIRAL HOOK COVER")
+        print("CREATING YOUTUBE THUMBNAIL")
         print("=" * 60)
 
         search_query = self.build_image_search(
@@ -108,14 +107,17 @@ class BrandingEngine:
         )
 
         image_path = generate_ai_image(
+
             search_query,
+
             output_folder="assets/hook_images"
+
         )
 
         if not image_path:
 
             print(
-                "Pexels hook image failed."
+                "Pexels thumbnail image failed."
             )
 
             return None
@@ -123,7 +125,7 @@ class BrandingEngine:
         if not os.path.exists(image_path):
 
             print(
-                "Hook image missing:",
+                "Thumbnail image missing:",
                 image_path
             )
 
@@ -204,7 +206,7 @@ class BrandingEngine:
             overlay = Image.new(
                 "RGBA",
                 image.size,
-                (0, 0, 0, 70)
+                (0, 0, 0, 75)
             )
 
             image = Image.alpha_composite(
@@ -217,7 +219,7 @@ class BrandingEngine:
             )
 
             # =================================
-            # HOOK FONT
+            # FONTS
             # =================================
 
             hook_font = self.get_font(
@@ -229,18 +231,35 @@ class BrandingEngine:
             )
 
             # =================================
+            # CLEAN HOOK TEXT
+            # =================================
+
+            hook = str(
+                hook
+            ).strip()
+
+            if not hook:
+
+                hook = (
+                    "AI CAN SAVE YOU HOURS"
+                )
+
+            # =================================
             # WRAP HOOK
             # =================================
 
             words = hook.split()
 
             lines = []
+
             current = ""
 
             for word in words:
 
                 test = (
-                    current + " " + word
+                    current +
+                    " " +
+                    word
                 ).strip()
 
                 bbox = draw.textbbox(
@@ -249,7 +268,12 @@ class BrandingEngine:
                     font=hook_font
                 )
 
-                if bbox[2] <= 620:
+                text_width = (
+                    bbox[2] -
+                    bbox[0]
+                )
+
+                if text_width <= 620:
 
                     current = test
 
@@ -269,13 +293,12 @@ class BrandingEngine:
                     current
                 )
 
-            # Limit to a reasonable number
-            # of lines
+            # Maximum five lines
 
             lines = lines[:5]
 
             # =================================
-            # HOOK POSITION
+            # POSITION
             # =================================
 
             line_height = 72
@@ -287,7 +310,8 @@ class BrandingEngine:
 
             start_y = (
                 self.height // 2
-                - total_height // 2
+                -
+                total_height // 2
             )
 
             # =================================
@@ -323,37 +347,61 @@ class BrandingEngine:
                 # Shadow
 
                 draw.text(
+
                     (
                         x + 4,
                         y + 4
                     ),
+
                     line,
+
                     font=hook_font,
-                    fill=(0, 0, 0, 190)
+
+                    fill=(
+                        0,
+                        0,
+                        0,
+                        210
+                    )
+
                 )
 
                 # Main text
 
                 draw.text(
+
                     (
                         x,
                         y
                     ),
+
                     line,
+
                     font=hook_font,
-                    fill=(255, 255, 255, 255)
+
+                    fill=(
+                        255,
+                        255,
+                        255,
+                        255
+                    )
+
                 )
 
             # =================================
-            # BRAND
+            # BRAND NAME
             # =================================
 
             brand_text = self.brand_name
 
             bbox = draw.textbbox(
+
                 (0, 0),
+
                 brand_text,
+
                 font=brand_font
+
             )
 
             brand_width = (
@@ -367,18 +415,33 @@ class BrandingEngine:
             ) // 2
 
             draw.text(
+
                 (
                     brand_x,
                     self.height - 90
                 ),
+
                 brand_text,
+
                 font=brand_font,
-                fill=(255, 255, 255, 230)
+
+                fill=(
+                    255,
+                    255,
+                    255,
+                    230
+                )
+
             )
 
             # =================================
-            # SAVE
+            # SAVE THUMBNAIL
             # =================================
+
+            os.makedirs(
+                "assets/hook_images",
+                exist_ok=True
+            )
 
             output_path = (
                 "assets/hook_images/"
@@ -388,24 +451,39 @@ class BrandingEngine:
             image.convert(
                 "RGB"
             ).save(
+
                 output_path,
-                quality=95
+
+                "JPEG",
+
+                quality=95,
+
+                optimize=True
+
             )
 
             print(
-                "Hook cover created:",
+                "YouTube thumbnail created:",
                 output_path
             )
+
+            print("=" * 60)
 
             return output_path
 
         except Exception as e:
 
             print("=" * 60)
-            print("HOOK IMAGE CREATION FAILED")
+            print("THUMBNAIL CREATION FAILED")
             print("=" * 60)
 
-            print(e)
+            print(
+                type(e).__name__
+            )
+
+            print(
+                str(e)
+            )
 
             return None
 
@@ -439,14 +517,14 @@ class BrandingEngine:
             return None
 
         # =====================================
-        # FALLBACK HOOK
+        # HOOK FALLBACK
         # =====================================
 
         if not hook_text:
 
             hook_text = (
-                "AI can save you hours "
-                "of repetitive work."
+                "AI CAN SAVE YOU HOURS "
+                "OF WORK"
             )
 
         hook_text = str(
@@ -454,7 +532,7 @@ class BrandingEngine:
         ).strip()
 
         print("=" * 60)
-        print("PROMPTPROHUB BRANDING ENGINE")
+        print("PROMPTPROHUB THUMBNAIL ENGINE")
         print("=" * 60)
 
         print(
@@ -463,123 +541,48 @@ class BrandingEngine:
         )
 
         # =====================================
-        # CREATE HOOK IMAGE
+        # CREATE SEPARATE THUMBNAIL
         # =====================================
 
-        hook_image = self.create_hook_image(
+        thumbnail = self.create_hook_image(
             hook_text
         )
 
-        if not hook_image:
+        if thumbnail:
 
             print(
-                "Could not create hook frame."
+                "Thumbnail ready:",
+                thumbnail
             )
+
+        else:
 
             print(
-                "Returning original video."
+                "Thumbnail could not be created."
             )
 
-            return video_path
+        # =====================================
+        # IMPORTANT
+        # =====================================
+        #
+        # DO NOT modify the video.
+        #
+        # DO NOT add an opening frame.
+        #
+        # DO NOT concatenate clips.
+        #
+        # DO NOT render the video again.
+        #
+        # The thumbnail is a separate JPEG.
+        #
 
-        try:
+        print("=" * 60)
+        print(
+            "VIDEO LEFT UNCHANGED"
+        )
+        print(
+            "Thumbnail generated separately."
+        )
+        print("=" * 60)
 
-            # =================================
-            # OPEN VIDEO
-            # =================================
-
-            video = VideoFileClip(
-                video_path
-            )
-
-            # =================================
-            # HOOK FRAME
-            # =================================
-
-            hook_clip = (
-                ImageClip(
-                    hook_image
-                )
-                .set_duration(2.0)
-                .resize(
-                    (
-                        self.width,
-                        self.height
-                    )
-                )
-            )
-
-            # Match FPS
-
-            hook_clip = hook_clip.set_fps(
-                video.fps or 30
-            )
-
-            # =================================
-            # COMBINE
-            # =================================
-
-            final_video = concatenate_videoclips(
-                [
-                    hook_clip,
-                    video
-                ],
-                method="compose"
-            )
-
-            # =================================
-            # OUTPUT
-            # =================================
-
-            output_path = (
-                "output/"
-                "promptprohub_final.mp4"
-            )
-
-            os.makedirs(
-                "output",
-                exist_ok=True
-            )
-
-            print(
-                "Rendering branded video..."
-            )
-
-            final_video.write_videofile(
-
-                output_path,
-
-                codec="libx264",
-
-                audio_codec="aac",
-
-                fps=video.fps or 30,
-
-                threads=2,
-
-                preset="veryfast",
-
-                logger=None
-
-            )
-
-            final_video.close()
-
-            video.close()
-
-            print("=" * 60)
-            print("BRANDED VIDEO READY")
-            print(output_path)
-            print("=" * 60)
-
-            return output_path
-
-        except Exception as e:
-
-            print("=" * 60)
-            print("BRANDING ENGINE FAILED")
-            print("=" * 60)
-
-            print(e)
-
-            return video_path
+        return video_path
