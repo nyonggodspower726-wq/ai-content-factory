@@ -6,9 +6,10 @@ import random
 SYSTEM_PROMPT = """
 You are PromptProHub AI Conversion Director.
 
-Your ONLY job is to create HIGH-CONVERTING Call-To-Actions.
+Your ONLY job is to create HIGH-CONVERTING spoken Call-To-Actions
+for the END of short-form videos.
 
-The CTA must sound like the ending of a premium YouTube documentary.
+The CTA will be spoken by an AI voice.
 
 Audience:
 - Freelancers
@@ -17,48 +18,64 @@ Audience:
 - Digital Marketers
 - AI Users
 
-Every CTA should naturally mention PromptProHub.
+Every CTA should naturally mention PromptProHub when appropriate.
 
-Whenever appropriate, naturally mention:
+IMPORTANT CTA REQUIREMENTS:
 
-PromptProHub.com
+Every CTA MUST contain BOTH:
 
-Never force it.
+1. A natural instruction to click/check the link in the bio.
+2. A natural instruction to follow for more.
 
-Never sound salesy.
+Use natural variations such as:
+
+"Click the link in my bio and follow for more."
+
+"Check the link in the bio, and follow for more AI strategies."
+
+"If you want more tools like this, click the link in my bio and follow for more."
+
+Do NOT make every CTA sound identical.
+
+The CTA should sound like the natural ending of a premium
+YouTube/TikTok documentary.
 
 Psychology:
-
-• Curiosity
-• Authority
-• Emotion
-• FOMO
-• Scarcity
-• Future pacing
+- Curiosity
+- Authority
+- Emotion
+- FOMO
+- Future pacing
+- Action
 
 Avoid:
+- Like and Subscribe
+- Comment Below
+- Thanks For Watching
+- "Please support us"
+- Robotic sales language
+- Excessive hype
 
-Like and Subscribe
-Comment Below
-Thanks For Watching
-Generic YouTube endings
+Keep each CTA short enough to be spoken naturally.
 
-Generate 15 DIFFERENT CTAs.
+Generate exactly 15 DIFFERENT CTAs.
 
-Each CTA should feel unique.
-
-Examples:
-
-"If you're serious about using AI to grow faster, PromptProHub has everything you need. Visit PromptProHub.com and start today."
-
-"The difference between watching and succeeding is taking action. Explore PromptProHub.com before your competitors do."
-
-"One prompt can save hours of work. Imagine what hundreds can do. Discover PromptProHub today."
-
-Return ONLY JSON.
+Return ONLY valid JSON.
 
 {
     "cta":[
+        "...",
+        "...",
+        "...",
+        "...",
+        "...",
+        "...",
+        "...",
+        "...",
+        "...",
+        "...",
+        "...",
+        "...",
         "...",
         "...",
         "..."
@@ -72,7 +89,7 @@ def generate_cta(topic):
     prompt = f"""
 {SYSTEM_PROMPT}
 
-Topic:
+Video Topic:
 
 {topic}
 """
@@ -90,14 +107,21 @@ Topic:
 
         data = json.loads(response)
 
-        ideas = data.get("cta", [])
+        ideas = data.get(
+            "cta",
+            []
+        )
 
         if ideas:
 
             print("=" * 60)
             print("PROMPTPROHUB CTA ENGINE")
             print("=" * 60)
-            print(f"Generated {len(ideas)} AI CTAs")
+
+            print(
+                f"Generated {len(ideas)} AI CTAs"
+            )
+
             print("=" * 60)
 
             return ideas
@@ -107,47 +131,105 @@ Topic:
         print("=" * 60)
         print("CTA ENGINE FAILED")
         print("=" * 60)
-        print(e)
+
+        print(
+            type(e).__name__
+        )
+
+        print(
+            str(e)
+        )
+
+
+    # =====================================
+    # FALLBACK CTAs
+    # =====================================
 
     print("=" * 60)
     print("USING CTA FALLBACK")
     print("=" * 60)
 
+
     return [
 
-        "Ready to work smarter instead of harder? Visit PromptProHub.com and unlock AI tools built for creators.",
+        (
+            "Want more AI tools like this? "
+            "Click the link in my bio and follow for more."
+        ),
 
-        "Every expert started with one decision. Make yours today at PromptProHub.com.",
+        (
+            "If you're serious about using AI to work smarter, "
+            "check the link in my bio and follow for more."
+        ),
 
-        "Don't let your competitors discover these AI tools before you do. Visit PromptProHub.com.",
+        (
+            "There's more waiting for you. "
+            "Click the link in my bio and follow for more AI strategies."
+        ),
 
-        "One great prompt can save hours. Imagine having hundreds. Explore PromptProHub today.",
+        (
+            "Ready to take your AI game further? "
+            "Click the link in my bio and follow for more."
+        ),
 
-        "If you're serious about growing with AI, PromptProHub was built for you.",
+        (
+            "Discover more powerful AI tools through the link in my bio, "
+            "and follow for more."
+        ),
 
-        "The future belongs to creators who use AI. Become one of them with PromptProHub.",
+        (
+            "If this saved you time, imagine what's next. "
+            "Click the link in my bio and follow for more."
+        ),
 
-        "Your next breakthrough could start with a single prompt. Visit PromptProHub.com today.",
+        (
+            "Your next AI breakthrough could be one click away. "
+            "Check the link in my bio and follow for more."
+        ),
 
-        "Work faster. Create better. Grow bigger. Start with PromptProHub.",
+        (
+            "Want to build faster with AI? "
+            "Click the link in my bio and follow for more."
+        ),
 
-        "The smartest creators don't work harder—they work smarter with AI. Join them at PromptProHub.",
+        (
+            "Don't stop here. "
+            "Explore the link in my bio and follow for more AI tools."
+        ),
 
-        "This is only the beginning. Discover what's possible at PromptProHub.com."
+        (
+            "More practical AI strategies are waiting for you. "
+            "Click the link in my bio and follow for more."
+        )
 
     ]
 
 
 def choose_cta(topic):
 
-    ideas = generate_cta(topic)
+    ideas = generate_cta(
+        topic
+    )
 
-    selected = random.choice(ideas)
+    if not ideas:
+
+        return (
+            "Want more AI tools like this? "
+            "Click the link in my bio and follow for more."
+        )
+
+    selected = random.choice(
+        ideas
+    )
 
     print("=" * 60)
     print("SELECTED CTA")
     print("=" * 60)
-    print(selected)
+
+    print(
+        selected
+    )
+
     print("=" * 60)
 
     return selected
