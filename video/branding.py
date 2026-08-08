@@ -11,11 +11,15 @@ class BrandingEngine:
 
         self.brand_name = "PromptProHub"
 
-        self.width = 720
-        self.height = 1280
+        # =========================================
+        # YOUTUBE THUMBNAIL SIZE
+        # =========================================
+
+        self.width = 1280
+        self.height = 720
 
         print("=" * 60)
-        print("PROMPTPROHUB BRANDING / THUMBNAIL ENGINE READY")
+        print("PROMPTPROHUB THUMBNAIL ENGINE READY")
         print("=" * 60)
 
     # =========================================
@@ -88,7 +92,7 @@ class BrandingEngine:
         return "man working laptop modern office"
 
     # =========================================
-    # CREATE THUMBNAIL
+    # CREATE YOUTUBE THUMBNAIL
     # =========================================
 
     def create_hook_image(self, hook):
@@ -133,12 +137,17 @@ class BrandingEngine:
 
         try:
 
+            # =================================
+            # OPEN IMAGE
+            # =================================
+
             image = Image.open(
                 image_path
             ).convert("RGB")
 
+
             # =================================
-            # RESIZE TO 9:16
+            # TARGET 16:9
             # =================================
 
             target_ratio = (
@@ -151,7 +160,14 @@ class BrandingEngine:
                 image.height
             )
 
+
+            # =================================
+            # CROP IMAGE TO 16:9
+            # =================================
+
             if image_ratio > target_ratio:
+
+                # Image is too wide
 
                 new_height = image.height
 
@@ -162,12 +178,15 @@ class BrandingEngine:
 
             else:
 
+                # Image is too tall
+
                 new_width = image.width
 
                 new_height = int(
                     new_width /
                     target_ratio
                 )
+
 
             image = image.resize(
                 (
@@ -176,73 +195,107 @@ class BrandingEngine:
                 )
             )
 
+
             # =================================
             # CENTER CROP
             # =================================
 
             left = max(
                 0,
-                (new_width - self.width) // 2
+                (
+                    new_width -
+                    self.width
+                ) // 2
             )
 
             top = max(
                 0,
-                (new_height - self.height) // 2
+                (
+                    new_height -
+                    self.height
+                ) // 2
             )
 
+
             image = image.crop(
+
                 (
                     left,
                     top,
-                    left + self.width,
-                    top + self.height
+
+                    left +
+                    self.width,
+
+                    top +
+                    self.height
                 )
+
             )
+
 
             # =================================
             # DARK OVERLAY
             # =================================
 
             overlay = Image.new(
+
                 "RGBA",
+
                 image.size,
-                (0, 0, 0, 75)
+
+                (
+                    0,
+                    0,
+                    0,
+                    85
+                )
+
             )
 
+
             image = Image.alpha_composite(
+
                 image.convert("RGBA"),
+
                 overlay
+
             )
+
 
             draw = ImageDraw.Draw(
                 image
             )
+
 
             # =================================
             # FONTS
             # =================================
 
             hook_font = self.get_font(
-                58
+                68
             )
 
             brand_font = self.get_font(
-                28
+                30
             )
 
+
             # =================================
-            # CLEAN HOOK TEXT
+            # CLEAN HOOK
             # =================================
 
             hook = str(
                 hook
             ).strip()
 
+
             if not hook:
 
                 hook = (
-                    "AI CAN SAVE YOU HOURS"
+                    "AI CAN SAVE YOU HOURS "
+                    "OF WORK"
                 )
+
 
             # =================================
             # WRAP HOOK
@@ -254,26 +307,38 @@ class BrandingEngine:
 
             current = ""
 
+
             for word in words:
 
                 test = (
+
                     current +
                     " " +
                     word
+
                 ).strip()
 
+
                 bbox = draw.textbbox(
+
                     (0, 0),
+
                     test,
+
                     font=hook_font
+
                 )
+
 
                 text_width = (
+
                     bbox[2] -
                     bbox[0]
+
                 )
 
-                if text_width <= 620:
+
+                if text_width <= 1050:
 
                     current = test
 
@@ -287,32 +352,44 @@ class BrandingEngine:
 
                     current = word
 
+
             if current:
 
                 lines.append(
                     current
                 )
 
-            # Maximum five lines
-
-            lines = lines[:5]
 
             # =================================
-            # POSITION
+            # LIMIT TEXT LINES
             # =================================
 
-            line_height = 72
+            lines = lines[:4]
+
+
+            # =================================
+            # TEXT POSITION
+            # =================================
+
+            line_height = 82
+
 
             total_height = (
+
                 len(lines) *
                 line_height
+
             )
 
+
             start_y = (
+
                 self.height // 2
                 -
                 total_height // 2
+
             )
+
 
             # =================================
             # DRAW HOOK
@@ -323,34 +400,48 @@ class BrandingEngine:
             ):
 
                 bbox = draw.textbbox(
+
                     (0, 0),
+
                     line,
+
                     font=hook_font
+
                 )
+
 
                 text_width = (
+
                     bbox[2] -
                     bbox[0]
+
                 )
 
+
                 x = (
+
                     self.width -
                     text_width
+
                 ) // 2
 
+
                 y = (
+
                     start_y +
                     index *
                     line_height
+
                 )
+
 
                 # Shadow
 
                 draw.text(
 
                     (
-                        x + 4,
-                        y + 4
+                        x + 5,
+                        y + 5
                     ),
 
                     line,
@@ -361,10 +452,11 @@ class BrandingEngine:
                         0,
                         0,
                         0,
-                        210
+                        220
                     )
 
                 )
+
 
                 # Main text
 
@@ -386,203 +478,4 @@ class BrandingEngine:
                         255
                     )
 
-                )
-
-            # =================================
-            # BRAND NAME
-            # =================================
-
-            brand_text = self.brand_name
-
-            bbox = draw.textbbox(
-
-                (0, 0),
-
-                brand_text,
-
-                font=brand_font
-
-            )
-
-            brand_width = (
-                bbox[2] -
-                bbox[0]
-            )
-
-            brand_x = (
-                self.width -
-                brand_width
-            ) // 2
-
-            draw.text(
-
-                (
-                    brand_x,
-                    self.height - 90
-                ),
-
-                brand_text,
-
-                font=brand_font,
-
-                fill=(
-                    255,
-                    255,
-                    255,
-                    230
-                )
-
-            )
-
-            # =================================
-            # SAVE THUMBNAIL
-            # =================================
-
-            os.makedirs(
-                "assets/hook_images",
-                exist_ok=True
-            )
-
-            output_path = (
-                "assets/hook_images/"
-                "promptprohub_hook.jpg"
-            )
-
-            image.convert(
-                "RGB"
-            ).save(
-
-                output_path,
-
-                "JPEG",
-
-                quality=95,
-
-                optimize=True
-
-            )
-
-            print(
-                "YouTube thumbnail created:",
-                output_path
-            )
-
-            print("=" * 60)
-
-            return output_path
-
-        except Exception as e:
-
-            print("=" * 60)
-            print("THUMBNAIL CREATION FAILED")
-            print("=" * 60)
-
-            print(
-                type(e).__name__
-            )
-
-            print(
-                str(e)
-            )
-
-            return None
-
-    # =========================================
-    # APPLY BRANDING
-    # =========================================
-
-    def apply(
-        self,
-        video_path,
-        hook_text=None
-    ):
-
-        if not video_path:
-
-            print(
-                "No video received."
-            )
-
-            return None
-
-        if not os.path.exists(
-            video_path
-        ):
-
-            print(
-                "Video not found:",
-                video_path
-            )
-
-            return None
-
-        # =====================================
-        # HOOK FALLBACK
-        # =====================================
-
-        if not hook_text:
-
-            hook_text = (
-                "AI CAN SAVE YOU HOURS "
-                "OF WORK"
-            )
-
-        hook_text = str(
-            hook_text
-        ).strip()
-
-        print("=" * 60)
-        print("PROMPTPROHUB THUMBNAIL ENGINE")
-        print("=" * 60)
-
-        print(
-            "Hook:",
-            hook_text
         )
-
-        # =====================================
-        # CREATE SEPARATE THUMBNAIL
-        # =====================================
-
-        thumbnail = self.create_hook_image(
-            hook_text
-        )
-
-        if thumbnail:
-
-            print(
-                "Thumbnail ready:",
-                thumbnail
-            )
-
-        else:
-
-            print(
-                "Thumbnail could not be created."
-            )
-
-        # =====================================
-        # IMPORTANT
-        # =====================================
-        #
-        # DO NOT modify the video.
-        #
-        # DO NOT add an opening frame.
-        #
-        # DO NOT concatenate clips.
-        #
-        # DO NOT render the video again.
-        #
-        # The thumbnail is a separate JPEG.
-        #
-
-        print("=" * 60)
-        print(
-            "VIDEO LEFT UNCHANGED"
-        )
-        print(
-            "Thumbnail generated separately."
-        )
-        print("=" * 60)
-
-        return video_path
