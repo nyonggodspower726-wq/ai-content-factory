@@ -12,7 +12,7 @@ STATUS200_BASE_URL = (
 
 
 # ============================================================
-# RAILWAY PUBLIC DOMAIN
+# RAILWAY PUBLIC URL
 # ============================================================
 
 RAILWAY_PUBLIC_DOMAIN = os.getenv(
@@ -53,17 +53,21 @@ def get_railway_public_url():
 
 
     raise RuntimeError(
-        "Railway public domain is not available."
+        "Railway public domain is not available. "
+        "Set RAILWAY_PUBLIC_DOMAIN or "
+        "RAILWAY_PUBLIC_URL in Railway Variables."
     )
 
 
 # ============================================================
-# FOUR STATUS 200 ACCOUNTS
+# STATUS 200 ACCOUNTS
 # ============================================================
 
 ACCOUNTS = [
 
     {
+        "number": 1,
+
         "api_key": os.getenv(
             "STATUS200_API_KEY_1"
         ),
@@ -77,6 +81,8 @@ ACCOUNTS = [
 
 
     {
+        "number": 2,
+
         "api_key": os.getenv(
             "STATUS200_API_KEY_2"
         ),
@@ -90,6 +96,8 @@ ACCOUNTS = [
 
 
     {
+        "number": 3,
+
         "api_key": os.getenv(
             "STATUS200_API_KEY_3"
         ),
@@ -103,6 +111,8 @@ ACCOUNTS = [
 
 
     {
+        "number": 4,
+
         "api_key": os.getenv(
             "STATUS200_API_KEY_4"
         ),
@@ -118,46 +128,48 @@ ACCOUNTS = [
 
 
 # ============================================================
-# PUBLISH ONE VIDEO
+# PUBLISH TO ONE STATUS 200 ACCOUNT
 # ============================================================
 
-def publish_to_status200(
-    video_path,
+def _publish_one_account(
+    video_url,
     caption,
-    account_number=1
+    account
 ):
 
+    account_number = account["number"]
+
+    api_key = account["api_key"]
+
+    account_name = account["account"]
+
+    platform = account["platform"]
+
+
+    print()
     print("=" * 60)
-    print("STATUS 200 PUBLISHER")
+
+    print(
+        f"STATUS 200 ACCOUNT {account_number}"
+    )
+
     print("=" * 60)
 
 
-    # --------------------------------------------------------
-    # ACCOUNT NUMBER
-    # --------------------------------------------------------
+    print(
+        "Account:",
+        account_name
+    )
 
-    if account_number < 1 or account_number > 4:
-
-        raise ValueError(
-            "account_number must be between 1 and 4."
-        )
-
-
-    selected = ACCOUNTS[
-        account_number - 1
-    ]
+    print(
+        "Platform:",
+        platform
+    )
 
 
-    api_key = selected["api_key"]
-
-    account = selected["account"]
-
-    platform = selected["platform"]
-
-
-    # --------------------------------------------------------
+    # ========================================================
     # CHECK API KEY
-    # --------------------------------------------------------
+    # ========================================================
 
     if not api_key:
 
@@ -167,11 +179,11 @@ def publish_to_status200(
         )
 
 
-    # --------------------------------------------------------
+    # ========================================================
     # CHECK ACCOUNT
-    # --------------------------------------------------------
+    # ========================================================
 
-    if not account:
+    if not account_name:
 
         raise RuntimeError(
             f"STATUS200_ACCOUNT_{account_number} "
@@ -179,65 +191,9 @@ def publish_to_status200(
         )
 
 
-    # --------------------------------------------------------
-    # CHECK VIDEO
-    # --------------------------------------------------------
-
-    if not video_path:
-
-        raise ValueError(
-            "No video path provided."
-        )
-
-
-    if not os.path.exists(video_path):
-
-        raise FileNotFoundError(
-            f"Video not found: {video_path}"
-        )
-
-
-    # --------------------------------------------------------
-    # RAILWAY URL
-    # --------------------------------------------------------
-
-    base_url = get_railway_public_url()
-
-
-    filename = os.path.basename(
-        video_path
-    )
-
-
-    video_url = (
-        f"{base_url}/videos/{filename}"
-    )
-
-
-    print(
-        "Account number:",
-        account_number
-    )
-
-    print(
-        "Status 200 account:",
-        account
-    )
-
-    print(
-        "Platform:",
-        platform
-    )
-
-    print(
-        "Video URL:",
-        video_url
-    )
-
-
-    # --------------------------------------------------------
+    # ========================================================
     # HEADERS
-    # --------------------------------------------------------
+    # ========================================================
 
     headers = {
 
@@ -254,9 +210,11 @@ def publish_to_status200(
     # STEP 1 — MEDIA UPLOAD
     # ========================================================
 
-    print("=" * 60)
-    print("STATUS 200 MEDIA UPLOAD")
-    print("=" * 60)
+    print()
+    print(
+        f"[Account {account_number}] "
+        "Uploading media to Status 200..."
+    )
 
 
     upload_response = requests.post(
@@ -276,13 +234,15 @@ def publish_to_status200(
 
 
     print(
-        "Media upload HTTP status:",
+        f"[Account {account_number}] "
+        "Media HTTP status:",
         upload_response.status_code
     )
 
 
     print(
-        "Media upload response:",
+        f"[Account {account_number}] "
+        "Media response:",
         upload_response.text
     )
 
@@ -297,31 +257,41 @@ def publish_to_status200(
         )
 
 
+    # ========================================================
+    # PARSE MEDIA RESPONSE
+    # ========================================================
+
     try:
 
         upload_data = (
             upload_response.json()
         )
 
-    except Exception:
+    except Exception as e:
 
         raise RuntimeError(
             "Status 200 returned invalid "
-            "media upload JSON."
+            f"media JSON: {e}"
         )
 
 
-    # --------------------------------------------------------
+    # ========================================================
     # GET MEDIA ID
-    # --------------------------------------------------------
+    # ========================================================
 
     file_id = (
 
-        upload_data.get("file_id")
+        upload_data.get(
+            "file_id"
+        )
 
-        or upload_data.get("mediaID")
+        or upload_data.get(
+            "mediaID"
+        )
 
-        or upload_data.get("mediaId")
+        or upload_data.get(
+            "mediaId"
+        )
 
     )
 
@@ -337,28 +307,27 @@ def publish_to_status200(
 
 
     print(
-        "Status 200 media ID:",
+        f"[Account {account_number}] "
+        "Media ID:",
         file_id
     )
 
 
     # ========================================================
-    # STEP 2 — CREATE PLATFORM POST
+    # STEP 2 — BUILD PLATFORM POST
     # ========================================================
 
-    print("=" * 60)
-
+    print()
     print(
-        f"STATUS 200 → {platform.upper()}"
+        f"[Account {account_number}] "
+        f"Preparing {platform.upper()} post..."
     )
-
-    print("=" * 60)
 
 
     post_data = {
 
         "accountId":
-            account,
+            account_name,
 
         "platform":
             platform,
@@ -379,11 +348,11 @@ def publish_to_status200(
     }
 
 
-    # --------------------------------------------------------
-    # TIKTOK OPTIONS
-    # --------------------------------------------------------
+    # ========================================================
+    # TIKTOK SETTINGS
+    # ========================================================
 
-    if platform == "tiktok":
+    if platform.lower() == "tiktok":
 
         post_data["tiktok"] = {
 
@@ -393,9 +362,23 @@ def publish_to_status200(
         }
 
 
-    # --------------------------------------------------------
-    # FINAL PAYLOAD
-    # --------------------------------------------------------
+    # ========================================================
+    # INSTAGRAM SETTINGS
+    # ========================================================
+
+    if platform.lower() == "instagram":
+
+        post_data["instagram"] = {
+
+            "mediaType":
+                "REELS"
+
+        }
+
+
+    # ========================================================
+    # FINAL PUBLISH PAYLOAD
+    # ========================================================
 
     publish_payload = {
 
@@ -406,13 +389,8 @@ def publish_to_status200(
 
 
     print(
-        "Publishing account:",
-        account
-    )
-
-    print(
-        "Publishing platform:",
-        platform
+        f"[Account {account_number}] "
+        "Sending publish request..."
     )
 
 
@@ -435,13 +413,15 @@ def publish_to_status200(
 
 
     print(
-        "Status 200 publish HTTP status:",
+        f"[Account {account_number}] "
+        "Publish HTTP status:",
         publish_response.status_code
     )
 
 
     print(
-        "Status 200 publish response:",
+        f"[Account {account_number}] "
+        "Publish response:",
         publish_response.text
     )
 
@@ -456,17 +436,21 @@ def publish_to_status200(
         )
 
 
+    # ========================================================
+    # PARSE RESULT
+    # ========================================================
+
     try:
 
         result = (
             publish_response.json()
         )
 
-    except Exception:
+    except Exception as e:
 
         raise RuntimeError(
             "Status 200 returned invalid "
-            "publish JSON."
+            f"publish JSON: {e}"
         )
 
 
@@ -474,18 +458,9 @@ def publish_to_status200(
     # SUCCESS
     # ========================================================
 
-    print("=" * 60)
-
+    print()
     print(
-        "STATUS 200 PUBLISH REQUEST SUCCESSFUL"
-    )
-
-    print("=" * 60)
-
-
-    print(
-        "Account:",
-        account
+        f"SUCCESS — ACCOUNT {account_number}"
     )
 
     print(
@@ -494,9 +469,321 @@ def publish_to_status200(
     )
 
     print(
+        "Account:",
+        account_name
+    )
+
+    print(
         "Result:",
         result
     )
 
 
-    return result
+    return {
+
+        "success": True,
+
+        "account_number":
+            account_number,
+
+        "account":
+            account_name,
+
+        "platform":
+            platform,
+
+        "result":
+            result
+
+    }
+
+
+# ============================================================
+# PUBLISH ONE VIDEO TO ALL STATUS 200 ACCOUNTS
+# ============================================================
+
+def publish_to_status200(
+    video_path,
+    caption
+):
+
+    print()
+    print("=" * 60)
+    print("PROMPTPROHUB STATUS 200 MULTI-ACCOUNT PUBLISHER")
+    print("=" * 60)
+
+
+    # ========================================================
+    # CHECK VIDEO
+    # ========================================================
+
+    if not video_path:
+
+        raise ValueError(
+            "No video path provided."
+        )
+
+
+    if not os.path.exists(video_path):
+
+        raise FileNotFoundError(
+            f"Video not found: {video_path}"
+        )
+
+
+    # ========================================================
+    # GET RAILWAY PUBLIC URL
+    # ========================================================
+
+    base_url = get_railway_public_url()
+
+
+    # ========================================================
+    # CREATE PUBLIC VIDEO URL
+    # ========================================================
+
+    filename = os.path.basename(
+        video_path
+    )
+
+
+    video_url = (
+        f"{base_url}/videos/{filename}"
+    )
+
+
+    print()
+    print(
+        "Local video:",
+        video_path
+    )
+
+    print(
+        "Railway URL:",
+        base_url
+    )
+
+    print(
+        "Public video URL:",
+        video_url
+    )
+
+
+    # ========================================================
+    # RESULTS
+    # ========================================================
+
+    successful = []
+
+    failed = []
+
+
+    # ========================================================
+    # SEND TO EACH ACCOUNT
+    # ========================================================
+
+    for account in ACCOUNTS:
+
+        account_number = account["number"]
+
+        platform = account["platform"]
+
+        account_name = account["account"]
+
+
+        print()
+        print("=" * 60)
+
+        print(
+            f"STARTING ACCOUNT {account_number}/4"
+        )
+
+        print("=" * 60)
+
+
+        try:
+
+            result = _publish_one_account(
+
+                video_url,
+
+                caption,
+
+                account
+
+            )
+
+
+            successful.append(
+                result
+            )
+
+
+        except Exception as e:
+
+            error = {
+
+                "success": False,
+
+                "account_number":
+                    account_number,
+
+                "account":
+                    account_name,
+
+                "platform":
+                    platform,
+
+                "error":
+                    str(e)
+
+            }
+
+
+            failed.append(
+                error
+            )
+
+
+            # =================================================
+            # IMPORTANT:
+            # DO NOT STOP THE OTHER ACCOUNTS
+            # =================================================
+
+            print()
+            print(
+                f"FAILED — ACCOUNT {account_number}"
+            )
+
+            print(
+                "Platform:",
+                platform
+            )
+
+            print(
+                "Account:",
+                account_name
+            )
+
+            print(
+                "Error:",
+                str(e)
+            )
+
+            print(
+                "Continuing to next Status 200 account..."
+            )
+
+
+    # ========================================================
+    # FINAL SUMMARY
+    # ========================================================
+
+    print()
+    print("=" * 60)
+    print("STATUS 200 MULTI-ACCOUNT SUMMARY")
+    print("=" * 60)
+
+
+    print(
+        "Total accounts:",
+        len(ACCOUNTS)
+    )
+
+    print(
+        "Successful:",
+        len(successful)
+    )
+
+    print(
+        "Failed:",
+        len(failed)
+    )
+
+
+    # ========================================================
+    # SUCCESS LIST
+    # ========================================================
+
+    if successful:
+
+        print()
+        print("SUCCESSFUL ACCOUNTS:")
+
+
+        for item in successful:
+
+            print(
+
+                f"  Account {item['account_number']} "
+                f"→ {item['platform']} "
+                f"→ {item['account']}"
+
+            )
+
+
+    # ========================================================
+    # FAILED LIST
+    # ========================================================
+
+    if failed:
+
+        print()
+        print("FAILED ACCOUNTS:")
+
+
+        for item in failed:
+
+            print(
+
+                f"  Account {item['account_number']} "
+                f"→ {item['platform']} "
+                f"→ {item['account']} "
+                f"→ {item['error']}"
+
+            )
+
+
+    # ========================================================
+    # FINAL STATUS
+    # ========================================================
+
+    print()
+    print("=" * 60)
+
+
+    if successful:
+
+        print(
+            "STATUS 200 MULTI-ACCOUNT PUBLISH COMPLETED"
+        )
+
+    else:
+
+        print(
+            "STATUS 200 MULTI-ACCOUNT PUBLISH FAILED"
+        )
+
+
+    print("=" * 60)
+
+
+    # ========================================================
+    # RETURN EVERYTHING TO BOT.PY
+    # ========================================================
+
+    return {
+
+        "success":
+            len(successful) > 0,
+
+        "total":
+            len(ACCOUNTS),
+
+        "successful":
+            successful,
+
+        "failed":
+            failed
+
+    }
