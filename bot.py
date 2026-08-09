@@ -12,67 +12,26 @@ from brain.retention_engine import choose_retention
 
 from video.video_generator import create_video
 
+# ============================================================
+# SOCIAL PUBLISHERS
+# ============================================================
+
 # STATUS 200:
-# TikTok #1, TikTok #2, LinkedIn, Pinterest
+# TikTok #1
+# LinkedIn
+# TikTok #2
+# Pinterest
 from social.status200_publisher import publish_to_status200
 
-# DIRECT INSTAGRAM REELS API
-from social.instagram_uploader import upload_to_instagram
+# ZERNIO:
+# Instagram @promptprohub3
+from social.instagram_zernio import publish_to_instagram
 
+# YOUTUBE:
 from social.youtube_shorts import upload_to_youtube
 
 from file_manager import save_text
 from logger import log
-
-
-# ============================================================
-# RAILWAY PUBLIC URL
-# ============================================================
-
-RAILWAY_PUBLIC_DOMAIN = os.getenv(
-    "RAILWAY_PUBLIC_DOMAIN"
-)
-
-RAILWAY_PUBLIC_URL = os.getenv(
-    "RAILWAY_PUBLIC_URL"
-)
-
-
-def get_public_video_url(video_path):
-
-    if RAILWAY_PUBLIC_DOMAIN:
-
-        base_url = RAILWAY_PUBLIC_DOMAIN.strip()
-
-        if not base_url.startswith(
-            ("http://", "https://")
-        ):
-
-            base_url = "https://" + base_url
-
-    elif RAILWAY_PUBLIC_URL:
-
-        base_url = RAILWAY_PUBLIC_URL.strip()
-
-        if not base_url.startswith(
-            ("http://", "https://")
-        ):
-
-            base_url = "https://" + base_url
-
-    else:
-
-        raise RuntimeError(
-            "Railway public URL is not configured. "
-            "Set RAILWAY_PUBLIC_DOMAIN or "
-            "RAILWAY_PUBLIC_URL in Railway Variables."
-        )
-
-    base_url = base_url.rstrip("/")
-
-    filename = os.path.basename(video_path)
-
-    return f"{base_url}/videos/{filename}"
 
 
 # ============================================================
@@ -91,8 +50,13 @@ def main(topic=None):
         # CREATIVE BRAIN
         # =====================================================
 
-        log("ACTIVATING NEW CONTENT BRAIN...")
-        log("Running Trend Intelligence Engine...")
+        log(
+            "ACTIVATING NEW CONTENT BRAIN..."
+        )
+
+        log(
+            "Running Trend Intelligence Engine..."
+        )
 
         if topic is None:
 
@@ -102,9 +66,25 @@ def main(topic=None):
             f"Selected Viral Topic: {topic}"
         )
 
-        angle = choose_best_angle(topic)
+        # =====================================================
+        # VIRAL ANGLE
+        # =====================================================
 
-        curiosity = choose_curiosity(topic)
+        angle = choose_best_angle(
+            topic
+        )
+
+        # =====================================================
+        # CURIOSITY
+        # =====================================================
+
+        curiosity = choose_curiosity(
+            topic
+        )
+
+        # =====================================================
+        # HOOK
+        # =====================================================
 
         hook = choose_hook(
             topic,
@@ -112,7 +92,17 @@ def main(topic=None):
             curiosity
         )
 
-        retention = choose_retention(topic)
+        # =====================================================
+        # RETENTION
+        # =====================================================
+
+        retention = choose_retention(
+            topic
+        )
+
+        # =====================================================
+        # SAVE CREATIVE BRAIN
+        # =====================================================
 
         save_text(
             "creative_brain.json",
@@ -125,10 +115,21 @@ def main(topic=None):
             }
         )
 
-        log(f"Selected Topic: {topic}")
-        log(f"Hook: {hook}")
-        log(f"Curiosity: {curiosity}")
-        log(f"Retention: {retention}")
+        log(
+            f"Selected Topic: {topic}"
+        )
+
+        log(
+            f"Hook: {hook}"
+        )
+
+        log(
+            f"Curiosity: {curiosity}"
+        )
+
+        log(
+            f"Retention: {retention}"
+        )
 
         # =====================================================
         # PRODUCTION
@@ -300,22 +301,11 @@ def main(topic=None):
         print(video)
         print("=" * 60)
 
+        # =====================================================
+        # CAPTION
+        # =====================================================
+
         caption = hook
-
-        # =====================================================
-        # CREATE PUBLIC VIDEO URL
-        # =====================================================
-
-        public_video_url = (
-            get_public_video_url(
-                video
-            )
-        )
-
-        print("=" * 60)
-        print("PUBLIC VIDEO URL")
-        print(public_video_url)
-        print("=" * 60)
 
         # =====================================================
         # STATUS 200
@@ -325,8 +315,8 @@ def main(topic=None):
         # Account 3 = TikTok 2
         # Account 4 = Pinterest
         #
-        # status200_publisher.py already handles all four
-        # sequentially and continues if one account fails.
+        # status200_publisher.py handles the accounts
+        # sequentially and continues if one fails.
         # =====================================================
 
         try:
@@ -358,8 +348,15 @@ def main(topic=None):
 
         except Exception as e:
 
-            log(
-                f"Status 200 publishing failed: {e}"
+            print("=" * 60)
+            print(
+                "STATUS 200 PUBLISHING FAILED"
+            )
+            print("=" * 60)
+
+            print(
+                "Error:",
+                e
             )
 
             print(
@@ -368,19 +365,31 @@ def main(topic=None):
 
             traceback.print_exc()
 
+            log(
+                f"Status 200 publishing failed: {e}"
+            )
+
         # =====================================================
-        # DIRECT INSTAGRAM REELS API
+        # INSTAGRAM — ZERNIO
+        #
+        # Connected Instagram:
+        # @promptprohub3
+        #
+        # IMPORTANT:
+        # The Zernio uploader receives the LOCAL video path.
+        # It uploads the MP4 to Zernio and then publishes
+        # the Instagram Reel.
         # =====================================================
 
         try:
 
             log(
-                "Publishing Instagram Reel..."
+                "Publishing Instagram Reel through Zernio..."
             )
 
             instagram_result = (
-                upload_to_instagram(
-                    public_video_url,
+                publish_to_instagram(
+                    video,
                     caption
                 )
             )
@@ -392,8 +401,16 @@ def main(topic=None):
             print("=" * 60)
 
             print(
+                "Instagram:",
+                "@promptprohub3"
+            )
+
+            print(
+                "Zernio Result:",
                 instagram_result
             )
+
+            print("=" * 60)
 
             log(
                 "Instagram Reel publishing completed."
@@ -408,6 +425,11 @@ def main(topic=None):
             print("=" * 60)
 
             print(
+                "Instagram:",
+                "@promptprohub3"
+            )
+
+            print(
                 "Error:",
                 e
             )
@@ -418,8 +440,10 @@ def main(topic=None):
 
             traceback.print_exc()
 
+            print("=" * 60)
+
             log(
-                f"Instagram publishing failed: {e}"
+                f"Instagram Zernio publishing failed: {e}"
             )
 
         # =====================================================
@@ -431,6 +455,10 @@ def main(topic=None):
             log(
                 "Uploading YouTube Shorts..."
             )
+
+            # =================================================
+            # EXTRACT SEO DATA
+            # =================================================
 
             if isinstance(
                 seo,
@@ -458,6 +486,10 @@ def main(topic=None):
                     seo
                 )
 
+            # =================================================
+            # THUMBNAIL
+            # =================================================
+
             thumbnail_path = (
                 "assets/hook_images/"
                 "promptprohub_hook.jpg"
@@ -480,6 +512,10 @@ def main(topic=None):
 
                 thumbnail_path = None
 
+            # =================================================
+            # YOUTUBE UPLOAD
+            # =================================================
+
             upload_to_youtube(
                 video,
                 youtube_title,
@@ -493,15 +529,28 @@ def main(topic=None):
 
         except Exception as e:
 
-            log(
-                f"YouTube upload failed: {e}"
+            print("=" * 60)
+            print(
+                "YOUTUBE UPLOAD FAILED"
+            )
+            print("=" * 60)
+
+            print(
+                "Error:",
+                e
             )
 
             print(
-                "YouTube upload traceback:"
+                "YouTube traceback:"
             )
 
             traceback.print_exc()
+
+            print("=" * 60)
+
+            log(
+                f"YouTube upload failed: {e}"
+            )
 
         # =====================================================
         # COMPLETE
@@ -513,8 +562,30 @@ def main(topic=None):
 
         print("=" * 60)
         print(
-            "BOT COMPLETED SUCCESSFULLY"
+            "PROMPTPROHUB AI STUDIO COMPLETED"
         )
+        print("=" * 60)
+
+        print(
+            "Video:",
+            video
+        )
+
+        print(
+            "Status 200:",
+            "TikTok + LinkedIn + TikTok 2 + Pinterest"
+        )
+
+        print(
+            "Instagram:",
+            "@promptprohub3 via Zernio"
+        )
+
+        print(
+            "YouTube:",
+            "Shorts"
+        )
+
         print("=" * 60)
 
     except Exception as e:
