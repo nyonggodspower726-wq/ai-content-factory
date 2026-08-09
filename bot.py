@@ -12,7 +12,9 @@ from brain.retention_engine import choose_retention
 
 from video.video_generator import create_video
 
-from social.tiktok_uploader import upload_to_tiktok
+# STATUS 200 — NOT DIRECT TIKTOK API
+from social.status200_publisher import publish_to_status200
+
 from social.youtube_shorts import upload_to_youtube
 
 from file_manager import save_text
@@ -236,29 +238,47 @@ def main(topic=None):
         print("=" * 60)
 
         # =========================
-        # SOCIAL UPLOAD
+        # STATUS 200 PUBLISHER
         # =========================
 
         try:
 
-            log("Uploading TikTok...")
+            log(
+                "Sending final video to Status 200..."
+            )
 
-            upload_to_tiktok(
-                video
+            # Use the generated hook as the
+            # social caption.
+            caption = hook
+
+            status200_result = publish_to_status200(
+
+                video,
+
+                caption
+
+            )
+
+            print("=" * 60)
+            print("STATUS 200 PUBLISH REQUEST SUCCESSFUL")
+            print("=" * 60)
+
+            print(
+                status200_result
             )
 
             log(
-                "TikTok upload completed."
+                "Status 200 publishing completed."
             )
 
         except Exception as e:
 
             log(
-                f"TikTok upload failed: {e}"
+                f"Status 200 publishing failed: {e}"
             )
 
             print(
-                "TikTok upload traceback:"
+                "Status 200 traceback:"
             )
 
             traceback.print_exc()
@@ -399,8 +419,6 @@ def main(topic=None):
             f"BOT FAILED: {type(e).__name__}: {e}"
         )
 
-        # Important:
-        # Tell scheduler/Railway that the run really failed.
         raise
 
 
