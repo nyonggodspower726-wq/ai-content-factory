@@ -17,3 +17,4 @@ google-auth-httplib2
 openai
 pytrends==4.9.2
 feedparser
+pip install flask
