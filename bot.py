@@ -12,7 +12,7 @@ from brain.retention_engine import choose_retention
 
 from video.video_generator import create_video
 
-# STATUS 200 — NOT DIRECT TIKTOK API
+# STATUS 200 — NOT DIRECT SOCIAL APIs
 from social.status200_publisher import publish_to_status200
 
 from social.youtube_shorts import upload_to_youtube
@@ -29,9 +29,9 @@ def main(topic=None):
 
     try:
 
-        # =========================
-        # NEW CREATIVE BRAIN
-        # =========================
+        # =====================================================
+        # CREATIVE BRAIN
+        # =====================================================
 
         log("ACTIVATING NEW CONTENT BRAIN...")
 
@@ -42,21 +42,21 @@ def main(topic=None):
 
         log(f"Selected Viral Topic: {topic}")
 
-        # =========================
+        # =====================================================
         # VIRAL ANGLE
-        # =========================
+        # =====================================================
 
         angle = choose_best_angle(topic)
 
-        # =========================
+        # =====================================================
         # CURIOSITY
-        # =========================
+        # =====================================================
 
         curiosity = choose_curiosity(topic)
 
-        # =========================
+        # =====================================================
         # HOOK
-        # =========================
+        # =====================================================
 
         hook = choose_hook(
             topic,
@@ -64,15 +64,15 @@ def main(topic=None):
             curiosity
         )
 
-        # =========================
+        # =====================================================
         # RETENTION
-        # =========================
+        # =====================================================
 
         retention = choose_retention(topic)
 
-        # =========================
+        # =====================================================
         # SAVE CREATIVE BRAIN
-        # =========================
+        # =====================================================
 
         save_text(
             "creative_brain.json",
@@ -90,19 +90,20 @@ def main(topic=None):
         log(f"Curiosity: {curiosity}")
         log(f"Retention: {retention}")
 
-        # =========================
+        # =====================================================
         # BRAIN PRODUCTION
-        # =========================
+        # =====================================================
 
         log(f"Starting campaign: {topic}")
-
         log("Running AI production brain...")
 
         production_plan = production.produce(topic)
 
         if not production_plan:
 
-            log("Production brain returned nothing")
+            log(
+                "Production brain returned nothing"
+            )
 
             return
 
@@ -120,9 +121,9 @@ def main(topic=None):
             "voice"
         )
 
-        # =========================
+        # =====================================================
         # SAVE SCRIPT
-        # =========================
+        # =====================================================
 
         save_text(
             "script.json",
@@ -137,9 +138,9 @@ def main(topic=None):
             )
         )
 
-        # =========================
+        # =====================================================
         # SEO
-        # =========================
+        # =====================================================
 
         log("Generating SEO...")
 
@@ -150,9 +151,9 @@ def main(topic=None):
             seo
         )
 
-        # =========================
+        # =====================================================
         # DEBUG
-        # =========================
+        # =====================================================
 
         print("=" * 60)
         print("DEBUG INFORMATION")
@@ -206,9 +207,9 @@ def main(topic=None):
 
         print("=" * 60)
 
-        # =========================
-        # VIDEO
-        # =========================
+        # =====================================================
+        # VIDEO GENERATION
+        # =====================================================
 
         log("Rendering AI sales video...")
 
@@ -220,7 +221,9 @@ def main(topic=None):
 
         if not video:
 
-            log("Video generation failed.")
+            log(
+                "Video generation failed."
+            )
 
             return
 
@@ -237,55 +240,132 @@ def main(topic=None):
         print(video)
         print("=" * 60)
 
-        # =========================
-        # STATUS 200 PUBLISHER
-        # =========================
+        # =====================================================
+        # STATUS 200 — FOUR SOCIAL ACCOUNTS
+        # =====================================================
 
-        try:
+        caption = hook
 
-            log(
-                "Sending final video to Status 200..."
-            )
+        status200_accounts = [
 
-            # Use the generated hook as the
-            # social caption.
-            caption = hook
+            {
+                "number": 1,
+                "name": "TikTok"
+            },
 
-            status200_result = publish_to_status200(
+            {
+                "number": 2,
+                "name": "LinkedIn"
+            },
 
-                video,
+            {
+                "number": 3,
+                "name": "Instagram"
+            },
 
-                caption
+            {
+                "number": 4,
+                "name": "Pinterest"
+            }
 
-            )
+        ]
 
-            print("=" * 60)
-            print("STATUS 200 PUBLISH REQUEST SUCCESSFUL")
-            print("=" * 60)
+        print("=" * 60)
+        print("STATUS 200 MULTI-ACCOUNT PUBLISHING")
+        print("=" * 60)
 
-            print(
-                status200_result
-            )
+        for account in status200_accounts:
 
-            log(
-                "Status 200 publishing completed."
-            )
+            account_number = account["number"]
+            account_name = account["name"]
 
-        except Exception as e:
+            try:
 
-            log(
-                f"Status 200 publishing failed: {e}"
-            )
+                log(
+                    f"Sending video to Status 200 "
+                    f"Account {account_number} → "
+                    f"{account_name}..."
+                )
 
-            print(
-                "Status 200 traceback:"
-            )
+                result = publish_to_status200(
 
-            traceback.print_exc()
+                    video,
 
-        # =========================
+                    caption,
+
+                    account_number=account_number
+
+                )
+
+                print("=" * 60)
+
+                print(
+                    f"STATUS 200 ACCOUNT "
+                    f"{account_number} SUCCESS"
+                )
+
+                print(
+                    f"Platform: {account_name}"
+                )
+
+                print(
+                    "Result:",
+                    result
+                )
+
+                print("=" * 60)
+
+                log(
+                    f"Status 200 Account "
+                    f"{account_number} → "
+                    f"{account_name} completed."
+                )
+
+            except Exception as e:
+
+                print("=" * 60)
+
+                print(
+                    f"STATUS 200 ACCOUNT "
+                    f"{account_number} FAILED"
+                )
+
+                print(
+                    f"Platform: {account_name}"
+                )
+
+                print(
+                    f"Error: {e}"
+                )
+
+                print("=" * 60)
+
+                log(
+                    f"Status 200 Account "
+                    f"{account_number} → "
+                    f"{account_name} failed: {e}"
+                )
+
+                print(
+                    "Status 200 traceback:"
+                )
+
+                traceback.print_exc()
+
+                # IMPORTANT:
+                # Continue to the next account.
+                continue
+
+        print("=" * 60)
+        print(
+            "STATUS 200 MULTI-ACCOUNT "
+            "PUBLISHING FINISHED"
+        )
+        print("=" * 60)
+
+        # =====================================================
         # YOUTUBE SHORTS
-        # =========================
+        # =====================================================
 
         try:
 
@@ -293,9 +373,9 @@ def main(topic=None):
                 "Uploading YouTube Shorts..."
             )
 
-            # =========================
+            # =================================================
             # EXTRACT SEO DATA
-            # =========================
+            # =================================================
 
             if isinstance(seo, dict):
 
@@ -320,18 +400,14 @@ def main(topic=None):
                     seo
                 )
 
-            # =========================
-            # THUMBNAIL PATH
-            # =========================
+            # =================================================
+            # THUMBNAIL
+            # =================================================
 
             thumbnail_path = (
                 "assets/hook_images/"
                 "promptprohub_hook.jpg"
             )
-
-            # =========================
-            # CHECK THUMBNAIL
-            # =========================
 
             if os.path.exists(
                 thumbnail_path
@@ -350,15 +426,20 @@ def main(topic=None):
 
                 thumbnail_path = None
 
-            # =========================
-            # UPLOAD TO YOUTUBE
-            # =========================
+            # =================================================
+            # YOUTUBE UPLOAD
+            # =================================================
 
             upload_to_youtube(
+
                 video,
+
                 youtube_title,
+
                 youtube_description,
+
                 thumbnail_path
+
             )
 
             log(
@@ -377,9 +458,9 @@ def main(topic=None):
 
             traceback.print_exc()
 
-        # =========================
+        # =====================================================
         # COMPLETE
-        # =========================
+        # =====================================================
 
         log(
             "Production completed successfully."
@@ -391,9 +472,9 @@ def main(topic=None):
 
     except Exception as e:
 
-        # =========================
+        # =====================================================
         # FULL BOT ERROR
-        # =========================
+        # =====================================================
 
         print("=" * 60)
         print("BOT FAILED")
@@ -416,15 +497,16 @@ def main(topic=None):
         print("=" * 60)
 
         log(
-            f"BOT FAILED: {type(e).__name__}: {e}"
+            f"BOT FAILED: "
+            f"{type(e).__name__}: {e}"
         )
 
         raise
 
 
-# =========================
+# ============================================================
 # START BOT
-# =========================
+# ============================================================
 
 if __name__ == "__main__":
 
