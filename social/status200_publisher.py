@@ -60,21 +60,7 @@ def get_railway_public_url():
 
 
 # ============================================================
-# PINTEREST BOARD
-# ============================================================
-#
-# IMPORTANT:
-# Account 4 requires a Pinterest board ID.
-#
-# Railway variable:
-#
-# STATUS200_PINTEREST_BOARD_ID
-#
-# Example:
-# STATUS200_PINTEREST_BOARD_ID = your_board_id
-#
-# Do NOT put the pin.it link here.
-#
+# PINTEREST BOARD ID
 # ============================================================
 
 PINTEREST_BOARD_ID = os.getenv(
@@ -118,10 +104,6 @@ ACCOUNTS = [
     },
 
 
-    # ========================================================
-    # ACCOUNT 3 = TIKTOK 2
-    # ========================================================
-
     {
         "number": 3,
 
@@ -155,7 +137,7 @@ ACCOUNTS = [
 
 
 # ============================================================
-# PUBLISH TO ONE STATUS 200 ACCOUNT
+# PUBLISH ONE ACCOUNT
 # ============================================================
 
 def _publish_one_account(
@@ -170,7 +152,7 @@ def _publish_one_account(
 
     account_name = account["account"]
 
-    platform = account["platform"]
+    platform = account["platform"].lower()
 
 
     print()
@@ -181,7 +163,6 @@ def _publish_one_account(
     )
 
     print("=" * 60)
-
 
     print(
         "Account:",
@@ -195,7 +176,7 @@ def _publish_one_account(
 
 
     # ========================================================
-    # CHECK API KEY
+    # API KEY
     # ========================================================
 
     if not api_key:
@@ -207,7 +188,7 @@ def _publish_one_account(
 
 
     # ========================================================
-    # CHECK ACCOUNT
+    # ACCOUNT
     # ========================================================
 
     if not account_name:
@@ -219,16 +200,16 @@ def _publish_one_account(
 
 
     # ========================================================
-    # PINTEREST BOARD CHECK
+    # PINTEREST BOARD
     # ========================================================
 
-    if platform.lower() == "pinterest":
+    if platform == "pinterest":
 
         if not PINTEREST_BOARD_ID:
 
             raise RuntimeError(
                 "STATUS200_PINTEREST_BOARD_ID "
-                "is not configured in Railway."
+                "is missing from Railway Variables."
             )
 
         print(
@@ -257,6 +238,7 @@ def _publish_one_account(
     # ========================================================
 
     print()
+
     print(
         f"[Account {account_number}] "
         "Uploading media to Status 200..."
@@ -296,10 +278,8 @@ def _publish_one_account(
     if not upload_response.ok:
 
         raise RuntimeError(
-
             "Status 200 media upload failed: "
             + upload_response.text
-
         )
 
 
@@ -309,9 +289,7 @@ def _publish_one_account(
 
     try:
 
-        upload_data = (
-            upload_response.json()
-        )
+        upload_data = upload_response.json()
 
     except Exception as e:
 
@@ -322,22 +300,16 @@ def _publish_one_account(
 
 
     # ========================================================
-    # GET MEDIA ID
+    # MEDIA ID
     # ========================================================
 
     file_id = (
 
-        upload_data.get(
-            "file_id"
-        )
+        upload_data.get("file_id")
 
-        or upload_data.get(
-            "mediaID"
-        )
+        or upload_data.get("mediaID")
 
-        or upload_data.get(
-            "mediaId"
-        )
+        or upload_data.get("mediaId")
 
     )
 
@@ -345,10 +317,8 @@ def _publish_one_account(
     if not file_id:
 
         raise RuntimeError(
-
             "Status 200 did not return "
             f"a media/file ID: {upload_data}"
-
         )
 
 
@@ -360,15 +330,8 @@ def _publish_one_account(
 
 
     # ========================================================
-    # STEP 2 — BUILD PLATFORM POST
+    # BUILD BASIC POST
     # ========================================================
-
-    print()
-    print(
-        f"[Account {account_number}] "
-        f"Preparing {platform.upper()} post..."
-    )
-
 
     post_data = {
 
@@ -381,7 +344,7 @@ def _publish_one_account(
         "content": {
 
             "text":
-                caption,
+                caption or "",
 
             "mediaID": [
 
@@ -395,10 +358,10 @@ def _publish_one_account(
 
 
     # ========================================================
-    # TIKTOK SETTINGS
+    # TIKTOK
     # ========================================================
 
-    if platform.lower() == "tiktok":
+    if platform == "tiktok":
 
         post_data["tiktok"] = {
 
@@ -409,38 +372,69 @@ def _publish_one_account(
 
 
     # ========================================================
-    # PINTEREST SETTINGS
+    # PINTEREST
     # ========================================================
     #
-    # Status 200 returned:
+    # IMPORTANT:
+    #
+    # Your previous request reached Status 200 but returned:
     #
     # {"error":{"message":"board_id is required"}}
     #
-    # Therefore Account 4 now sends the required board_id.
+    # We therefore explicitly provide the board in the
+    # Pinterest options.
+    #
+    # Both board_id and boardId are included for compatibility
+    # with the Status 200 Pinterest handler.
     #
     # ========================================================
 
-    if platform.lower() == "pinterest":
+    if platform == "pinterest":
 
         post_data["pinterest"] = {
 
             "board_id":
+                PINTEREST_BOARD_ID,
+
+            "boardId":
                 PINTEREST_BOARD_ID
 
         }
 
 
+        # ====================================================
+        # ALSO INCLUDE BOARD ID AT POST LEVEL
+        # ====================================================
+        #
+        # This is intentional.
+        #
+        # Your previous request proved that the server did not
+        # detect the nested value. Including it here makes the
+        # board value available to handlers expecting the field
+        # directly on the post object.
+        #
+        # ====================================================
+
+        post_data["board_id"] = (
+            PINTEREST_BOARD_ID
+        )
+
+        post_data["boardId"] = (
+            PINTEREST_BOARD_ID
+        )
+
+
     # ========================================================
     # LINKEDIN
     # ========================================================
-    #
-    # No special options required for the current setup.
-    #
-    # ========================================================
+
+    if platform == "linkedin":
+
+        pass
 
 
     # ========================================================
-    # FINAL PUBLISH PAYLOAD
+    # FINAL PAYLOAD
     # ========================================================
 
     publish_payload = {
@@ -451,16 +445,56 @@ def _publish_one_account(
     }
 
 
+    # ========================================================
+    # PINTEREST DEBUG
+    # ========================================================
+
+    if platform == "pinterest":
+
+        print()
+        print("=" * 60)
+        print("PINTEREST DEBUG")
+        print("=" * 60)
+
+        print(
+            "Account:",
+            account_name
+        )
+
+        print(
+            "Board ID:",
+            PINTEREST_BOARD_ID
+        )
+
+        print(
+            "Pinterest object:",
+            post_data.get("pinterest")
+        )
+
+        print(
+            "Post board_id:",
+            post_data.get("board_id")
+        )
+
+        print(
+            "Post boardId:",
+            post_data.get("boardId")
+        )
+
+        print("=" * 60)
+
+
+    # ========================================================
+    # PUBLISH
+    # ========================================================
+
     print()
+
     print(
         f"[Account {account_number}] "
         f"Publishing to {platform.upper()}..."
     )
 
-
-    # ========================================================
-    # STEP 3 — PUBLISH
-    # ========================================================
 
     publish_response = requests.post(
 
@@ -490,13 +524,15 @@ def _publish_one_account(
     )
 
 
+    # ========================================================
+    # ERROR
+    # ========================================================
+
     if not publish_response.ok:
 
         raise RuntimeError(
-
             "Status 200 publish failed: "
             + publish_response.text
-
         )
 
 
@@ -506,9 +542,7 @@ def _publish_one_account(
 
     try:
 
-        result = (
-            publish_response.json()
-        )
+        result = publish_response.json()
 
     except Exception as e:
 
@@ -523,6 +557,8 @@ def _publish_one_account(
     # ========================================================
 
     print()
+    print("=" * 60)
+
     print(
         f"SUCCESS — ACCOUNT {account_number}"
     )
@@ -542,10 +578,13 @@ def _publish_one_account(
         result
     )
 
+    print("=" * 60)
+
 
     return {
 
-        "success": True,
+        "success":
+            True,
 
         "account_number":
             account_number,
@@ -563,7 +602,7 @@ def _publish_one_account(
 
 
 # ============================================================
-# PUBLISH ONE VIDEO TO ALL STATUS 200 ACCOUNTS
+# PUBLISH ALL ACCOUNTS
 # ============================================================
 
 def publish_to_status200(
@@ -573,12 +612,15 @@ def publish_to_status200(
 
     print()
     print("=" * 60)
-    print("PROMPTPROHUB STATUS 200 MULTI-ACCOUNT PUBLISHER")
+    print(
+        "PROMPTPROHUB STATUS 200 "
+        "MULTI-ACCOUNT PUBLISHER"
+    )
     print("=" * 60)
 
 
     # ========================================================
-    # CHECK VIDEO
+    # VIDEO CHECK
     # ========================================================
 
     if not video_path:
@@ -596,15 +638,11 @@ def publish_to_status200(
 
 
     # ========================================================
-    # GET RAILWAY PUBLIC URL
+    # PUBLIC URL
     # ========================================================
 
     base_url = get_railway_public_url()
 
-
-    # ========================================================
-    # CREATE PUBLIC VIDEO URL
-    # ========================================================
 
     filename = os.path.basename(
         video_path
@@ -643,7 +681,7 @@ def publish_to_status200(
 
 
     # ========================================================
-    # SEND TO EACH ACCOUNT
+    # LOOP ACCOUNTS
     # ========================================================
 
     for account in ACCOUNTS:
@@ -659,7 +697,8 @@ def publish_to_status200(
         print("=" * 60)
 
         print(
-            f"STARTING ACCOUNT {account_number}/4"
+            f"STARTING ACCOUNT "
+            f"{account_number}/{len(ACCOUNTS)}"
         )
 
         print("=" * 60)
@@ -684,9 +723,11 @@ def publish_to_status200(
 
 
             print()
+
             print(
-                f"Status 200 Account {account_number} "
-                f"→ {platform} completed."
+                f"Status 200 Account "
+                f"{account_number} → "
+                f"{platform} completed."
             )
 
 
@@ -694,7 +735,8 @@ def publish_to_status200(
 
             error = {
 
-                "success": False,
+                "success":
+                    False,
 
                 "account_number":
                     account_number,
@@ -716,14 +758,10 @@ def publish_to_status200(
             )
 
 
-            # =================================================
-            # IMPORTANT:
-            # DO NOT STOP THE OTHER ACCOUNTS
-            # =================================================
-
             print()
             print(
-                f"FAILED — ACCOUNT {account_number}"
+                f"FAILED — ACCOUNT "
+                f"{account_number}"
             )
 
             print(
@@ -747,14 +785,17 @@ def publish_to_status200(
 
 
     # ========================================================
-    # FINAL SUMMARY
+    # SUMMARY
     # ========================================================
 
     print()
     print("=" * 60)
-    print("STATUS 200 MULTI-ACCOUNT SUMMARY")
-    print("=" * 60)
 
+    print(
+        "STATUS 200 MULTI-ACCOUNT SUMMARY"
+    )
+
+    print("=" * 60)
 
     print(
         "Total accounts:",
@@ -772,52 +813,36 @@ def publish_to_status200(
     )
 
 
-    # ========================================================
-    # SUCCESS LIST
-    # ========================================================
-
     if successful:
 
         print()
         print("SUCCESSFUL ACCOUNTS:")
 
-
         for item in successful:
 
             print(
-
-                f"  Account {item['account_number']} "
+                f"  Account "
+                f"{item['account_number']} "
                 f"→ {item['platform']} "
                 f"→ {item['account']}"
-
             )
 
-
-    # ========================================================
-    # FAILED LIST
-    # ========================================================
 
     if failed:
 
         print()
         print("FAILED ACCOUNTS:")
 
-
         for item in failed:
 
             print(
-
-                f"  Account {item['account_number']} "
+                f"  Account "
+                f"{item['account_number']} "
                 f"→ {item['platform']} "
                 f"→ {item['account']} "
                 f"→ {item['error']}"
-
             )
 
-
-    # ========================================================
-    # FINAL STATUS
-    # ========================================================
 
     print()
     print("=" * 60)
@@ -826,22 +851,20 @@ def publish_to_status200(
     if successful:
 
         print(
-            "STATUS 200 MULTI-ACCOUNT PUBLISH COMPLETED"
+            "STATUS 200 MULTI-ACCOUNT "
+            "PUBLISH COMPLETED"
         )
 
     else:
 
         print(
-            "STATUS 200 MULTI-ACCOUNT PUBLISH FAILED"
+            "STATUS 200 MULTI-ACCOUNT "
+            "PUBLISH FAILED"
         )
 
 
     print("=" * 60)
 
-
-    # ========================================================
-    # RETURN EVERYTHING TO BOT.PY
-    # ========================================================
 
     return {
 
@@ -857,5 +880,4 @@ def publish_to_status200(
         "failed":
             failed
 
-    }
-    
+}
