@@ -1,11 +1,26 @@
 # ============================================================
 # INSTAGRAM ZERNIO UPLOADER
 # PromptProHub AI Content Factory
+#
+# IMPORTANT:
+# This version DOES NOT use Zernio's direct media upload.
+#
+# Flow:
+#
+# AI VIDEO
+#    ↓
+# Railway public /videos/ URL
+#    ↓
+# Zernio Posts API
+#    ↓
+# Instagram Reels
+#
+# This avoids Zernio HTTP 413:
+# "Request Entity Too Large"
 # ============================================================
 
 import os
 import uuid
-import mimetypes
 import requests
 
 
@@ -13,42 +28,159 @@ import requests
 # CONFIGURATION
 # ============================================================
 
-ZERNIO_API_KEY = os.getenv("ZERNIO_API_KEY")
+ZERNIO_API_KEY = os.getenv(
+    "ZERNIO_API_KEY"
+)
 
-# Your connected Instagram account.
-#
-# From your successful check_zernio.py result:
-# Instagram account = @promptprohub3
-#
-# IMPORTANT:
-# Put the Zernio account ID in Railway Variables.
-#
-# Variable:
-# ZERNIO_INSTAGRAM_ACCOUNT_ID
-#
 ZERNIO_INSTAGRAM_ACCOUNT_ID = os.getenv(
     "ZERNIO_INSTAGRAM_ACCOUNT_ID"
 )
 
-ZERNIO_BASE_URL = "https://zernio.com/api/v1"
+ZERNIO_BASE_URL = (
+    "https://zernio.com/api/v1"
+)
 
 
 # ============================================================
-# VALIDATE CONFIG
+# RAILWAY PUBLIC URL
+# ============================================================
+
+RAILWAY_PUBLIC_DOMAIN = os.getenv(
+    "RAILWAY_PUBLIC_DOMAIN"
+)
+
+RAILWAY_PUBLIC_URL = os.getenv(
+    "RAILWAY_PUBLIC_URL"
+)
+
+
+# ============================================================
+# VALIDATE CONFIGURATION
 # ============================================================
 
 def validate_config():
 
     if not ZERNIO_API_KEY:
-        raise RuntimeError(
-            "ZERNIO_API_KEY is missing from Railway Variables."
-        )
 
-    if not ZERNIO_INSTAGRAM_ACCOUNT_ID:
         raise RuntimeError(
-            "ZERNIO_INSTAGRAM_ACCOUNT_ID is missing "
+            "ZERNIO_API_KEY is missing "
             "from Railway Variables."
         )
+
+
+    if not ZERNIO_INSTAGRAM_ACCOUNT_ID:
+
+        raise RuntimeError(
+            "ZERNIO_INSTAGRAM_ACCOUNT_ID "
+            "is missing from Railway Variables."
+        )
+
+
+# ============================================================
+# GET RAILWAY BASE URL
+# ============================================================
+
+def get_railway_public_url():
+
+    # --------------------------------------------------------
+    # OPTION 1
+    # --------------------------------------------------------
+
+    if RAILWAY_PUBLIC_DOMAIN:
+
+        base_url = (
+            RAILWAY_PUBLIC_DOMAIN.strip()
+        )
+
+        if not base_url.startswith(
+            (
+                "http://",
+                "https://"
+            )
+        ):
+
+            base_url = (
+                "https://"
+                + base_url
+            )
+
+        return base_url.rstrip("/")
+
+
+    # --------------------------------------------------------
+    # OPTION 2
+    # --------------------------------------------------------
+
+    if RAILWAY_PUBLIC_URL:
+
+        base_url = (
+            RAILWAY_PUBLIC_URL.strip()
+        )
+
+        if not base_url.startswith(
+            (
+                "http://",
+                "https://"
+            )
+        ):
+
+            base_url = (
+                "https://"
+                + base_url
+            )
+
+        return base_url.rstrip("/")
+
+
+    # --------------------------------------------------------
+    # NOTHING FOUND
+    # --------------------------------------------------------
+
+    raise RuntimeError(
+        "Railway public URL is not configured. "
+        "Set RAILWAY_PUBLIC_DOMAIN or "
+        "RAILWAY_PUBLIC_URL in Railway Variables."
+    )
+
+
+# ============================================================
+# BUILD PUBLIC VIDEO URL
+# ============================================================
+
+def get_public_video_url(
+    video_path
+):
+
+    if not video_path:
+
+        raise ValueError(
+            "No video path was supplied."
+        )
+
+
+    filename = os.path.basename(
+        video_path
+    )
+
+
+    if not filename:
+
+        raise ValueError(
+            "Could not determine video filename."
+        )
+
+
+    base_url = (
+        get_railway_public_url()
+    )
+
+
+    public_url = (
+        f"{base_url}/videos/{filename}"
+    )
+
+
+    return public_url
 
 
 # ============================================================
@@ -58,118 +190,67 @@ def validate_config():
 def get_headers():
 
     return {
-        "Authorization": f"Bearer {ZERNIO_API_KEY}",
-        "Accept": "application/json"
+
+        "Authorization":
+            f"Bearer {ZERNIO_API_KEY}",
+
+        "Accept":
+            "application/json",
+
+        "Content-Type":
+            "application/json"
+
     }
 
 
 # ============================================================
-# UPLOAD VIDEO TO ZERNIO
+# CHECK PUBLIC VIDEO
+# ============================================================
+#
+# We perform a HEAD request first.
+#
+# This helps detect:
+#
+# - wrong Railway URL
+# - missing video
+# - inaccessible video
+#
+# before sending the post to Zernio.
+#
 # ============================================================
 
-def upload_video(video_path):
+def check_public_video(
+    public_video_url
+):
 
-    validate_config()
-
-    if not video_path:
-        raise ValueError(
-            "No video path was supplied."
-        )
-
-    if not os.path.exists(video_path):
-        raise FileNotFoundError(
-            f"Instagram video not found: {video_path}"
-        )
-
-    file_size = os.path.getsize(video_path)
-
-    # Zernio direct media upload limit is 25 MB.
-    max_size = 25 * 1024 * 1024
-
-    if file_size > max_size:
-
-        size_mb = round(
-            file_size / (1024 * 1024),
-            2
-        )
-
-        raise ValueError(
-            f"Video is {size_mb} MB. "
-            "Zernio direct media upload is limited "
-            "to 25 MB. Use a public CDN/media URL "
-            "for larger videos."
-        )
-
-    mime_type = (
-        mimetypes.guess_type(video_path)[0]
-        or "video/mp4"
-    )
-
-    url = (
-        f"{ZERNIO_BASE_URL}"
-        "/media/upload-direct"
-    )
-
+    print()
     print("=" * 60)
-    print("ZERNIO MEDIA UPLOAD")
+    print("CHECKING PUBLIC VIDEO URL")
     print("=" * 60)
 
     print(
-        "Video:",
-        video_path
+        "URL:",
+        public_video_url
     )
 
-    print(
-        "Size:",
-        round(
-            file_size / (1024 * 1024),
-            2
-        ),
-        "MB"
-    )
-
-    print(
-        "MIME:",
-        mime_type
-    )
 
     try:
 
-        with open(
-            video_path,
-            "rb"
-        ) as video_file:
+        response = requests.head(
 
-            files = {
-                "file": (
-                    os.path.basename(video_path),
-                    video_file,
-                    mime_type
-                )
-            }
+            public_video_url,
 
-            data = {
-                "contentType": mime_type
-            }
+            allow_redirects=True,
 
-            response = requests.post(
+            timeout=30
 
-                url,
-
-                headers=get_headers(),
-
-                files=files,
-
-                data=data,
-
-                timeout=300
-
-            )
+        )
 
     except requests.RequestException as e:
 
         raise RuntimeError(
-            f"Zernio media upload request failed: {e}"
+            "Could not reach the Railway "
+            f"video URL: {e}"
         )
 
 
@@ -179,53 +260,80 @@ def upload_video(video_path):
     )
 
 
-    try:
-
-        result = response.json()
-
-    except ValueError:
-
-        raise RuntimeError(
-            "Zernio returned an invalid response:\n"
-            + response.text
+    content_type = (
+        response.headers.get(
+            "Content-Type",
+            ""
         )
+    )
 
+
+    content_length = (
+        response.headers.get(
+            "Content-Length"
+        )
+    )
+
+
+    print(
+        "Content-Type:",
+        content_type
+    )
+
+
+    print(
+        "Content-Length:",
+        content_length
+    )
+
+
+    # --------------------------------------------------------
+    # ACCEPT 200
+    # --------------------------------------------------------
 
     if response.status_code != 200:
 
         raise RuntimeError(
-            "Zernio media upload failed:\n"
-            + str(result)
+            "Railway video URL is not publicly "
+            "accessible. HTTP status: "
+            f"{response.status_code}\n"
+            f"URL: {public_video_url}"
         )
 
 
-    media_url = result.get("url")
+    # --------------------------------------------------------
+    # CONTENT TYPE WARNING
+    # --------------------------------------------------------
 
-    if not media_url:
+    if content_type:
 
-        raise RuntimeError(
-            "Zernio upload succeeded but "
-            "no media URL was returned:\n"
-            + str(result)
-        )
+        if (
+            "video" not in
+            content_type.lower()
+            and
+            "octet-stream" not in
+            content_type.lower()
+        ):
+
+            print(
+                "WARNING: Railway returned "
+                f"Content-Type: {content_type}"
+            )
 
 
     print(
-        "MEDIA URL RECEIVED:"
+        "Public video URL is reachable."
     )
 
-    print(
-        media_url
-    )
 
     print("=" * 60)
 
 
-    return media_url
+    return True
 
 
 # ============================================================
-# PUBLISH INSTAGRAM REEL
+# CREATE INSTAGRAM REEL
 # ============================================================
 
 def publish_instagram_reel(
@@ -237,21 +345,63 @@ def publish_instagram_reel(
 
 
     if not caption:
+
         caption = ""
 
 
-    # --------------------------------------------------------
-    # STEP 1 — Upload video
-    # --------------------------------------------------------
+    # ========================================================
+    # STEP 1 — MAKE PUBLIC RAILWAY URL
+    # ========================================================
 
-    media_url = upload_video(
+    public_video_url = (
+        get_public_video_url(
+            video_path
+        )
+    )
+
+
+    print()
+    print("=" * 60)
+    print("INSTAGRAM ZERNIO PUBLISHER")
+    print("=" * 60)
+
+
+    print(
+        "Instagram Account:",
+        ZERNIO_INSTAGRAM_ACCOUNT_ID
+    )
+
+
+    print(
+        "Local Video:",
         video_path
     )
 
 
-    # --------------------------------------------------------
-    # STEP 2 — Create Instagram Reel
-    # --------------------------------------------------------
+    print(
+        "Public Video URL:",
+        public_video_url
+    )
+
+
+    print(
+        "Caption:",
+        caption
+    )
+
+
+    # ========================================================
+    # STEP 2 — VERIFY RAILWAY URL
+    # ========================================================
+
+    check_public_video(
+        public_video_url
+    )
+
+
+    # ========================================================
+    # STEP 3 — CREATE ZERNIO POST
+    # ========================================================
 
     url = (
         f"{ZERNIO_BASE_URL}"
@@ -268,14 +418,28 @@ def publish_instagram_reel(
 
     headers.update({
 
-        "Content-Type":
-            "application/json",
-
         "x-request-id":
             request_id
 
     })
 
+
+    # ========================================================
+    # ZERNIO PAYLOAD
+    # ========================================================
+    #
+    # IMPORTANT:
+    #
+    # There is NO:
+    #
+    # /media/upload-direct
+    #
+    # request anymore.
+    #
+    # Zernio receives the Railway public video URL
+    # directly as the media URL.
+    #
+    # ========================================================
 
     payload = {
 
@@ -285,11 +449,13 @@ def publish_instagram_reel(
         "mediaItems": [
 
             {
+
                 "type":
                     "video",
 
                 "url":
-                    media_url
+                    public_video_url
+
             }
 
         ],
@@ -297,6 +463,7 @@ def publish_instagram_reel(
         "platforms": [
 
             {
+
                 "platform":
                     "instagram",
 
@@ -311,38 +478,63 @@ def publish_instagram_reel(
                     "shareToFeed":
                         True,
 
-                    # Your videos are produced
-                    # by the AI Content Factory.
                     "isAiGenerated":
                         True
+
                 }
+
             }
 
         ],
 
         "publishNow":
             True
+
     }
 
 
+    # ========================================================
+    # DEBUG
+    # ========================================================
+
+    print()
     print("=" * 60)
-    print("INSTAGRAM REEL PUBLISH")
+    print("ZERNIO INSTAGRAM REQUEST")
     print("=" * 60)
+
+
+    print(
+        "Endpoint:",
+        url
+    )
+
+
+    print(
+        "Request ID:",
+        request_id
+    )
+
 
     print(
         "Instagram Account:",
         ZERNIO_INSTAGRAM_ACCOUNT_ID
     )
 
-    print(
-        "Caption:",
-        caption
-    )
 
     print(
-        "Publishing..."
+        "Media URL:",
+        public_video_url
     )
 
+
+    print(
+        "Publishing Instagram Reel..."
+    )
+
+
+    # ========================================================
+    # STEP 4 — SEND TO ZERNIO
+    # ========================================================
 
     try:
 
@@ -361,19 +553,41 @@ def publish_instagram_reel(
     except requests.RequestException as e:
 
         raise RuntimeError(
-            f"Instagram publishing request failed: {e}"
+            "Zernio Instagram publishing "
+            f"request failed: {e}"
         )
 
 
+    # ========================================================
+    # RESPONSE
+    # ========================================================
+
+    print()
     print(
-        "HTTP STATUS:",
+        "ZERNIO HTTP STATUS:",
         response.status_code
     )
 
 
+    print(
+        "ZERNIO RESPONSE:"
+    )
+
+
+    print(
+        response.text
+    )
+
+
+    # ========================================================
+    # PARSE JSON
+    # ========================================================
+
     try:
 
-        result = response.json()
+        result = (
+            response.json()
+        )
 
     except ValueError:
 
@@ -383,14 +597,9 @@ def publish_instagram_reel(
         )
 
 
-    print(
-        "ZERNIO RESPONSE:"
-    )
-
-    print(
-        result
-    )
-
+    # ========================================================
+    # ERROR
+    # ========================================================
 
     if response.status_code not in (
         200,
@@ -398,10 +607,15 @@ def publish_instagram_reel(
     ):
 
         raise RuntimeError(
-            "Instagram Reel publishing failed:\n"
+            "Zernio Instagram publishing "
+            "failed:\n"
             + str(result)
         )
 
+
+    # ========================================================
+    # POST INFORMATION
+    # ========================================================
 
     post = result.get(
         "post",
@@ -414,8 +628,59 @@ def publish_instagram_reel(
     )
 
 
+    # ========================================================
+    # PLATFORM URL
+    # ========================================================
+
+    platform_url = None
+
+
+    platforms = post.get(
+        "platforms",
+        []
+    )
+
+
+    if isinstance(
+        platforms,
+        list
+    ):
+
+        for platform in platforms:
+
+            if not isinstance(
+                platform,
+                dict
+            ):
+
+                continue
+
+
+            if (
+                platform.get(
+                    "platform"
+                )
+                == "instagram"
+            ):
+
+                platform_url = (
+                    platform.get(
+                        "platformPostUrl"
+                    )
+                )
+
+                break
+
+
+    # ========================================================
+    # SUCCESS
+    # ========================================================
+
+    print()
     print("=" * 60)
-    print("INSTAGRAM REEL PUBLISHED SUCCESSFULLY")
+    print(
+        "INSTAGRAM REEL PUBLISHED SUCCESSFULLY"
+    )
     print("=" * 60)
 
 
@@ -427,33 +692,18 @@ def publish_instagram_reel(
         )
 
 
-    # Some successful responses contain
-    # platformPostUrl after immediate publishing.
-
-    platform_url = None
-
-    for platform in post.get(
-        "platforms",
-        []
-    ):
-
-        if (
-            platform.get("platform")
-            == "instagram"
-        ):
-
-            platform_url = platform.get(
-                "platformPostUrl"
-            )
-
-            break
-
-
     if platform_url:
 
         print(
             "Instagram URL:",
             platform_url
+        )
+
+    else:
+
+        print(
+            "Instagram URL: "
+            "Not returned by Zernio yet."
         )
 
 
@@ -464,14 +714,15 @@ def publish_instagram_reel(
 
 
 # ============================================================
-# COMPATIBILITY ALIAS
+# COMPATIBILITY FUNCTION
 # ============================================================
 #
-# This lets the main production system call:
+# bot.py already calls:
 #
 # publish_to_instagram(video, caption)
 #
-# without needing to know the internal function name.
+# Therefore we keep this function name unchanged.
+#
 # ============================================================
 
 def publish_to_instagram(
@@ -495,19 +746,51 @@ if __name__ == "__main__":
     print("INSTAGRAM ZERNIO UPLOADER TEST")
     print("=" * 60)
 
-    validate_config()
 
-    print(
-        "ZERNIO_API_KEY: configured"
-    )
+    try:
 
-    print(
-        "INSTAGRAM ACCOUNT ID:",
-        ZERNIO_INSTAGRAM_ACCOUNT_ID
-    )
+        validate_config()
 
-    print(
-        "Instagram uploader is ready."
-    )
+
+        print(
+            "ZERNIO_API_KEY: configured"
+        )
+
+
+        print(
+            "INSTAGRAM ACCOUNT ID:",
+            ZERNIO_INSTAGRAM_ACCOUNT_ID
+        )
+
+
+        railway_url = (
+            get_railway_public_url()
+        )
+
+
+        print(
+            "Railway Public URL:",
+            railway_url
+        )
+
+
+        print()
+        print(
+            "Instagram Zernio uploader "
+            "configuration is valid."
+        )
+
+
+    except Exception as e:
+
+        print()
+        print(
+            "CONFIGURATION ERROR:"
+        )
+
+        print(
+            str(e)
+        )
+
 
     print("=" * 60)
