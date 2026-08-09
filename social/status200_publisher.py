@@ -3,6 +3,7 @@ import requests
 
 
 STATUS200_API_KEY = os.getenv("STATUS200_API_KEY")
+
 TIKTOK_ACCOUNT = os.getenv(
     "STATUS200_TIKTOK_ACCOUNT",
     "@Promptprohub"
@@ -32,9 +33,9 @@ def publish_to_tiktok(video_url, caption):
         "Content-Type": "application/json",
     }
 
-    # -----------------------------
-    # STEP 1: Upload media
-    # -----------------------------
+    # ==================================================
+    # STEP 1 — UPLOAD VIDEO TO STATUS 200
+    # ==================================================
 
     print("=" * 60)
     print("STATUS 200 MEDIA UPLOAD")
@@ -70,37 +71,41 @@ def publish_to_tiktok(video_url, caption):
 
     if not file_id:
         raise RuntimeError(
-            "Status 200 did not return a file ID: "
+            "Status 200 did not return file ID: "
             + str(upload_data)
         )
 
     print(
-        "Status 200 media ID:",
+        "Status 200 file ID:",
         file_id
     )
 
-    # -----------------------------
-    # STEP 2: Publish to TikTok
-    # -----------------------------
+    # ==================================================
+    # STEP 2 — PUBLISH TO TIKTOK
+    # ==================================================
 
     print("=" * 60)
-    print("STATUS 200 TIKTOK PUBLISH")
+    print("STATUS 200 → TIKTOK")
     print("=" * 60)
 
     publish_response = requests.post(
-        f"{BASE_URL}/post",
+        f"{BASE_URL}/api-posts",
         headers=headers,
         json={
             "post": {
-                "post": caption,
-                "platforms": [
-                    {
-                        "platform": "tiktok",
-                        "accountId": TIKTOK_ACCOUNT,
-                        "mediaUrls": [file_id],
-                        "privacy_level": "PUBLIC_TO_EVERYONE",
-                    }
-                ]
+                "accountId": TIKTOK_ACCOUNT,
+                "platform": "tiktok",
+
+                "content": {
+                    "text": caption,
+                    "mediaID": [
+                        file_id
+                    ]
+                },
+
+                "tiktok": {
+                    "privacyLevel": "PUBLIC_TO_EVERYONE"
+                }
             }
         },
         timeout=120
@@ -120,7 +125,7 @@ def publish_to_tiktok(video_url, caption):
     result = publish_response.json()
 
     print("=" * 60)
-    print("TIKTOK PUBLISH SUCCESS")
+    print("TIKTOK PUBLISH REQUEST SUCCESSFUL")
     print("=" * 60)
 
     print(result)
