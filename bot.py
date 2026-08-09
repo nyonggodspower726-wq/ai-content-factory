@@ -12,14 +12,72 @@ from brain.retention_engine import choose_retention
 
 from video.video_generator import create_video
 
-# STATUS 200 — NOT DIRECT SOCIAL APIs
+# STATUS 200:
+# TikTok #1, TikTok #2, LinkedIn, Pinterest
 from social.status200_publisher import publish_to_status200
+
+# DIRECT INSTAGRAM REELS API
+from social.instagram_uploader import upload_to_instagram
 
 from social.youtube_shorts import upload_to_youtube
 
 from file_manager import save_text
 from logger import log
 
+
+# ============================================================
+# RAILWAY PUBLIC URL
+# ============================================================
+
+RAILWAY_PUBLIC_DOMAIN = os.getenv(
+    "RAILWAY_PUBLIC_DOMAIN"
+)
+
+RAILWAY_PUBLIC_URL = os.getenv(
+    "RAILWAY_PUBLIC_URL"
+)
+
+
+def get_public_video_url(video_path):
+
+    if RAILWAY_PUBLIC_DOMAIN:
+
+        base_url = RAILWAY_PUBLIC_DOMAIN.strip()
+
+        if not base_url.startswith(
+            ("http://", "https://")
+        ):
+
+            base_url = "https://" + base_url
+
+    elif RAILWAY_PUBLIC_URL:
+
+        base_url = RAILWAY_PUBLIC_URL.strip()
+
+        if not base_url.startswith(
+            ("http://", "https://")
+        ):
+
+            base_url = "https://" + base_url
+
+    else:
+
+        raise RuntimeError(
+            "Railway public URL is not configured. "
+            "Set RAILWAY_PUBLIC_DOMAIN or "
+            "RAILWAY_PUBLIC_URL in Railway Variables."
+        )
+
+    base_url = base_url.rstrip("/")
+
+    filename = os.path.basename(video_path)
+
+    return f"{base_url}/videos/{filename}"
+
+
+# ============================================================
+# MAIN
+# ============================================================
 
 def main(topic=None):
 
@@ -34,29 +92,19 @@ def main(topic=None):
         # =====================================================
 
         log("ACTIVATING NEW CONTENT BRAIN...")
-
         log("Running Trend Intelligence Engine...")
 
         if topic is None:
+
             topic = choose_trending_topic()
 
-        log(f"Selected Viral Topic: {topic}")
-
-        # =====================================================
-        # VIRAL ANGLE
-        # =====================================================
+        log(
+            f"Selected Viral Topic: {topic}"
+        )
 
         angle = choose_best_angle(topic)
 
-        # =====================================================
-        # CURIOSITY
-        # =====================================================
-
         curiosity = choose_curiosity(topic)
-
-        # =====================================================
-        # HOOK
-        # =====================================================
 
         hook = choose_hook(
             topic,
@@ -64,15 +112,7 @@ def main(topic=None):
             curiosity
         )
 
-        # =====================================================
-        # RETENTION
-        # =====================================================
-
         retention = choose_retention(topic)
-
-        # =====================================================
-        # SAVE CREATIVE BRAIN
-        # =====================================================
 
         save_text(
             "creative_brain.json",
@@ -91,13 +131,20 @@ def main(topic=None):
         log(f"Retention: {retention}")
 
         # =====================================================
-        # BRAIN PRODUCTION
+        # PRODUCTION
         # =====================================================
 
-        log(f"Starting campaign: {topic}")
-        log("Running AI production brain...")
+        log(
+            f"Starting campaign: {topic}"
+        )
 
-        production_plan = production.produce(topic)
+        log(
+            "Running AI production brain..."
+        )
+
+        production_plan = production.produce(
+            topic
+        )
 
         if not production_plan:
 
@@ -142,9 +189,13 @@ def main(topic=None):
         # SEO
         # =====================================================
 
-        log("Generating SEO...")
+        log(
+            "Generating SEO..."
+        )
 
-        seo = generate_seo(topic)
+        seo = generate_seo(
+            topic
+        )
 
         save_text(
             "seo.json",
@@ -165,12 +216,12 @@ def main(topic=None):
         )
 
         print(
-            "Voice File :",
+            "Voice File:",
             voice_file
         )
 
         print(
-            "Voice Exists :",
+            "Voice Exists:",
             bool(
                 voice_file
                 and os.path.exists(
@@ -180,28 +231,33 @@ def main(topic=None):
         )
 
         print(
-            "Scene Prompts :",
+            "Scene Prompts:",
             len(scene_prompts)
         )
 
         if scene_prompts:
 
             print(
-                "First Scene :",
+                "First Scene:",
                 scene_prompts[0]
             )
 
-        if isinstance(script, dict):
+        if isinstance(
+            script,
+            dict
+        ):
 
             print(
-                "Script Keys :",
-                list(script.keys())
+                "Script Keys:",
+                list(
+                    script.keys()
+                )
             )
 
         else:
 
             print(
-                "Script Type :",
+                "Script Type:",
                 type(script)
             )
 
@@ -211,7 +267,9 @@ def main(topic=None):
         # VIDEO GENERATION
         # =====================================================
 
-        log("Rendering AI sales video...")
+        log(
+            "Rendering AI sales video..."
+        )
 
         video = create_video(
             scene_prompts,
@@ -227,7 +285,9 @@ def main(topic=None):
 
             return
 
-        if not os.path.exists(video):
+        if not os.path.exists(
+            video
+        ):
 
             log(
                 f"Rendered video not found: {video}"
@@ -240,128 +300,127 @@ def main(topic=None):
         print(video)
         print("=" * 60)
 
-        # =====================================================
-        # STATUS 200 — FOUR SOCIAL ACCOUNTS
-        # =====================================================
-
         caption = hook
 
-        status200_accounts = [
+        # =====================================================
+        # CREATE PUBLIC VIDEO URL
+        # =====================================================
 
-            {
-                "number": 1,
-                "name": "TikTok"
-            },
-
-            {
-                "number": 2,
-                "name": "LinkedIn"
-            },
-
-            {
-                "number": 3,
-                "name": "Instagram"
-            },
-
-            {
-                "number": 4,
-                "name": "Pinterest"
-            }
-
-        ]
-
-        print("=" * 60)
-        print("STATUS 200 MULTI-ACCOUNT PUBLISHING")
-        print("=" * 60)
-
-        for account in status200_accounts:
-
-            account_number = account["number"]
-            account_name = account["name"]
-
-            try:
-
-                log(
-                    f"Sending video to Status 200 "
-                    f"Account {account_number} → "
-                    f"{account_name}..."
-                )
-
-                result = publish_to_status200(
-
-                    video,
-
-                    caption,
-
-                    account_number=account_number
-
-                )
-
-                print("=" * 60)
-
-                print(
-                    f"STATUS 200 ACCOUNT "
-                    f"{account_number} SUCCESS"
-                )
-
-                print(
-                    f"Platform: {account_name}"
-                )
-
-                print(
-                    "Result:",
-                    result
-                )
-
-                print("=" * 60)
-
-                log(
-                    f"Status 200 Account "
-                    f"{account_number} → "
-                    f"{account_name} completed."
-                )
-
-            except Exception as e:
-
-                print("=" * 60)
-
-                print(
-                    f"STATUS 200 ACCOUNT "
-                    f"{account_number} FAILED"
-                )
-
-                print(
-                    f"Platform: {account_name}"
-                )
-
-                print(
-                    f"Error: {e}"
-                )
-
-                print("=" * 60)
-
-                log(
-                    f"Status 200 Account "
-                    f"{account_number} → "
-                    f"{account_name} failed: {e}"
-                )
-
-                print(
-                    "Status 200 traceback:"
-                )
-
-                traceback.print_exc()
-
-                # IMPORTANT:
-                # Continue to the next account.
-                continue
-
-        print("=" * 60)
-        print(
-            "STATUS 200 MULTI-ACCOUNT "
-            "PUBLISHING FINISHED"
+        public_video_url = (
+            get_public_video_url(
+                video
+            )
         )
+
         print("=" * 60)
+        print("PUBLIC VIDEO URL")
+        print(public_video_url)
+        print("=" * 60)
+
+        # =====================================================
+        # STATUS 200
+        #
+        # Account 1 = TikTok
+        # Account 2 = LinkedIn
+        # Account 3 = TikTok 2
+        # Account 4 = Pinterest
+        #
+        # status200_publisher.py already handles all four
+        # sequentially and continues if one account fails.
+        # =====================================================
+
+        try:
+
+            log(
+                "Publishing to Status 200 accounts..."
+            )
+
+            status200_result = (
+                publish_to_status200(
+                    video,
+                    caption
+                )
+            )
+
+            print("=" * 60)
+            print(
+                "STATUS 200 MULTI-ACCOUNT RESULT"
+            )
+            print("=" * 60)
+
+            print(
+                status200_result
+            )
+
+            log(
+                "Status 200 publishing finished."
+            )
+
+        except Exception as e:
+
+            log(
+                f"Status 200 publishing failed: {e}"
+            )
+
+            print(
+                "Status 200 traceback:"
+            )
+
+            traceback.print_exc()
+
+        # =====================================================
+        # DIRECT INSTAGRAM REELS API
+        # =====================================================
+
+        try:
+
+            log(
+                "Publishing Instagram Reel..."
+            )
+
+            instagram_result = (
+                upload_to_instagram(
+                    public_video_url,
+                    caption
+                )
+            )
+
+            print("=" * 60)
+            print(
+                "INSTAGRAM REEL PUBLISH SUCCESS"
+            )
+            print("=" * 60)
+
+            print(
+                instagram_result
+            )
+
+            log(
+                "Instagram Reel publishing completed."
+            )
+
+        except Exception as e:
+
+            print("=" * 60)
+            print(
+                "INSTAGRAM REEL PUBLISH FAILED"
+            )
+            print("=" * 60)
+
+            print(
+                "Error:",
+                e
+            )
+
+            print(
+                "Instagram traceback:"
+            )
+
+            traceback.print_exc()
+
+            log(
+                f"Instagram publishing failed: {e}"
+            )
 
         # =====================================================
         # YOUTUBE SHORTS
@@ -373,11 +432,10 @@ def main(topic=None):
                 "Uploading YouTube Shorts..."
             )
 
-            # =================================================
-            # EXTRACT SEO DATA
-            # =================================================
-
-            if isinstance(seo, dict):
+            if isinstance(
+                seo,
+                dict
+            ):
 
                 youtube_title = seo.get(
                     "click_title",
@@ -399,10 +457,6 @@ def main(topic=None):
                 youtube_description = str(
                     seo
                 )
-
-            # =================================================
-            # THUMBNAIL
-            # =================================================
 
             thumbnail_path = (
                 "assets/hook_images/"
@@ -426,20 +480,11 @@ def main(topic=None):
 
                 thumbnail_path = None
 
-            # =================================================
-            # YOUTUBE UPLOAD
-            # =================================================
-
             upload_to_youtube(
-
                 video,
-
                 youtube_title,
-
                 youtube_description,
-
                 thumbnail_path
-
             )
 
             log(
@@ -467,7 +512,9 @@ def main(topic=None):
         )
 
         print("=" * 60)
-        print("BOT COMPLETED SUCCESSFULLY")
+        print(
+            "BOT COMPLETED SUCCESSFULLY"
+        )
         print("=" * 60)
 
     except Exception as e:
