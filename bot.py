@@ -1,4 +1,5 @@
 import os
+import traceback
 
 from brain.production_manager import production
 from brain.seo_engine import generate_seo
@@ -30,40 +31,26 @@ def main(topic=None):
         # NEW CREATIVE BRAIN
         # =========================
 
-        log(
-            "ACTIVATING NEW CONTENT BRAIN..."
-        )
+        log("ACTIVATING NEW CONTENT BRAIN...")
 
-        log(
-            "Running Trend Intelligence Engine..."
-        )
+        log("Running Trend Intelligence Engine...")
 
         if topic is None:
-
             topic = choose_trending_topic()
 
-        log(
-            f"Selected Viral Topic: {topic}"
-        )
-
+        log(f"Selected Viral Topic: {topic}")
 
         # =========================
         # VIRAL ANGLE
         # =========================
 
-        angle = choose_best_angle(
-            topic
-        )
-
+        angle = choose_best_angle(topic)
 
         # =========================
         # CURIOSITY
         # =========================
 
-        curiosity = choose_curiosity(
-            topic
-        )
-
+        curiosity = choose_curiosity(topic)
 
         # =========================
         # HOOK
@@ -75,15 +62,11 @@ def main(topic=None):
             curiosity
         )
 
-
         # =========================
         # RETENTION
         # =========================
 
-        retention = choose_retention(
-            topic
-        )
-
+        retention = choose_retention(topic)
 
         # =========================
         # SAVE CREATIVE BRAIN
@@ -100,67 +83,40 @@ def main(topic=None):
             }
         )
 
-
-        log(
-            f"Selected Topic: {topic}"
-        )
-
-        log(
-            f"Hook: {hook}"
-        )
-
-        log(
-            f"Curiosity: {curiosity}"
-        )
-
-        log(
-            f"Retention: {retention}"
-        )
-
+        log(f"Selected Topic: {topic}")
+        log(f"Hook: {hook}")
+        log(f"Curiosity: {curiosity}")
+        log(f"Retention: {retention}")
 
         # =========================
         # BRAIN PRODUCTION
         # =========================
 
-        log(
-            f"Starting campaign: {topic}"
-        )
+        log(f"Starting campaign: {topic}")
 
-        log(
-            "Running AI production brain..."
-        )
+        log("Running AI production brain...")
 
-
-        production_plan = production.produce(
-            topic
-        )
-
+        production_plan = production.produce(topic)
 
         if not production_plan:
 
-            log(
-                "Production brain returned nothing"
-            )
+            log("Production brain returned nothing")
 
             return
-
 
         project = production_plan.get(
             "project",
             {}
         )
 
-
         script = production_plan.get(
             "script",
             {}
         )
 
-
         voice_file = production_plan.get(
             "voice"
         )
-
 
         # =========================
         # SAVE SCRIPT
@@ -171,7 +127,6 @@ def main(topic=None):
             script
         )
 
-
         save_text(
             "voice.json",
             production_plan.get(
@@ -180,26 +135,18 @@ def main(topic=None):
             )
         )
 
-
         # =========================
         # SEO
         # =========================
 
-        log(
-            "Generating SEO..."
-        )
+        log("Generating SEO...")
 
-
-        seo = generate_seo(
-            topic
-        )
-
+        seo = generate_seo(topic)
 
         save_text(
             "seo.json",
             seo
         )
-
 
         # =========================
         # DEBUG
@@ -209,18 +156,15 @@ def main(topic=None):
         print("DEBUG INFORMATION")
         print("=" * 60)
 
-
         scene_prompts = project.get(
             "scene_prompts",
             []
         )
 
-
         print(
             "Voice File :",
             voice_file
         )
-
 
         print(
             "Voice Exists :",
@@ -232,12 +176,10 @@ def main(topic=None):
             )
         )
 
-
         print(
             "Scene Prompts :",
             len(scene_prompts)
         )
-
 
         if scene_prompts:
 
@@ -245,7 +187,6 @@ def main(topic=None):
                 "First Scene :",
                 scene_prompts[0]
             )
-
 
         if isinstance(script, dict):
 
@@ -261,38 +202,25 @@ def main(topic=None):
                 type(script)
             )
 
-
         print("=" * 60)
-
 
         # =========================
         # VIDEO
         # =========================
 
-        log(
-            "Rendering AI sales video..."
-        )
-
+        log("Rendering AI sales video...")
 
         video = create_video(
-
             scene_prompts,
-
             script,
-
             voice_file
-
         )
-
 
         if not video:
 
-            log(
-                "Video generation failed."
-            )
+            log("Video generation failed.")
 
             return
-
 
         if not os.path.exists(video):
 
@@ -302,26 +230,26 @@ def main(topic=None):
 
             return
 
-
         print("=" * 60)
         print("VIDEO CREATED SUCCESSFULLY")
         print(video)
         print("=" * 60)
+
         # =========================
         # SOCIAL UPLOAD
         # =========================
 
         try:
 
-            log(
-                "Uploading TikTok..."
-            )
-
+            log("Uploading TikTok...")
 
             upload_to_tiktok(
                 video
             )
 
+            log(
+                "TikTok upload completed."
+            )
 
         except Exception as e:
 
@@ -329,6 +257,11 @@ def main(topic=None):
                 f"TikTok upload failed: {e}"
             )
 
+            print(
+                "TikTok upload traceback:"
+            )
+
+            traceback.print_exc()
 
         # =========================
         # YOUTUBE SHORTS
@@ -339,7 +272,6 @@ def main(topic=None):
             log(
                 "Uploading YouTube Shorts..."
             )
-
 
             # =========================
             # EXTRACT SEO DATA
@@ -355,12 +287,10 @@ def main(topic=None):
                     )
                 )
 
-
                 youtube_description = seo.get(
                     "description",
                     ""
                 )
-
 
             else:
 
@@ -370,7 +300,6 @@ def main(topic=None):
                     seo
                 )
 
-
             # =========================
             # THUMBNAIL PATH
             # =========================
@@ -379,7 +308,6 @@ def main(topic=None):
                 "assets/hook_images/"
                 "promptprohub_hook.jpg"
             )
-
 
             # =========================
             # CHECK THUMBNAIL
@@ -402,23 +330,20 @@ def main(topic=None):
 
                 thumbnail_path = None
 
-
             # =========================
             # UPLOAD TO YOUTUBE
             # =========================
 
             upload_to_youtube(
-
                 video,
-
                 youtube_title,
-
                 youtube_description,
-
                 thumbnail_path
-
             )
 
+            log(
+                "YouTube upload completed."
+            )
 
         except Exception as e:
 
@@ -426,6 +351,11 @@ def main(topic=None):
                 f"YouTube upload failed: {e}"
             )
 
+            print(
+                "YouTube upload traceback:"
+            )
+
+            traceback.print_exc()
 
         # =========================
         # COMPLETE
@@ -435,12 +365,43 @@ def main(topic=None):
             "Production completed successfully."
         )
 
+        print("=" * 60)
+        print("BOT COMPLETED SUCCESSFULLY")
+        print("=" * 60)
 
     except Exception as e:
 
-        log(
-            f"BOT FAILED: {e}"
+        # =========================
+        # FULL BOT ERROR
+        # =========================
+
+        print("=" * 60)
+        print("BOT FAILED")
+        print("=" * 60)
+
+        print(
+            f"ERROR TYPE: {type(e).__name__}"
         )
+
+        print(
+            f"ERROR: {repr(e)}"
+        )
+
+        print("=" * 60)
+        print("FULL TRACEBACK")
+        print("=" * 60)
+
+        traceback.print_exc()
+
+        print("=" * 60)
+
+        log(
+            f"BOT FAILED: {type(e).__name__}: {e}"
+        )
+
+        # Important:
+        # Tell scheduler/Railway that the run really failed.
+        raise
 
 
 # =========================
