@@ -6,20 +6,6 @@ import requests
 # STATUS 200 CONFIGURATION
 # ============================================================
 
-STATUS200_API_KEY = os.getenv(
-    "STATUS200_API_KEY"
-)
-
-STATUS200_ACCOUNT = os.getenv(
-    "STATUS200_TIKTOK_ACCOUNT",
-    "@Promptprohub"
-)
-
-STATUS200_PLATFORM = os.getenv(
-    "STATUS200_PLATFORM",
-    "tiktok"
-)
-
 STATUS200_BASE_URL = (
     "https://app.status200uploads.com/functions/v1"
 )
@@ -29,100 +15,173 @@ STATUS200_BASE_URL = (
 # RAILWAY PUBLIC DOMAIN
 # ============================================================
 
-# Railway provides RAILWAY_PUBLIC_DOMAIN automatically
-# when the service has a public domain.
-
 RAILWAY_PUBLIC_DOMAIN = os.getenv(
     "RAILWAY_PUBLIC_DOMAIN"
 )
 
-# Keep compatibility with the old variable in case it exists.
 RAILWAY_PUBLIC_URL = os.getenv(
     "RAILWAY_PUBLIC_URL"
 )
 
 
-# ============================================================
-# BUILD PUBLIC RAILWAY URL
-# ============================================================
-
 def get_railway_public_url():
 
-    # Prefer Railway's official public-domain variable.
     if RAILWAY_PUBLIC_DOMAIN:
 
         domain = RAILWAY_PUBLIC_DOMAIN.strip()
 
-        if not domain.startswith("http://") and \
-           not domain.startswith("https://"):
+        if not domain.startswith(
+            ("http://", "https://")
+        ):
 
             domain = "https://" + domain
 
         return domain.rstrip("/")
 
-    # Fallback to manually configured URL.
+
     if RAILWAY_PUBLIC_URL:
 
         url = RAILWAY_PUBLIC_URL.strip()
 
-        if not url.startswith("http://") and \
-           not url.startswith("https://"):
+        if not url.startswith(
+            ("http://", "https://")
+        ):
 
             url = "https://" + url
 
         return url.rstrip("/")
 
+
     raise RuntimeError(
-        "Railway public domain is not available. "
-        "RAILWAY_PUBLIC_DOMAIN was not found."
+        "Railway public domain is not available."
     )
 
 
 # ============================================================
-# PUBLISH TO STATUS 200
+# FOUR STATUS 200 ACCOUNTS
 # ============================================================
 
-def publish_to_status200(video_path, caption):
+ACCOUNTS = [
 
-    """
-    Send a locally generated PromptProHub video
-    to Status 200.
+    {
+        "api_key": os.getenv(
+            "STATUS200_API_KEY_1"
+        ),
 
-    Flow:
+        "account": os.getenv(
+            "STATUS200_ACCOUNT_1"
+        ),
 
-        Local video
-            ↓
-        Railway public URL
-            ↓
-        Status 200 media upload
-            ↓
-        Status 200 file_id
-            ↓
-        Status 200 publish
-            ↓
-        Connected social account
-    """
+        "platform": "tiktok"
+    },
+
+
+    {
+        "api_key": os.getenv(
+            "STATUS200_API_KEY_2"
+        ),
+
+        "account": os.getenv(
+            "STATUS200_ACCOUNT_2"
+        ),
+
+        "platform": "linkedin"
+    },
+
+
+    {
+        "api_key": os.getenv(
+            "STATUS200_API_KEY_3"
+        ),
+
+        "account": os.getenv(
+            "STATUS200_ACCOUNT_3"
+        ),
+
+        "platform": "instagram"
+    },
+
+
+    {
+        "api_key": os.getenv(
+            "STATUS200_API_KEY_4"
+        ),
+
+        "account": os.getenv(
+            "STATUS200_ACCOUNT_4"
+        ),
+
+        "platform": "pinterest"
+    }
+
+]
+
+
+# ============================================================
+# PUBLISH ONE VIDEO
+# ============================================================
+
+def publish_to_status200(
+    video_path,
+    caption,
+    account_number=1
+):
 
     print("=" * 60)
     print("STATUS 200 PUBLISHER")
     print("=" * 60)
 
 
-    # ========================================================
-    # CHECK API KEY
-    # ========================================================
+    # --------------------------------------------------------
+    # ACCOUNT NUMBER
+    # --------------------------------------------------------
 
-    if not STATUS200_API_KEY:
+    if account_number < 1 or account_number > 4:
 
-        raise RuntimeError(
-            "STATUS200_API_KEY is not configured "
-            "in Railway Variables."
+        raise ValueError(
+            "account_number must be between 1 and 4."
         )
 
 
-    # ========================================================
-    # CHECK VIDEO PATH
-    # ========================================================
+    selected = ACCOUNTS[
+        account_number - 1
+    ]
+
+
+    api_key = selected["api_key"]
+
+    account = selected["account"]
+
+    platform = selected["platform"]
+
+
+    # --------------------------------------------------------
+    # CHECK API KEY
+    # --------------------------------------------------------
+
+    if not api_key:
+
+        raise RuntimeError(
+            f"STATUS200_API_KEY_{account_number} "
+            "is not configured in Railway."
+        )
+
+
+    # --------------------------------------------------------
+    # CHECK ACCOUNT
+    # --------------------------------------------------------
+
+    if not account:
+
+        raise RuntimeError(
+            f"STATUS200_ACCOUNT_{account_number} "
+            "is not configured in Railway."
+        )
+
+
+    # --------------------------------------------------------
+    # CHECK VIDEO
+    # --------------------------------------------------------
 
     if not video_path:
 
@@ -138,20 +197,17 @@ def publish_to_status200(video_path, caption):
         )
 
 
-    # ========================================================
-    # GET PUBLIC RAILWAY URL
-    # ========================================================
+    # --------------------------------------------------------
+    # RAILWAY URL
+    # --------------------------------------------------------
 
     base_url = get_railway_public_url()
 
 
-    # ========================================================
-    # CREATE PUBLIC VIDEO URL
-    # ========================================================
-
     filename = os.path.basename(
         video_path
     )
+
 
     video_url = (
         f"{base_url}/videos/{filename}"
@@ -159,54 +215,49 @@ def publish_to_status200(video_path, caption):
 
 
     print(
-        "Local video:",
-        video_path
-    )
-
-    print(
-        "Railway public domain:",
-        base_url
-    )
-
-    print(
-        "Public video URL:",
-        video_url
+        "Account number:",
+        account_number
     )
 
     print(
         "Status 200 account:",
-        STATUS200_ACCOUNT
+        account
     )
 
     print(
-        "Status 200 platform:",
-        STATUS200_PLATFORM
+        "Platform:",
+        platform
+    )
+
+    print(
+        "Video URL:",
+        video_url
     )
 
 
-    # ========================================================
+    # --------------------------------------------------------
     # HEADERS
-    # ========================================================
+    # --------------------------------------------------------
 
     headers = {
 
         "Authorization":
-            f"Bearer {STATUS200_API_KEY}",
+            f"Bearer {api_key}",
 
         "Content-Type":
-            "application/json",
+            "application/json"
 
     }
 
 
     # ========================================================
-    # STEP 1
-    # STATUS 200 MEDIA UPLOAD
+    # STEP 1 — MEDIA UPLOAD
     # ========================================================
 
     print("=" * 60)
     print("STATUS 200 MEDIA UPLOAD")
     print("=" * 60)
+
 
     upload_response = requests.post(
 
@@ -229,6 +280,7 @@ def publish_to_status200(video_path, caption):
         upload_response.status_code
     )
 
+
     print(
         "Media upload response:",
         upload_response.text
@@ -245,10 +297,6 @@ def publish_to_status200(video_path, caption):
         )
 
 
-    # ========================================================
-    # PARSE MEDIA RESPONSE
-    # ========================================================
-
     try:
 
         upload_data = (
@@ -258,30 +306,22 @@ def publish_to_status200(video_path, caption):
     except Exception:
 
         raise RuntimeError(
-
-            "Status 200 returned an invalid "
-            "media upload response."
-
+            "Status 200 returned invalid "
+            "media upload JSON."
         )
 
 
-    # ========================================================
-    # GET FILE ID
-    # ========================================================
+    # --------------------------------------------------------
+    # GET MEDIA ID
+    # --------------------------------------------------------
 
     file_id = (
 
-        upload_data.get(
-            "file_id"
-        )
+        upload_data.get("file_id")
 
-        or upload_data.get(
-            "mediaID"
-        )
+        or upload_data.get("mediaID")
 
-        or upload_data.get(
-            "mediaId"
-        )
+        or upload_data.get("mediaId")
 
     )
 
@@ -303,50 +343,49 @@ def publish_to_status200(video_path, caption):
 
 
     # ========================================================
-    # STEP 2
-    # ASK STATUS 200 TO PUBLISH
+    # STEP 2 — CREATE PLATFORM POST
     # ========================================================
 
     print("=" * 60)
-    print("STATUS 200 → SOCIAL PLATFORM")
+
+    print(
+        f"STATUS 200 → {platform.upper()}"
+    )
+
     print("=" * 60)
 
 
-    publish_payload = {
+    post_data = {
 
-        "post": {
+        "accountId":
+            account,
 
-            "accountId":
-                STATUS200_ACCOUNT,
+        "platform":
+            platform,
 
-            "platform":
-                STATUS200_PLATFORM,
+        "content": {
 
-            "content": {
+            "text":
+                caption,
 
-                "text":
-                    caption,
+            "mediaID": [
 
-                "mediaID": [
+                file_id
 
-                    file_id
-
-                ]
-
-            }
+            ]
 
         }
 
     }
 
 
-    # ========================================================
+    # --------------------------------------------------------
     # TIKTOK OPTIONS
-    # ========================================================
+    # --------------------------------------------------------
 
-    if STATUS200_PLATFORM.lower() == "tiktok":
+    if platform == "tiktok":
 
-        publish_payload["post"]["tiktok"] = {
+        post_data["tiktok"] = {
 
             "privacyLevel":
                 "PUBLIC_TO_EVERYONE"
@@ -354,19 +393,31 @@ def publish_to_status200(video_path, caption):
         }
 
 
+    # --------------------------------------------------------
+    # FINAL PAYLOAD
+    # --------------------------------------------------------
+
+    publish_payload = {
+
+        "post":
+            post_data
+
+    }
+
+
     print(
-        "Publishing to:",
-        STATUS200_ACCOUNT
+        "Publishing account:",
+        account
     )
 
     print(
-        "Platform:",
-        STATUS200_PLATFORM
+        "Publishing platform:",
+        platform
     )
 
 
     # ========================================================
-    # SEND PUBLISH REQUEST
+    # STEP 3 — PUBLISH
     # ========================================================
 
     publish_response = requests.post(
@@ -388,6 +439,7 @@ def publish_to_status200(video_path, caption):
         publish_response.status_code
     )
 
+
     print(
         "Status 200 publish response:",
         publish_response.text
@@ -404,10 +456,6 @@ def publish_to_status200(video_path, caption):
         )
 
 
-    # ========================================================
-    # PARSE PUBLISH RESPONSE
-    # ========================================================
-
     try:
 
         result = (
@@ -417,10 +465,8 @@ def publish_to_status200(video_path, caption):
     except Exception:
 
         raise RuntimeError(
-
-            "Status 200 returned an invalid "
-            "publish response."
-
+            "Status 200 returned invalid "
+            "publish JSON."
         )
 
 
@@ -429,15 +475,28 @@ def publish_to_status200(video_path, caption):
     # ========================================================
 
     print("=" * 60)
-    print("STATUS 200 PUBLISH REQUEST SUCCESSFUL")
-    print("=" * 60)
 
     print(
-        "Status 200 result:",
-        result
+        "STATUS 200 PUBLISH REQUEST SUCCESSFUL"
     )
 
     print("=" * 60)
+
+
+    print(
+        "Account:",
+        account
+    )
+
+    print(
+        "Platform:",
+        platform
+    )
+
+    print(
+        "Result:",
+        result
+    )
 
 
     return result
