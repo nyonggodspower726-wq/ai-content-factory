@@ -1,7 +1,34 @@
 import os
-import requests
-import tempfile
 import subprocess
+import requests
+
+
+# ============================================================
+# PROMPTPROHUB STATUS 200 MULTI-ACCOUNT PUBLISHER
+# ============================================================
+#
+# ACCOUNT 1  -> TikTok
+# ACCOUNT 2  -> LinkedIn
+# ACCOUNT 3  -> TikTok
+# ACCOUNT 4  -> Pinterest
+#
+# IMPORTANT:
+#
+# Accounts 1-3 continue using the generated MP4.
+#
+# Pinterest is different:
+#
+# Pinterest requires an IMAGE PIN.
+#
+# Therefore Account 4 automatically:
+#
+# 1. Takes the generated MP4
+# 2. Extracts a JPG frame
+# 3. Makes the JPG publicly accessible through Railway
+# 4. Uploads the JPG to Status 200
+# 5. Publishes the JPG to Pinterest
+#
+# ============================================================
 
 
 # ============================================================
@@ -10,6 +37,15 @@ import subprocess
 
 STATUS200_BASE_URL = (
     "https://app.status200uploads.com/functions/v1"
+)
+
+
+# ============================================================
+# STATUS 200 REST V2
+# ============================================================
+
+STATUS200_V2_URL = (
+    "https://status200uploads.com/api/v2/posts"
 )
 
 
@@ -139,12 +175,19 @@ ACCOUNTS = [
 
 
 # ============================================================
-# EXTRACT PINTEREST IMAGE FROM VIDEO
+# CREATE PINTEREST JPG
 # ============================================================
 
-def create_pinterest_image(
+def create_pinterest_jpg(
     video_path
 ):
+
+    if not video_path:
+
+        raise ValueError(
+            "No video path supplied for Pinterest."
+        )
+
 
     if not os.path.exists(video_path):
 
@@ -153,8 +196,13 @@ def create_pinterest_image(
         )
 
 
+    # --------------------------------------------------------
+    # Pinterest output directory
+    # --------------------------------------------------------
+
     output_dir = os.path.join(
-        os.path.dirname(video_path),
+        "output",
+        "videos",
         "pinterest"
     )
 
@@ -165,20 +213,24 @@ def create_pinterest_image(
     )
 
 
-    filename = os.path.splitext(
+    # --------------------------------------------------------
+    # Create JPG filename
+    # --------------------------------------------------------
+
+    video_name = os.path.splitext(
         os.path.basename(video_path)
     )[0]
 
 
-    image_path = os.path.join(
+    jpg_path = os.path.join(
         output_dir,
-        f"{filename}_pinterest.jpg"
+        f"{video_name}_pinterest.jpg"
     )
 
 
     print()
     print("=" * 60)
-    print("CREATING PINTEREST IMAGE")
+    print("CREATING PINTEREST JPG")
     print("=" * 60)
 
     print(
@@ -187,14 +239,19 @@ def create_pinterest_image(
     )
 
     print(
-        "Pinterest image:",
-        image_path
+        "Pinterest JPG:",
+        jpg_path
     )
 
 
-    # ========================================================
-    # FFmpeg
-    # ========================================================
+    # --------------------------------------------------------
+    # Use FFmpeg
+    #
+    # Take frame at 1 second.
+    #
+    # If the video is shorter than 1 second,
+    # FFmpeg automatically falls back to the available frame.
+    # --------------------------------------------------------
 
     command = [
 
@@ -202,21 +259,19 @@ def create_pinterest_image(
 
         "-y",
 
+        "-ss",
+        "1",
+
         "-i",
         video_path,
-
-        # Grab a frame around 2 seconds into the video.
-        "-ss",
-        "2",
 
         "-frames:v",
         "1",
 
-        # Pinterest-friendly JPEG quality.
         "-q:v",
         "2",
 
-        image_path
+        jpg_path
 
     ]
 
@@ -240,47 +295,70 @@ def create_pinterest_image(
     except FileNotFoundError:
 
         raise RuntimeError(
-            "FFmpeg is not installed or "
-            "is not available in Railway."
+            "FFmpeg is not installed or not available "
+            "in the Railway environment."
         )
 
     except subprocess.TimeoutExpired:
 
         raise RuntimeError(
             "FFmpeg timed out while creating "
-            "the Pinterest image."
+            "the Pinterest JPG."
         )
 
+
+    # --------------------------------------------------------
+    # Check FFmpeg
+    # --------------------------------------------------------
 
     if result.returncode != 0:
 
+        print(
+            "FFmpeg output:"
+        )
+
+        print(
+            result.stderr[-4000:]
+        )
+
         raise RuntimeError(
-            "FFmpeg failed to create Pinterest image:\n"
-            + result.stderr[-3000:]
+            "FFmpeg failed to create the "
+            "Pinterest JPG."
         )
 
 
-    if not os.path.exists(image_path):
+    # --------------------------------------------------------
+    # Check JPG
+    # --------------------------------------------------------
+
+    if not os.path.exists(jpg_path):
 
         raise RuntimeError(
-            "FFmpeg completed but the Pinterest "
-            "JPG was not created."
+            "Pinterest JPG was not created."
         )
 
 
-    image_size = os.path.getsize(
-        image_path
+    jpg_size = os.path.getsize(
+        jpg_path
     )
 
 
+    if jpg_size <= 0:
+
+        raise RuntimeError(
+            "Pinterest JPG was created but "
+            "has zero bytes."
+        )
+
+
     print(
-        "Pinterest JPG created."
+        "Pinterest JPG created successfully."
     )
 
     print(
-        "Image size:",
+        "JPG size:",
         round(
-            image_size / (1024 * 1024),
+            jpg_size / (1024 * 1024),
             2
         ),
         "MB"
@@ -289,7 +367,51 @@ def create_pinterest_image(
     print("=" * 60)
 
 
-    return image_path
+    return jpg_path
+
+
+# ============================================================
+# CREATE PUBLIC URL FOR FILE
+# ============================================================
+
+def get_public_file_url(
+    file_path
+):
+
+    base_url = get_railway_public_url()
+
+
+    filename = os.path.basename(
+        file_path
+    )
+
+
+    # --------------------------------------------------------
+    # Railway static video directory
+    #
+    # Your Railway server already exposes:
+    #
+    # /videos/...
+    #
+    # Keep the Pinterest JPG under the same public directory.
+    # --------------------------------------------------------
+
+    relative_path = os.path.relpath(
+        file_path,
+        "output"
+    )
+
+
+    relative_path = (
+        relative_path
+        .replace("\\", "/")
+    )
+
+
+    return (
+        f"{base_url}/videos/"
+        f"{relative_path}"
+    )
 
 
 # ============================================================
@@ -297,16 +419,22 @@ def create_pinterest_image(
 # ============================================================
 
 def upload_media(
-    media_url,
-    api_key,
-    account_number
+    video_url,
+    api_key
 ):
 
-    print()
-    print(
-        f"[Account {account_number}] "
-        "Uploading media to Status 200..."
-    )
+    if not video_url:
+
+        raise ValueError(
+            "No public media URL supplied."
+        )
+
+
+    if not api_key:
+
+        raise RuntimeError(
+            "Status 200 API key is missing."
+        )
 
 
     headers = {
@@ -320,6 +448,17 @@ def upload_media(
     }
 
 
+    print()
+    print(
+        "Uploading media to Status 200..."
+    )
+
+    print(
+        "Media URL:",
+        video_url
+    )
+
+
     response = requests.post(
 
         f"{STATUS200_BASE_URL}"
@@ -328,23 +467,21 @@ def upload_media(
         headers=headers,
 
         json={
-            "url": media_url
+            "url": video_url
         },
 
-        timeout=120
+        timeout=180
 
     )
 
 
     print(
-        f"[Account {account_number}] "
         "Media HTTP status:",
         response.status_code
     )
 
 
     print(
-        f"[Account {account_number}] "
         "Media response:",
         response.text
     )
@@ -353,8 +490,10 @@ def upload_media(
     if not response.ok:
 
         raise RuntimeError(
+
             "Status 200 media upload failed: "
             + response.text
+
         )
 
 
@@ -384,14 +523,15 @@ def upload_media(
     if not file_id:
 
         raise RuntimeError(
+
             "Status 200 did not return "
             f"a media/file ID: {data}"
+
         )
 
 
     print(
-        f"[Account {account_number}] "
-        "Media ID:",
+        "Status 200 Media ID:",
         file_id
     )
 
@@ -400,14 +540,13 @@ def upload_media(
 
 
 # ============================================================
-# PUBLISH ONE STATUS 200 ACCOUNT
+# PUBLISH NORMAL VIDEO ACCOUNT
 # ============================================================
 
-def _publish_one_account(
-    media_url,
+def _publish_video_account(
+    video_url,
     caption,
-    account,
-    pinterest=False
+    account
 ):
 
     account_number = account["number"]
@@ -439,9 +578,9 @@ def _publish_one_account(
     )
 
 
-    # ========================================================
+    # --------------------------------------------------------
     # API KEY
-    # ========================================================
+    # --------------------------------------------------------
 
     if not api_key:
 
@@ -451,9 +590,9 @@ def _publish_one_account(
         )
 
 
-    # ========================================================
+    # --------------------------------------------------------
     # ACCOUNT
-    # ========================================================
+    # --------------------------------------------------------
 
     if not account_name:
 
@@ -463,43 +602,19 @@ def _publish_one_account(
         )
 
 
-    # ========================================================
-    # PINTEREST BOARD
-    # ========================================================
-
-    if platform == "pinterest":
-
-        if not PINTEREST_BOARD_ID:
-
-            raise RuntimeError(
-                "STATUS200_PINTEREST_BOARD_ID "
-                "is missing from Railway Variables."
-            )
-
-        print(
-            "Pinterest Board ID:",
-            PINTEREST_BOARD_ID
-        )
-
-
-    # ========================================================
-    # MEDIA UPLOAD
-    # ========================================================
+    # --------------------------------------------------------
+    # UPLOAD VIDEO
+    # --------------------------------------------------------
 
     file_id = upload_media(
-
-        media_url,
-
-        api_key,
-
-        account_number
-
+        video_url,
+        api_key
     )
 
 
-    # ========================================================
+    # --------------------------------------------------------
     # BASIC POST
-    # ========================================================
+    # --------------------------------------------------------
 
     post_data = {
 
@@ -525,9 +640,9 @@ def _publish_one_account(
     }
 
 
-    # ========================================================
+    # --------------------------------------------------------
     # TIKTOK
-    # ========================================================
+    # --------------------------------------------------------
 
     if platform == "tiktok":
 
@@ -539,63 +654,27 @@ def _publish_one_account(
         }
 
 
-    # ========================================================
-    # PINTEREST
-    # ========================================================
+    # --------------------------------------------------------
+    # LINKEDIN
+    # --------------------------------------------------------
 
-    if platform == "pinterest":
+    if platform == "linkedin":
 
-        post_data["pinterest"] = {
-
-            "board_id":
-                PINTEREST_BOARD_ID
-
-        }
+        pass
 
 
-        print()
-        print("=" * 60)
-        print("PINTEREST PUBLISH DATA")
-        print("=" * 60)
-
-        print(
-            "Pinterest Account:",
-            account_name
-        )
-
-        print(
-            "Pinterest Board ID:",
-            PINTEREST_BOARD_ID
-        )
-
-        print(
-            "Pinterest Media ID:",
-            file_id
-        )
-
-        print("=" * 60)
-
-
-    # ========================================================
-    # FINAL PAYLOAD
-    # ========================================================
-
-    publish_payload = {
-
-        "post":
-            post_data
-
-    }
-
+    # --------------------------------------------------------
+    # PUBLISH NORMAL ACCOUNT
+    # --------------------------------------------------------
 
     print()
     print(
-        f"[Account {account_number}] "
-        f"Publishing to {platform.upper()}..."
+        f"Publishing Account {account_number} "
+        f"to {platform.upper()}..."
     )
 
 
-    publish_response = requests.post(
+    response = requests.post(
 
         f"{STATUS200_BASE_URL}"
         "/api-posts",
@@ -610,38 +689,41 @@ def _publish_one_account(
 
         },
 
-        json=publish_payload,
+        json={
+            "post":
+                post_data
+        },
 
-        timeout=120
+        timeout=180
 
     )
 
 
     print(
-        f"[Account {account_number}] "
         "Publish HTTP status:",
-        publish_response.status_code
+        response.status_code
     )
 
 
     print(
-        f"[Account {account_number}] "
         "Publish response:",
-        publish_response.text
+        response.text
     )
 
 
-    if not publish_response.ok:
+    if not response.ok:
 
         raise RuntimeError(
+
             "Status 200 publish failed: "
-            + publish_response.text
+            + response.text
+
         )
 
 
     try:
 
-        result = publish_response.json()
+        result = response.json()
 
     except Exception as e:
 
@@ -651,13 +733,7 @@ def _publish_one_account(
         )
 
 
-    # ========================================================
-    # SUCCESS
-    # ========================================================
-
     print()
-    print("=" * 60)
-
     print(
         f"SUCCESS — ACCOUNT {account_number}"
     )
@@ -676,8 +752,6 @@ def _publish_one_account(
         "Result:",
         result
     )
-
-    print("=" * 60)
 
 
     return {
@@ -701,384 +775,383 @@ def _publish_one_account(
 
 
 # ============================================================
-# MAIN PUBLISH FUNCTION
+# PUBLISH PINTEREST ONLY
 # ============================================================
 
-def publish_to_status200(
+def _publish_pinterest(
     video_path,
-    caption
+    caption,
+    account
 ):
 
-    print()
-    print("=" * 60)
+    account_number = account["number"]
 
-    print(
-        "PROMPTPROHUB STATUS 200 "
-        "MULTI-ACCOUNT PUBLISHER"
-    )
+    api_key = account["api_key"]
 
-    print("=" * 60)
-
-
-    # ========================================================
-    # CHECK VIDEO
-    # ========================================================
-
-    if not video_path:
-
-        raise ValueError(
-            "No video path provided."
-        )
-
-
-    if not os.path.exists(video_path):
-
-        raise FileNotFoundError(
-            f"Video not found: {video_path}"
-        )
-
-
-    # ========================================================
-    # RAILWAY URL
-    # ========================================================
-
-    base_url = get_railway_public_url()
-
-
-    filename = os.path.basename(
-        video_path
-    )
-
-
-    video_url = (
-        f"{base_url}/videos/{filename}"
-    )
+    account_name = account["account"]
 
 
     print()
+    print("=" * 60)
+    print("PINTEREST ACCOUNT 4")
+    print("=" * 60)
+
     print(
-        "Local video:",
-        video_path
+        "Account:",
+        account_name
     )
 
     print(
-        "Railway URL:",
-        base_url
-    )
-
-    print(
-        "Public video URL:",
-        video_url
+        "Platform:",
+        "pinterest"
     )
 
 
     # ========================================================
-    # RESULTS
+    # API KEY
     # ========================================================
 
-    successful = []
+    if not api_key:
 
-    failed = []
-
-
-    # ========================================================
-    # PROCESS EACH ACCOUNT
-    # ========================================================
-
-    for account in ACCOUNTS:
-
-        account_number = account["number"]
-
-        platform = (
-            account["platform"].lower()
+        raise RuntimeError(
+            "STATUS200_API_KEY_4 "
+            "is not configured in Railway."
         )
 
-        account_name = account["account"]
 
+    # ========================================================
+    # ACCOUNT
+    # ========================================================
 
-        print()
-        print("=" * 60)
+    if not account_name:
 
-        print(
-            f"STARTING ACCOUNT "
-            f"{account_number}/{len(ACCOUNTS)}"
+        raise RuntimeError(
+            "STATUS200_ACCOUNT_4 "
+            "is not configured in Railway."
         )
-
-        print("=" * 60)
-
-
-        try:
-
-            # ==================================================
-            # PINTEREST
-            # ==================================================
-
-            if platform == "pinterest":
-
-                print()
-                print(
-                    "Pinterest detected."
-                )
-
-                print(
-                    "The MP4 will NOT be sent "
-                    "directly to Pinterest."
-                )
-
-                # ----------------------------------------------
-                # Create JPG
-                # ----------------------------------------------
-
-                pinterest_image = (
-                    create_pinterest_image(
-                        video_path
-                    )
-                )
-
-
-                # ----------------------------------------------
-                # Create public URL for JPG
-                # ----------------------------------------------
-
-                image_filename = (
-                    os.path.basename(
-                        pinterest_image
-                    )
-                )
-
-
-                image_url = (
-                    f"{base_url}"
-                    f"/videos/pinterest/"
-                    f"{image_filename}"
-                )
-
-
-                print()
-                print(
-                    "Pinterest public image URL:",
-                    image_url
-                )
-
-
-                # ----------------------------------------------
-                # Publish JPG
-                # ----------------------------------------------
-
-                result = _publish_one_account(
-
-                    image_url,
-
-                    caption,
-
-                    account,
-
-                    pinterest=True
-
-                )
-
-
-            # ==================================================
-            # ALL OTHER PLATFORMS
-            # ==================================================
-
-            else:
-
-                result = _publish_one_account(
-
-                    video_url,
-
-                    caption,
-
-                    account,
-
-                    pinterest=False
-
-                )
-
-
-            successful.append(
-                result
-            )
-
-
-            print()
-            print(
-                f"Status 200 Account "
-                f"{account_number} → "
-                f"{platform} completed."
-            )
-
-
-        except Exception as e:
-
-            error = {
-
-                "success":
-                    False,
-
-                "account_number":
-                    account_number,
-
-                "account":
-                    account_name,
-
-                "platform":
-                    platform,
-
-                "error":
-                    str(e)
-
-            }
-
-
-            failed.append(
-                error
-            )
-
-
-            print()
-            print("=" * 60)
-
-            print(
-                f"FAILED — ACCOUNT "
-                f"{account_number}"
-            )
-
-            print(
-                "Platform:",
-                platform
-            )
-
-            print(
-                "Account:",
-                account_name
-            )
-
-            print(
-                "Error:",
-                str(e)
-            )
-
-            print(
-                "Continuing to next account..."
-            )
-
-            print("=" * 60)
 
 
     # ========================================================
-    # FINAL SUMMARY
+    # BOARD ID
+    # ========================================================
+
+    if not PINTEREST_BOARD_ID:
+
+        raise RuntimeError(
+            "STATUS200_PINTEREST_BOARD_ID "
+            "is missing from Railway Variables."
+        )
+
+
+    print(
+        "Pinterest Board ID:",
+        PINTEREST_BOARD_ID
+    )
+
+
+    # ========================================================
+    # STEP 1 — CREATE JPG
+    # ========================================================
+
+    pinterest_jpg = (
+        create_pinterest_jpg(
+            video_path
+        )
+    )
+
+
+    # ========================================================
+    # STEP 2 — CREATE PUBLIC JPG URL
+    # ========================================================
+
+    pinterest_url = (
+        get_public_file_url(
+            pinterest_jpg
+        )
+    )
+
+
+    print()
+    print(
+        "Pinterest JPG public URL:"
+    )
+
+    print(
+        pinterest_url
+    )
+
+
+    # ========================================================
+    # STEP 3 — CHECK PUBLIC JPG
+    # ========================================================
+
+    print()
+    print(
+        "Checking public Pinterest JPG..."
+    )
+
+
+    try:
+
+        check = requests.head(
+
+            pinterest_url,
+
+            timeout=60,
+
+            allow_redirects=True
+
+        )
+
+    except requests.RequestException as e:
+
+        raise RuntimeError(
+            "Could not check Pinterest JPG URL: "
+            + str(e)
+        )
+
+
+    print(
+        "Pinterest JPG HTTP status:",
+        check.status_code
+    )
+
+
+    if not check.ok:
+
+        raise RuntimeError(
+
+            "Pinterest JPG is not publicly reachable. "
+            f"HTTP {check.status_code}: "
+            f"{pinterest_url}"
+
+        )
+
+
+    # ========================================================
+    # STEP 4 — UPLOAD JPG
+    # ========================================================
+
+    pinterest_media_id = (
+        upload_media(
+            pinterest_url,
+            api_key
+        )
+    )
+
+
+    # ========================================================
+    # STEP 5 — PINTEREST PAYLOAD
+    # ========================================================
+
+    #
+    # IMPORTANT:
+    #
+    # Pinterest receives an IMAGE media ID.
+    #
+    # We intentionally do NOT send the original MP4.
+    #
+    # The board ID is supplied in the Pinterest-specific
+    # options.
+    #
+    # ========================================================
+
+    pinterest_post = {
+
+        "accountId":
+            account_name,
+
+        "platform":
+            "pinterest",
+
+        "content": {
+
+            "text":
+                caption or "",
+
+            "mediaID": [
+
+                pinterest_media_id
+
+            ]
+
+        },
+
+        "pinterest": {
+
+            "boardId":
+                PINTEREST_BOARD_ID,
+
+            "board_id":
+                PINTEREST_BOARD_ID
+
+        }
+
+    }
+
+
+    # ========================================================
+    # DEBUG
     # ========================================================
 
     print()
     print("=" * 60)
+    print("PINTEREST PUBLISH DATA")
+    print("=" * 60)
 
     print(
-        "STATUS 200 MULTI-ACCOUNT SUMMARY"
+        "Pinterest Account:",
+        account_name
+    )
+
+    print(
+        "Pinterest Board ID:",
+        PINTEREST_BOARD_ID
+    )
+
+    print(
+        "Pinterest Media ID:",
+        pinterest_media_id
+    )
+
+    print(
+        "Pinterest Payload:",
+        pinterest_post
     )
 
     print("=" * 60)
 
+
+    # ========================================================
+    # STEP 6 — PUBLISH USING REST V2
+    # ========================================================
+
+    print()
     print(
-        "Total accounts:",
-        len(ACCOUNTS)
+        "Publishing Pinterest Pin..."
     )
 
     print(
-        "Successful:",
-        len(successful)
+        "Endpoint:",
+        STATUS200_V2_URL
     )
 
+
+    response = requests.post(
+
+        STATUS200_V2_URL,
+
+        headers={
+
+            "Authorization":
+                f"Bearer {api_key}",
+
+            "Content-Type":
+                "application/json"
+
+        },
+
+        json={
+
+            "post":
+                pinterest_post
+
+        },
+
+        timeout=180
+
+    )
+
+
+    print()
     print(
-        "Failed:",
-        len(failed)
+        "Pinterest Publish HTTP status:",
+        response.status_code
+    )
+
+
+    print(
+        "Pinterest Publish response:",
+        response.text
     )
 
 
     # ========================================================
-    # SUCCESS LIST
+    # ACCEPT 200 OR 202
     # ========================================================
 
-    if successful:
+    if response.status_code not in (
+        200,
+        201,
+        202
+    ):
 
-        print()
-        print(
-            "SUCCESSFUL ACCOUNTS:"
+        raise RuntimeError(
+
+            "Status 200 Pinterest publish failed: "
+            + response.text
+
         )
 
 
-        for item in successful:
+    # ========================================================
+    # PARSE RESPONSE
+    # ========================================================
 
-            print(
-                f"  Account "
-                f"{item['account_number']} "
-                f"→ {item['platform']} "
-                f"→ {item['account']}"
-            )
+    try:
+
+        result = response.json()
+
+    except Exception:
+
+        result = {
+            "raw_response":
+                response.text
+        }
 
 
     # ========================================================
-    # FAILED LIST
-    # ========================================================
-
-    if failed:
-
-        print()
-        print(
-            "FAILED ACCOUNTS:"
-        )
-
-
-        for item in failed:
-
-            print(
-                f"  Account "
-                f"{item['account_number']} "
-                f"→ {item['platform']} "
-                f"→ {item['account']} "
-                f"→ {item['error']}"
-            )
-
-
-    # ========================================================
-    # FINAL
+    # SUCCESS
     # ========================================================
 
     print()
     print("=" * 60)
 
-
-    if successful:
+    if response.status_code == 202:
 
         print(
-            "STATUS 200 MULTI-ACCOUNT "
-            "PUBLISH COMPLETED"
+            "PINTEREST ACCEPTED / QUEUED"
         )
 
     else:
 
         print(
-            "STATUS 200 MULTI-ACCOUNT "
-            "PUBLISH FAILED"
+            "PINTEREST PUBLISHED SUCCESSFULLY"
         )
 
+    print("=" * 60)
+
+    print(
+        "Account:",
+        account_name
+    )
+
+    print(
+        "Board:",
+        PINTEREST_BOARD_ID
+    )
+
+    print(
+        "JPG:",
+        pinterest_jpg
+    )
+
+    print(
+        "Result:",
+        result
+    )
 
     print("=" * 60)
 
 
-    return {
-
-        "success":
-            len(successful) > 0,
-
-        "total":
-            len(ACCOUNTS),
-
-        "successful":
-            successful,
-
-        "failed":
-            failed
-
-            }
+    ret
