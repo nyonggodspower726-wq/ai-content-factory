@@ -5,9 +5,21 @@ from zoneinfo import ZoneInfo
 from bot import main
 
 
-# Nigeria 24-hourformat (24-hourformat)
-TEST_TIME = "08:49"
+# ============================================================
+# DAILY POSTING SCHEDULE — NIGERIA TIME
+# ============================================================
 
+SCHEDULE_TIMES = [
+    "08:00",
+    "12:00",
+    "16:00",
+    "20:00",
+]
+
+
+# ============================================================
+# RUN BOT
+# ============================================================
 
 def run_bot():
 
@@ -28,9 +40,17 @@ def run_bot():
     except Exception as e:
 
         print("=" * 60)
-        print(f"BOT ERROR: {e}")
+        print("BOT ERROR")
         print("=" * 60)
 
+        print(f"ERROR: {e}")
+
+        print("=" * 60)
+
+
+# ============================================================
+# SCHEDULER
+# ============================================================
 
 def start_scheduler():
 
@@ -38,9 +58,20 @@ def start_scheduler():
     print("AI CONTENT FACTORY SCHEDULER STARTED")
     print("=" * 60)
 
-    print(f"Scheduled trigger time (Nigeria): {TEST_TIME}")
+    print("Timezone: Africa/Lagos")
 
-    last_run = None
+    print(
+        "Daily posting times:",
+        ", ".join(SCHEDULE_TIMES)
+    )
+
+    print("Posts per day: 4")
+
+    print("=" * 60)
+
+    # Prevent duplicate execution during the same minute
+    last_run_date = None
+    last_run_time = None
 
     while True:
 
@@ -48,25 +79,49 @@ def start_scheduler():
             ZoneInfo("Africa/Lagos")
         )
 
-        current_time = nigeria_now.strftime("%H:%M")
-        current_seconds = nigeria_now.strftime("%H:%M:%S")
-
-        print(
-            f"Scheduler running | Nigeria time: {current_seconds}"
+        current_date = nigeria_now.strftime(
+            "%Y-%m-%d"
         )
 
-        # Run only once during the scheduled minute
-        if current_time == TEST_TIME:
+        current_time = nigeria_now.strftime(
+            "%H:%M"
+        )
 
-            if last_run != current_time:
+        current_seconds = nigeria_now.strftime(
+            "%H:%M:%S"
+        )
+
+        print(
+            f"Scheduler running | "
+            f"Nigeria time: {current_date} "
+            f"{current_seconds}"
+        )
+
+        # ====================================================
+        # CHECK ALL FOUR DAILY TIMES
+        # ====================================================
+
+        if current_time in SCHEDULE_TIMES:
+
+            # Make sure this exact scheduled time
+            # only runs once.
+            if (
+                last_run_date != current_date
+                or last_run_time != current_time
+            ):
+
+                print("=" * 60)
+
+                print(
+                    f"POSTING TIME REACHED: "
+                    f"{current_time}"
+                )
+
+                print("=" * 60)
 
                 run_bot()
 
-                last_run = current_time
-
-        else:
-
-            # Reset after the minute has passed
-            last_run = None
+                last_run_date = current_date
+                last_run_time = current_time
 
         time.sleep(1)
