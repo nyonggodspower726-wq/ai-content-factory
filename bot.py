@@ -1,631 +1,214 @@
 import os
 import traceback
-
 from brain.production_manager import production
 from brain.seo_engine import generate_seo
-
 from brain.trend_brain import choose_trending_topic
 from brain.viral_angle_engine import choose_best_angle
 from brain.curiosity_engine import choose_curiosity
 from brain.hook_engine import choose_hook
 from brain.retention_engine import choose_retention
-
 from video.video_generator import create_video
-
-# ============================================================
-# SOCIAL PUBLISHERS
-# ============================================================
-
-# STATUS 200:
-# TikTok #1
-# LinkedIn
-# TikTok #2
-# Pinterest
 from social.status200_publisher import publish_to_status200
-
-# ZERNIO:
-# Instagram @promptprohub3
 from social.instagram_zernio import publish_to_instagram
-
-# YOUTUBE:
 from social.youtube_shorts import upload_to_youtube
-
 from file_manager import save_text
 from logger import log
 
+PLATFORM_CONFIG = {
+    "tiktok": {
+        "label": "TIKTOK",
+        "music": True
+    },
+    "instagram": {
+        "label": "INSTAGRAM",
+        "music": True
+    },
+    "youtube": {
+        "label": "YOUTUBE",
+        "music": False
+    }
+}
 
-# ============================================================
-# MAIN
-# ============================================================
-
-def main(topic=None):
-
+def main(topic=None, platform="tiktok", video_number=1):
     print("=" * 60)
     print("PROMPTPROHUB AI STUDIO ONLINE")
     print("=" * 60)
-
+    print(f"PLATFORM: {platform.upper()}")
+    print(f"VIDEO NUMBER: {video_number}")
+    print("=" * 60)
+    if platform not in PLATFORM_CONFIG:
+        raise ValueError(f"Unsupported platform: {platform}")
     try:
-
-        # =====================================================
-        # CREATIVE BRAIN
-        # =====================================================
-
-        log(
-            "ACTIVATING NEW CONTENT BRAIN..."
-        )
-
-        log(
-            "Running Trend Intelligence Engine..."
-        )
-
+        config = PLATFORM_CONFIG[platform]
         if topic is None:
-
             topic = choose_trending_topic()
-
-        log(
-            f"Selected Viral Topic: {topic}"
-        )
-
-        # =====================================================
-        # VIRAL ANGLE
-        # =====================================================
-
-        angle = choose_best_angle(
-            topic
-        )
-
-        # =====================================================
-        # CURIOSITY
-        # =====================================================
-
-        curiosity = choose_curiosity(
-            topic
-        )
-
-        # =====================================================
-        # HOOK
-        # =====================================================
-
-        hook = choose_hook(
-            topic,
-            angle,
-            curiosity
-        )
-
-        # =====================================================
-        # RETENTION
-        # =====================================================
-
-        retention = choose_retention(
-            topic
-        )
-
-        # =====================================================
-        # SAVE CREATIVE BRAIN
-        # =====================================================
-
+        log(f"Selected Viral Topic: {topic}")
+        angle = choose_best_angle(topic)
+        curiosity = choose_curiosity(topic)
+        hook = choose_hook(topic, angle, curiosity)
+        retention = choose_retention(topic)
+        creative_data = {
+            "topic": topic,
+            "platform": platform,
+            "video_number": video_number,
+            "angle": angle,
+            "curiosity": curiosity,
+            "hook": hook,
+            "retention": retention
+        }
         save_text(
-            "creative_brain.json",
-            {
-                "topic": topic,
-                "angle": angle,
-                "curiosity": curiosity,
-                "hook": hook,
-                "retention": retention
-            }
+            f"creative_brain_{platform}_{video_number}.json",
+            creative_data
         )
-
-        log(
-            f"Selected Topic: {topic}"
-        )
-
-        log(
-            f"Hook: {hook}"
-        )
-
-        log(
-            f"Curiosity: {curiosity}"
-        )
-
-        log(
-            f"Retention: {retention}"
-        )
-
-        # =====================================================
-        # PRODUCTION
-        # =====================================================
-
-        log(
-            f"Starting campaign: {topic}"
-        )
-
-        log(
-            "Running AI production brain..."
-        )
-
+        log(f"Hook: {hook}")
+        log(f"Curiosity: {curiosity}")
+        log(f"Retention: {retention}")
+        log(f"Starting {platform} production #{video_number}")
         production_plan = production.produce(
-            topic
+            topic,
+            platform=platform,
+            video_number=video_number
         )
-
         if not production_plan:
-
-            log(
-                "Production brain returned nothing"
-            )
-
-            return
-
-        project = production_plan.get(
-            "project",
-            {}
-        )
-
-        script = production_plan.get(
-            "script",
-            {}
-        )
-
-        voice_file = production_plan.get(
-            "voice"
-        )
-
-        # =====================================================
-        # SAVE SCRIPT
-        # =====================================================
-
+            log("Production brain returned nothing.")
+            return None
+        project = production_plan.get("project", {})
+        script = production_plan.get("script", {})
+        voice_file = production_plan.get("voice")
         save_text(
-            "script.json",
+            f"script_{platform}_{video_number}.json",
             script
         )
-
         save_text(
-            "voice.json",
-            production_plan.get(
-                "voice_profile",
-                {}
-            )
+            f"voice_{platform}_{video_number}.json",
+            production_plan.get("voice_profile", {})
         )
-
-        # =====================================================
-        # SEO
-        # =====================================================
-
-        log(
-            "Generating SEO..."
-        )
-
-        seo = generate_seo(
-            topic
-        )
-
+        log("Generating platform-specific SEO...")
+        seo = generate_seo(topic)
         save_text(
-            "seo.json",
+            f"seo_{platform}_{video_number}.json",
             seo
         )
-
-        # =====================================================
-        # DEBUG
-        # =====================================================
-
-        print("=" * 60)
-        print("DEBUG INFORMATION")
-        print("=" * 60)
-
         scene_prompts = project.get(
             "scene_prompts",
             []
         )
-
-        print(
-            "Voice File:",
-            voice_file
-        )
-
-        print(
-            "Voice Exists:",
-            bool(
-                voice_file
-                and os.path.exists(
-                    voice_file
-                )
-            )
-        )
-
-        print(
-            "Scene Prompts:",
-            len(scene_prompts)
-        )
-
-        if scene_prompts:
-
-            print(
-                "First Scene:",
-                scene_prompts[0]
-            )
-
-        if isinstance(
-            script,
-            dict
-        ):
-
-            print(
-                "Script Keys:",
-                list(
-                    script.keys()
-                )
-            )
-
-        else:
-
-            print(
-                "Script Type:",
-                type(script)
-            )
-
+        if not scene_prompts:
+            log("No scene prompts available.")
+            return None
         print("=" * 60)
-
-        # =====================================================
-        # VIDEO GENERATION
-        # =====================================================
-
-        log(
-            "Rendering AI sales video..."
-        )
-
+        print("VIDEO GENERATION")
+        print("=" * 60)
+        print(f"Platform: {platform}")
+        print(f"Video: {video_number}/4")
+        print(f"Scenes: {len(scene_prompts)}")
+        print(f"YouTube Music Disabled: {not config['music']}")
+        print("=" * 60)
         video = create_video(
             scene_prompts,
             script,
-            voice_file
+            voice_file,
+            platform=platform,
+            video_number=video_number,
+            music_enabled=config["music"]
         )
-
         if not video:
-
-            log(
-                "Video generation failed."
-            )
-
-            return
-
-        if not os.path.exists(
-            video
-        ):
-
-            log(
-                f"Rendered video not found: {video}"
-            )
-
-            return
-
+            log("Video generation failed.")
+            return None
+        if not os.path.exists(video):
+            log(f"Rendered video not found: {video}")
+            return None
         print("=" * 60)
         print("VIDEO CREATED SUCCESSFULLY")
         print(video)
         print("=" * 60)
-
-        # =====================================================
-        # CAPTION
-        # =====================================================
-
         caption = hook
-
-        # =====================================================
-        # STATUS 200
-        #
-        # Account 1 = TikTok
-        # Account 2 = LinkedIn
-        # Account 3 = TikTok 2
-        # Account 4 = Pinterest
-        #
-        # status200_publisher.py handles the accounts
-        # sequentially and continues if one fails.
-        # =====================================================
-
-        try:
-
-            log(
-                "Publishing to Status 200 accounts..."
-            )
-
-            status200_result = (
-                publish_to_status200(
+        if platform == "tiktok":
+            try:
+                log("Publishing TikTok video...")
+                result = publish_to_status200(
+                    video,
+                    caption,
+                    platform="tiktok",
+                    video_number=video_number
+                )
+                print("TikTok result:", result)
+            except Exception as e:
+                log(f"TikTok publishing failed: {e}")
+                traceback.print_exc()
+        elif platform == "instagram":
+            try:
+                log("Publishing Instagram Reel through Zernio...")
+                result = publish_to_instagram(
                     video,
                     caption
                 )
-            )
-
-            print("=" * 60)
-            print(
-                "STATUS 200 MULTI-ACCOUNT RESULT"
-            )
-            print("=" * 60)
-
-            print(
-                status200_result
-            )
-
-            log(
-                "Status 200 publishing finished."
-            )
-
-        except Exception as e:
-
-            print("=" * 60)
-            print(
-                "STATUS 200 PUBLISHING FAILED"
-            )
-            print("=" * 60)
-
-            print(
-                "Error:",
-                e
-            )
-
-            print(
-                "Status 200 traceback:"
-            )
-
-            traceback.print_exc()
-
-            log(
-                f"Status 200 publishing failed: {e}"
-            )
-
-        # =====================================================
-        # INSTAGRAM — ZERNIO
-        #
-        # Connected Instagram:
-        # @promptprohub3
-        #
-        # IMPORTANT:
-        # The Zernio uploader receives the LOCAL video path.
-        # It uploads the MP4 to Zernio and then publishes
-        # the Instagram Reel.
-        # =====================================================
-
-        try:
-
-            log(
-                "Publishing Instagram Reel through Zernio..."
-            )
-
-            instagram_result = (
-                publish_to_instagram(
-                    video,
-                    caption
-                )
-            )
-
-            print("=" * 60)
-            print(
-                "INSTAGRAM REEL PUBLISH SUCCESS"
-            )
-            print("=" * 60)
-
-            print(
-                "Instagram:",
-                "@promptprohub3"
-            )
-
-            print(
-                "Zernio Result:",
-                instagram_result
-            )
-
-            print("=" * 60)
-
-            log(
-                "Instagram Reel publishing completed."
-            )
-
-        except Exception as e:
-
-            print("=" * 60)
-            print(
-                "INSTAGRAM REEL PUBLISH FAILED"
-            )
-            print("=" * 60)
-
-            print(
-                "Instagram:",
-                "@promptprohub3"
-            )
-
-            print(
-                "Error:",
-                e
-            )
-
-            print(
-                "Instagram traceback:"
-            )
-
-            traceback.print_exc()
-
-            print("=" * 60)
-
-            log(
-                f"Instagram Zernio publishing failed: {e}"
-            )
-
-        # =====================================================
-        # YOUTUBE SHORTS
-        # =====================================================
-
-        try:
-
-            log(
-                "Uploading YouTube Shorts..."
-            )
-
-            # =================================================
-            # EXTRACT SEO DATA
-            # =================================================
-
-            if isinstance(
-                seo,
-                dict
-            ):
-
-                youtube_title = seo.get(
-                    "click_title",
-                    seo.get(
-                        "title",
-                        topic
+                print("Instagram result:", result)
+            except Exception as e:
+                log(f"Instagram publishing failed: {e}")
+                traceback.print_exc()
+        elif platform == "youtube":
+            try:
+                log("Uploading YouTube Short...")
+                if isinstance(seo, dict):
+                    youtube_title = seo.get(
+                        "click_title",
+                        seo.get(
+                            "title",
+                            topic
+                        )
                     )
+                    youtube_description = seo.get(
+                        "description",
+                        ""
+                    )
+                else:
+                    youtube_title = topic
+                    youtube_description = str(seo)
+                thumbnail_path = (
+                    "assets/hook_images/"
+                    "promptprohub_hook.jpg"
                 )
-
-                youtube_description = seo.get(
-                    "description",
-                    ""
+                if not os.path.exists(thumbnail_path):
+                    thumbnail_path = None
+                upload_to_youtube(
+                    video,
+                    youtube_title,
+                    youtube_description,
+                    thumbnail_path
                 )
-
-            else:
-
-                youtube_title = topic
-
-                youtube_description = str(
-                    seo
-                )
-
-            # =================================================
-            # THUMBNAIL
-            # =================================================
-
-            thumbnail_path = (
-                "assets/hook_images/"
-                "promptprohub_hook.jpg"
-            )
-
-            if os.path.exists(
-                thumbnail_path
-            ):
-
-                log(
-                    f"YouTube thumbnail found: "
-                    f"{thumbnail_path}"
-                )
-
-            else:
-
-                log(
-                    "YouTube thumbnail not found."
-                )
-
-                thumbnail_path = None
-
-            # =================================================
-            # YOUTUBE UPLOAD
-            # =================================================
-
-            upload_to_youtube(
-                video,
-                youtube_title,
-                youtube_description,
-                thumbnail_path
-            )
-
-            log(
-                "YouTube upload completed."
-            )
-
-        except Exception as e:
-
-            print("=" * 60)
-            print(
-                "YOUTUBE UPLOAD FAILED"
-            )
-            print("=" * 60)
-
-            print(
-                "Error:",
-                e
-            )
-
-            print(
-                "YouTube traceback:"
-            )
-
-            traceback.print_exc()
-
-            print("=" * 60)
-
-            log(
-                f"YouTube upload failed: {e}"
-            )
-
-        # =====================================================
-        # COMPLETE
-        # =====================================================
-
-        log(
-            "Production completed successfully."
-        )
-
+                log("YouTube upload completed.")
+            except Exception as e:
+                log(f"YouTube upload failed: {e}")
+                traceback.print_exc()
         print("=" * 60)
-        print(
-            "PROMPTPROHUB AI STUDIO COMPLETED"
-        )
+        print("PLATFORM PRODUCTION COMPLETE")
         print("=" * 60)
-
-        print(
-            "Video:",
-            video
-        )
-
-        print(
-            "Status 200:",
-            "TikTok + LinkedIn + TikTok 2 + Pinterest"
-        )
-
-        print(
-            "Instagram:",
-            "@promptprohub3 via Zernio"
-        )
-
-        print(
-            "YouTube:",
-            "Shorts"
-        )
-
+        print(f"Platform: {platform}")
+        print(f"Video Number: {video_number}")
+        print(f"Video: {video}")
         print("=" * 60)
-
+        return {
+            "success": True,
+            "platform": platform,
+            "video_number": video_number,
+            "topic": topic,
+            "video": video,
+            "hook": hook,
+            "seo": seo
+        }
     except Exception as e:
-
-        # =====================================================
-        # FULL BOT ERROR
-        # =====================================================
-
         print("=" * 60)
         print("BOT FAILED")
         print("=" * 60)
-
-        print(
-            f"ERROR TYPE: {type(e).__name__}"
-        )
-
-        print(
-            f"ERROR: {repr(e)}"
-        )
-
-        print("=" * 60)
-        print("FULL TRACEBACK")
-        print("=" * 60)
-
+        print(f"ERROR TYPE: {type(e).__name__}")
+        print(f"ERROR: {repr(e)}")
         traceback.print_exc()
-
-        print("=" * 60)
-
         log(
             f"BOT FAILED: "
             f"{type(e).__name__}: {e}"
         )
-
-        raise
-
-
-# ============================================================
-# START BOT
-# ============================================================
+        return None
 
 if __name__ == "__main__":
-
     main()
