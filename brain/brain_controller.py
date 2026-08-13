@@ -16,70 +16,43 @@ from brain.cta_engine import choose_cta
 from brain.viral_engine import evaluate_video
 from brain.decision_engine import final_decision
 
-
 class BrainController:
-
     def __init__(self):
-
         print("=" * 60)
         print("PROMPTPROHUB AI BRAIN ONLINE")
         print("=" * 60)
 
-    def safe_run(
-        self,
-        name,
-        function,
-        *args
-    ):
-
+    def safe_run(self, name, function, *args):
         try:
-
             print("=" * 60)
             print(name)
             print("=" * 60)
-
             return function(*args)
-
         except Exception as e:
-
-            print(
-                f"{name} FAILED:",
-                e
-            )
-
+            print(f"{name} FAILED:", e)
             return {}
 
-    def build(
-        self,
-        topic
-    ):
-
+    def build(self, topic, platform="tiktok", video_number=1):
         print("=" * 60)
         print("BUILDING AI CAMPAIGN")
         print("=" * 60)
+        print(f"Platform: {platform.upper()}")
+        print(f"Video Number: {video_number}/4")
+        print("=" * 60)
 
         project = {
-            "topic": topic
+            "topic": topic,
+            "platform": platform,
+            "video_number": video_number
         }
 
-        print(
-            "FINAL CREATIVE TOPIC:",
-            topic
-        )
-
-        # =====================================
-        # PRODUCT
-        # =====================================
+        print("FINAL CREATIVE TOPIC:", topic)
 
         project["product"] = self.safe_run(
             "Product Engine",
             recommend_product,
             topic
         )
-
-        # =====================================
-        # CEO
-        # =====================================
 
         project["ceo"] = self.safe_run(
             "CEO Engine",
@@ -88,18 +61,10 @@ class BrainController:
             project["product"]
         )
 
-        # =====================================
-        # BRAND
-        # =====================================
-
         project["brand"] = self.safe_run(
             "Brand Engine",
             brand.get_brand
         )
-
-        # =====================================
-        # TREND
-        # =====================================
 
         project["trend"] = self.safe_run(
             "Market Trend Engine",
@@ -107,19 +72,11 @@ class BrainController:
             topic
         )
 
-        # =====================================
-        # AUDIENCE
-        # =====================================
-
         project["audience"] = self.safe_run(
             "Audience Engine",
             audience_plan,
             topic
         )
-
-        # =====================================
-        # OFFER
-        # =====================================
 
         project["offer"] = self.safe_run(
             "Offer Engine",
@@ -128,10 +85,6 @@ class BrainController:
             project["audience"]
         )
 
-        # =====================================
-        # THINKING
-        # =====================================
-
         project["thinking"] = self.safe_run(
             "Thinking Engine",
             think,
@@ -139,19 +92,11 @@ class BrainController:
             topic
         )
 
-        # =====================================
-        # MARKETING
-        # =====================================
-
         project["marketing"] = self.safe_run(
             "Marketing Engine",
             marketing_plan,
             project
         )
-
-        # =====================================
-        # PSYCHOLOGY
-        # =====================================
 
         project["psychology"] = self.safe_run(
             "Psychology Engine",
@@ -159,19 +104,11 @@ class BrainController:
             project["marketing"]
         )
 
-        # =====================================
-        # DIRECTOR
-        # =====================================
-
         project["director"] = self.safe_run(
             "Director Engine",
             create_director_plan,
             project
         )
-
-        # =====================================
-        # STORYBOARD
-        # =====================================
 
         project["storyboard"] = self.safe_run(
             "Storyboard Engine",
@@ -179,19 +116,11 @@ class BrainController:
             project["director"]
         )
 
-        # =====================================
-        # SCENE PROMPTS
-        # =====================================
-
         project["scene_prompts"] = self.safe_run(
             "Scene Prompt Engine",
             generate_scene_prompts,
             project["storyboard"]
         )
-
-        # =====================================
-        # CTA
-        # =====================================
 
         print("=" * 60)
         print("GENERATING CTA BEFORE SCRIPT")
@@ -202,10 +131,6 @@ class BrainController:
             choose_cta,
             topic
         )
-
-        # =====================================
-        # SCRIPT
-        # =====================================
 
         print("=" * 60)
         print("GENERATING SCRIPT WITH CTA")
@@ -218,19 +143,11 @@ class BrainController:
             project["cta"]
         )
 
-        # =====================================
-        # WATCH TIME OPTIMIZATION
-        # =====================================
-
         project["retention"] = self.safe_run(
             "Retention Engine",
             choose_retention,
             topic
         )
-
-        # =====================================
-        # VIRAL CHECK
-        # =====================================
 
         project["viral"] = self.safe_run(
             "Viral Analysis Engine",
@@ -238,35 +155,29 @@ class BrainController:
             project["storyboard"]
         )
 
-        # =====================================
-        # FINAL DECISION
-        # =====================================
-
         project["decision"] = self.safe_run(
             "Final Decision Engine",
             final_decision,
             project
         )
 
-        # =====================================
-        # COMPLETE
-        # =====================================
-
         print("=" * 60)
         print("BRAIN CAMPAIGN COMPLETE")
         print("=" * 60)
 
-        print(
-            "CTA:",
-            project.get("cta", "")
-        )
-
+        print("Platform:", platform.upper())
+        print("Video Number:", f"{video_number}/4")
+        print("CTA:", project.get("cta", ""))
         print(
             "SCRIPT GENERATED:",
             bool(project.get("script"))
         )
+        print(
+            "SCENE PROMPTS:",
+            len(project.get("scene_prompts", []))
+        )
+        print("=" * 60)
 
         return project
-
 
 brain = BrainController()
