@@ -26,19 +26,14 @@ class Pipeline:
 
             print("Starting Production Controller...")
 
-            project = controller.produce(
-                topic,
-                platform=platform,
-                video_number=video_number
-            )
+            # ProductionController currently accepts topic only.
+            # Keep the new platform/video metadata at the Pipeline level
+            # without breaking the existing controller interface.
+            project = controller.produce(topic)
 
             if not project:
                 print("Controller returned no project.")
-
-                monitor.fail(
-                    "No production project created"
-                )
-
+                monitor.fail("No production project created")
                 monitor.summary()
                 return None
 
