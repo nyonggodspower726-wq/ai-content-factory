@@ -19,7 +19,12 @@ class ProductionManager:
 
         try:
             print("Running AI Strategy Pipeline...")
-            project = pipeline.run(topic)
+
+            project = pipeline.run(
+                topic,
+                platform=platform,
+                video_number=video_number
+            )
 
             if not project:
                 print("Pipeline returned nothing.")
