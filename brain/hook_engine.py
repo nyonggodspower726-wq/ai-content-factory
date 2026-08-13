@@ -397,3 +397,278 @@ def record_hook_usage(history, hook, score, archetype):
         "timestamp": time.time()
     })
     save_hook_history(history)
+def generate_hooks(topic, angle, curiosity):
+    history = load_hook_history()
+    recent_hooks = get_recent_hooks(history)
+    recent_examples = recent_hooks[-12:]
+    recent_text = "\n".join(
+        f"- {hook}"
+        for hook in recent_examples
+    )
+    prompt = f"""
+{SYSTEM_PROMPT}
+
+================================
+CURRENT TOPIC
+================================
+{topic}
+
+================================
+CURRENT VIRAL ANGLE
+================================
+{angle}
+
+================================
+CURRENT CURIOSITY
+================================
+{curiosity}
+
+================================
+RECENTLY USED HOOKS
+================================
+These hooks were recently used.
+
+DO NOT copy them.
+DO NOT lightly rewrite them.
+DO NOT repeat their opening structure.
+DO NOT reuse the same psychological angle.
+
+{recent_text}
+
+================================
+BATCH DESIGN
+================================
+Generate exactly 15 candidates.
+
+Use different archetypes across the batch.
+
+Do not make the batch dominated by:
+"You're..."
+"Most..."
+"Stop..."
+"I..."
+"This..."
+
+Prioritize hooks that create a strong information gap.
+
+When a money angle is appropriate, make the benefit concrete
+without promising guaranteed income.
+
+When an AI disruption angle is appropriate, create urgency
+without inventing predictions or statistics.
+
+When using "cheat-code" energy, make it metaphorical and
+credible rather than falsely claiming something is illegal,
+banned or leaked.
+
+The viewer should immediately understand:
+WHAT is at stake
+WHY it matters
+WHY they should keep watching.
+
+Return ONLY valid JSON.
+"""
+    try:
+        response = ask_ai(prompt)
+        response = response.replace("```json", "").replace("```", "").strip()
+        data = json.loads(response)
+        hooks = data.get("hooks", [])
+        if not hooks:
+            raise Exception("AI returned no hooks")
+        cleaned_hooks = []
+        for item in hooks:
+            if not isinstance(item, dict):
+                continue
+            hook = str(item.get("hook", "")).strip()
+            if not hook:
+                continue
+            try:
+                scores = {
+                    "scroll": float(item.get("scroll_stopping_power", 0)),
+                    "curiosity": float(item.get("curiosity", 0)),
+                    "specificity": float(item.get("specificity", 0)),
+                    "benefit": float(item.get("benefit", 0)),
+                    "emotion": float(item.get("emotional_tension", 0)),
+                    "credibility": float(item.get("credibility", 0)),
+                    "natural": float(item.get("natural_sounding", 0)),
+                    "novelty": float(item.get("novelty", 0))
+                }
+            except (TypeError, ValueError):
+                continue
+            weighted_score = (
+                scores["scroll"] * 0.22 +
+                scores["curiosity"] * 0.18 +
+                scores["specificity"] * 0.13 +
+                scores["benefit"] * 0.13 +
+                scores["emotion"] * 0.10 +
+                scores["credibility"] * 0.10 +
+                scores["natural"] * 0.07 +
+                scores["novelty"] * 0.07
+            )
+            archetype = str(
+                item.get(
+                    "archetype",
+                    "unknown"
+                )
+            ).strip().lower()
+            cleaned_hooks.append({
+                "score": weighted_score,
+                "hook": hook,
+                "archetype": archetype
+            })
+        if not cleaned_hooks:
+            raise Exception("No valid hooks remained after parsing.")
+        cleaned_hooks.sort(
+            reverse=True,
+            key=lambda item: item["score"]
+        )
+        print("=" * 60)
+        print("ELITE VIRAL HOOK ENGINE")
+        print("=" * 60)
+        print(f"Generated: {len(cleaned_hooks)}")
+        print(f"Recent hooks: {len(recent_hooks)}")
+        print("=" * 60)
+        return cleaned_hooks
+    except Exception as e:
+        print("=" * 60)
+        print("HOOK ENGINE ERROR")
+        print("=" * 60)
+        print(e)
+        print("=" * 60)
+        return [
+            {
+                "score": 95,
+                "hook": f"Most people are using {topic} the wrong way.",
+                "archetype": "contrarian"
+            },
+            {
+                "score": 94,
+                "hook": f"I found a faster way to handle {topic}.",
+                "archetype": "result"
+            },
+            {
+                "score": 93,
+                "hook": f"This {topic} mistake can waste hours.",
+                "archetype": "mistake"
+            },
+            {
+                "score": 92,
+                "hook": f"One prompt can make {topic} dramatically easier.",
+                "archetype": "benefit"
+            },
+            {
+                "score": 91,
+                "hook": f"Most people are missing this part of {topic}.",
+                "archetype": "curiosity_gap"
+            },
+            {
+                "score": 90,
+                "hook": f"Try this before doing {topic} manually.",
+                "archetype": "challenge"
+            }
+        ]
+
+def choose_hook(topic, angle, curiosity):
+    candidates = generate_hooks(
+        topic,
+        angle,
+        curiosity
+    )
+    history = load_hook_history()
+    recent_hooks = get_recent_hooks(history)
+    fresh = []
+    blocked = []
+    used_archetypes = []
+    for item in candidates:
+        hook = item["hook"]
+        score = item["score"]
+        archetype = item.get(
+            "archetype",
+            "unknown"
+        )
+        if is_recent_duplicate(
+            hook,
+            recent_hooks
+        ):
+            blocked.append(
+                (hook, "duplicate")
+            )
+            continue
+        if has_recent_pattern_repeat(
+            hook,
+            recent_hooks
+        ):
+            blocked.append(
+                (hook, "pattern")
+            )
+            continue
+        fresh.append(item)
+    if not fresh:
+        non_exact = [
+            item
+            for item in candidates
+            if normalize_text(
+                item["hook"]
+            ) not in {
+                normalize_text(old)
+                for old in recent_hooks
+            }
+        ]
+        if non_exact:
+            fresh = non_exact
+        else:
+            fresh = candidates
+    # Prefer the strongest candidate, but slightly reward
+    # an archetype not used in the recent history.
+    recent_archetypes = {
+        str(item.get("archetype", "")).lower()
+        for item in history[-8:]
+        if isinstance(item, dict)
+    }
+    def final_score(item):
+        bonus = 4 if (
+            item.get("archetype", "")
+            not in recent_archetypes
+        ) else 0
+        return item["score"] + bonus
+    fresh.sort(
+        reverse=True,
+        key=final_score
+    )
+    selected = fresh[0]
+    best_hook = selected["hook"]
+    best_score = selected["score"]
+    archetype = selected.get(
+        "archetype",
+        "unknown"
+    )
+    record_hook_usage(
+        history,
+        best_hook,
+        best_score,
+        archetype
+    )
+    print("=" * 60)
+    print("SELECTED ELITE VIRAL HOOK")
+    print("=" * 60)
+    print(
+        f"Score: {best_score:.1f}/100"
+    )
+    print(
+        "Archetype:",
+        archetype
+    )
+    print(
+        "Hook:",
+        best_hook
+    )
+    print(
+        "Cooldown:",
+        f"{HOOK_COOLDOWN} videos"
+    )
+    print(
+        "Blocked:",
+        len(blocked)
+    )
+    print("=" * 60)
+    return best_hook
