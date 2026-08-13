@@ -17,167 +17,254 @@ from brain.viral_engine import evaluate_video
 from brain.decision_engine import final_decision
 
 class BrainController:
-    def __init__(self):
-        print("=" * 60)
-        print("PROMPTPROHUB AI BRAIN ONLINE")
-        print("=" * 60)
 
-    def safe_run(self, name, function, *args):
-        try:
-            print("=" * 60)
-            print(name)
-            print("=" * 60)
-            return function(*args)
-        except Exception as e:
-            print(f"{name} FAILED:", e)
-            return {}
+def __init__(self):  
 
-    def build(self, topic, platform="tiktok", video_number=1):
-        print("=" * 60)
-        print("BUILDING AI CAMPAIGN")
-        print("=" * 60)
-        print(f"Platform: {platform.upper()}")
-        print(f"Video Number: {video_number}/4")
-        print("=" * 60)
+    print("=" * 60)  
+    print("PROMPTPROHUB AI BRAIN ONLINE")  
+    print("=" * 60)  
 
-        project = {
-            "topic": topic,
-            "platform": platform,
-            "video_number": video_number
-        }
+def safe_run(  
+    self,  
+    name,  
+    function,  
+    *args  
+):  
 
-        print("FINAL CREATIVE TOPIC:", topic)
+    try:  
 
-        project["product"] = self.safe_run(
-            "Product Engine",
-            recommend_product,
-            topic
-        )
+        print("=" * 60)  
+        print(name)  
+        print("=" * 60)  
 
-        project["ceo"] = self.safe_run(
-            "CEO Engine",
-            ceo.review,
-            topic,
-            project["product"]
-        )
+        return function(*args)  
 
-        project["brand"] = self.safe_run(
-            "Brand Engine",
-            brand.get_brand
-        )
+    except Exception as e:  
 
-        project["trend"] = self.safe_run(
-            "Market Trend Engine",
-            discover_trends,
-            topic
-        )
+        print(  
+            f"{name} FAILED:",  
+            e  
+        )  
 
-        project["audience"] = self.safe_run(
-            "Audience Engine",
-            audience_plan,
-            topic
-        )
+        return {}  
 
-        project["offer"] = self.safe_run(
-            "Offer Engine",
-            create_offer,
-            project["product"],
-            project["audience"]
-        )
+def build(  
+    self,  
+    topic  
+):  
 
-        project["thinking"] = self.safe_run(
-            "Thinking Engine",
-            think,
-            project["product"],
-            topic
-        )
+    print("=" * 60)  
+    print("BUILDING AI CAMPAIGN")  
+    print("=" * 60)  
 
-        project["marketing"] = self.safe_run(
-            "Marketing Engine",
-            marketing_plan,
-            project
-        )
+    project = {  
+        "topic": topic  
+    }  
 
-        project["psychology"] = self.safe_run(
-            "Psychology Engine",
-            psychology_plan,
-            project["marketing"]
-        )
+    print(  
+        "FINAL CREATIVE TOPIC:",  
+        topic  
+    )  
 
-        project["director"] = self.safe_run(
-            "Director Engine",
-            create_director_plan,
-            project
-        )
+    # =====================================  
+    # PRODUCT  
+    # =====================================  
 
-        project["storyboard"] = self.safe_run(
-            "Storyboard Engine",
-            create_storyboard,
-            project["director"]
-        )
+    project["product"] = self.safe_run(  
+        "Product Engine",  
+        recommend_product,  
+        topic  
+    )  
 
-        project["scene_prompts"] = self.safe_run(
-            "Scene Prompt Engine",
-            generate_scene_prompts,
-            project["storyboard"]
-        )
+    # =====================================  
+    # CEO  
+    # =====================================  
 
-        print("=" * 60)
-        print("GENERATING CTA BEFORE SCRIPT")
-        print("=" * 60)
+    project["ceo"] = self.safe_run(  
+        "CEO Engine",  
+        ceo.review,  
+        topic,  
+        project["product"]  
+    )  
 
-        project["cta"] = self.safe_run(
-            "CTA Engine",
-            choose_cta,
-            topic
-        )
+    # =====================================  
+    # BRAND  
+    # =====================================  
 
-        print("=" * 60)
-        print("GENERATING SCRIPT WITH CTA")
-        print("=" * 60)
+    project["brand"] = self.safe_run(  
+        "Brand Engine",  
+        brand.get_brand  
+    )  
 
-        project["script"] = self.safe_run(
-            "Script Engine",
-            generate_script,
-            project,
-            project["cta"]
-        )
+    # =====================================  
+    # TREND  
+    # =====================================  
 
-        project["retention"] = self.safe_run(
-            "Retention Engine",
-            choose_retention,
-            topic
-        )
+    project["trend"] = self.safe_run(  
+        "Market Trend Engine",  
+        discover_trends,  
+        topic  
+    )  
 
-        project["viral"] = self.safe_run(
-            "Viral Analysis Engine",
-            evaluate_video,
-            project["storyboard"]
-        )
+    # =====================================  
+    # AUDIENCE  
+    # =====================================  
 
-        project["decision"] = self.safe_run(
-            "Final Decision Engine",
-            final_decision,
-            project
-        )
+    project["audience"] = self.safe_run(  
+        "Audience Engine",  
+        audience_plan,  
+        topic  
+    )  
 
-        print("=" * 60)
-        print("BRAIN CAMPAIGN COMPLETE")
-        print("=" * 60)
+    # =====================================  
+    # OFFER  
+    # =====================================  
 
-        print("Platform:", platform.upper())
-        print("Video Number:", f"{video_number}/4")
-        print("CTA:", project.get("cta", ""))
-        print(
-            "SCRIPT GENERATED:",
-            bool(project.get("script"))
-        )
-        print(
-            "SCENE PROMPTS:",
-            len(project.get("scene_prompts", []))
-        )
-        print("=" * 60)
+    project["offer"] = self.safe_run(  
+        "Offer Engine",  
+        create_offer,  
+        project["product"],  
+        project["audience"]  
+    )  
 
-        return project
+    # =====================================  
+    # THINKING  
+    # =====================================  
+
+    project["thinking"] = self.safe_run(  
+        "Thinking Engine",  
+        think,  
+        project["product"],  
+        topic  
+    )  
+
+    # =====================================  
+    # MARKETING  
+    # =====================================  
+
+    project["marketing"] = self.safe_run(  
+        "Marketing Engine",  
+        marketing_plan,  
+        project  
+    )  
+
+    # =====================================  
+    # PSYCHOLOGY  
+    # =====================================  
+
+    project["psychology"] = self.safe_run(  
+        "Psychology Engine",  
+        psychology_plan,  
+        project["marketing"]  
+    )  
+
+    # =====================================  
+    # DIRECTOR  
+    # =====================================  
+
+    project["director"] = self.safe_run(  
+        "Director Engine",  
+        create_director_plan,  
+        project  
+    )  
+
+    # =====================================  
+    # STORYBOARD  
+    # =====================================  
+
+    project["storyboard"] = self.safe_run(  
+        "Storyboard Engine",  
+        create_storyboard,  
+        project["director"]  
+    )  
+
+    # =====================================  
+    # SCENE PROMPTS  
+    # =====================================  
+
+    project["scene_prompts"] = self.safe_run(  
+        "Scene Prompt Engine",  
+        generate_scene_prompts,  
+        project["storyboard"]  
+    )  
+
+    # =====================================  
+    # CTA  
+    # =====================================  
+
+    print("=" * 60)  
+    print("GENERATING CTA BEFORE SCRIPT")  
+    print("=" * 60)  
+
+    project["cta"] = self.safe_run(  
+        "CTA Engine",  
+        choose_cta,  
+        topic  
+    )  
+
+    # =====================================  
+    # SCRIPT  
+    # =====================================  
+
+    print("=" * 60)  
+    print("GENERATING SCRIPT WITH CTA")  
+    print("=" * 60)  
+
+    project["script"] = self.safe_run(  
+        "Script Engine",  
+        generate_script,  
+        project,  
+        project["cta"]  
+    )  
+
+    # =====================================  
+    # WATCH TIME OPTIMIZATION  
+    # =====================================  
+
+    project["retention"] = self.safe_run(  
+        "Retention Engine",  
+        choose_retention,  
+        topic  
+    )  
+
+    # =====================================  
+    # VIRAL CHECK  
+    # =====================================  
+
+    project["viral"] = self.safe_run(  
+        "Viral Analysis Engine",  
+        evaluate_video,  
+        project["storyboard"]  
+    )  
+
+    # =====================================  
+    # FINAL DECISION  
+    # =====================================  
+
+    project["decision"] = self.safe_run(  
+        "Final Decision Engine",  
+        final_decision,  
+        project  
+    )  
+
+    # =====================================  
+    # COMPLETE  
+    # =====================================  
+
+    print("=" * 60)  
+    print("BRAIN CAMPAIGN COMPLETE")  
+    print("=" * 60)  
+
+    print(  
+        "CTA:",  
+        project.get("cta", "")  
+    )  
+
+    print(  
+        "SCRIPT GENERATED:",  
+        bool(project.get("script"))  
+    )  
+
+    return project
 
 brain = BrainController()
