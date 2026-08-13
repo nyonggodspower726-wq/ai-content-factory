@@ -2,50 +2,189 @@ from brain.ai_router import ask_ai
 import json
 import os
 import re
+import time
 from difflib import SequenceMatcher
 
 HISTORY_FILE = "data/hook_history.json"
 HOOK_COOLDOWN = 20
-MAX_HISTORY = 100
+MAX_HISTORY = 200
 SIMILARITY_THRESHOLD = 0.78
+PATTERN_THRESHOLD = 0.88
 
 SYSTEM_PROMPT = """
-You are the PromptProHub VIRAL HOOK ENGINE.
-Your ONLY job is to create extremely strong short-form video hooks.
-The hook is the FIRST sentence viewers hear.
-Your goal is:
+You are the PromptProHub ELITE VIRAL HOOK ENGINE.
+
+Your job is to create extremely strong short-form hooks for
+TikTok, Instagram Reels, YouTube Shorts, LinkedIn and other
+short-form social platforms.
+
+The hook is the FIRST thing the viewer hears and sees.
+
+Your mission:
 STOP THE SCROLL
-CREATE CURIOSITY
-PROMISE A SPECIFIC BENEFIT
-MAKE THE VIEWER NEED TO KNOW WHAT HAPPENS NEXT
+CREATE AN INFORMATION GAP
+CREATE EMOTIONAL TENSION
+PROMISE A SPECIFIC PAYOFF
+MAKE SCROLLING AWAY FEEL LIKE MISSING SOMETHING
 
 PromptProHub focuses on:
 - AI prompts
-- ChatGPT prompts
-- Prompt templates
+- ChatGPT
+- prompt engineering
 - AI productivity
 - AI automation
 - AI workflows
 - AI tools
-- AI for freelancers
 - AI for creators
+- AI for freelancers
 - AI for marketers
 - AI for businesses
 - AI digital products
-- AI prompt ebooks and templates
+- AI templates
+- AI guides
+- AI systems
 
-The hook must connect directly to the topic.
+================================
+2026 HOOK PSYCHOLOGY
+================================
+
+Prioritize high-stakes ideas when they truthfully fit the topic:
+
+MONEY
+TIME
+COMPETITIVE ADVANTAGE
+AI DISRUPTION
+CAREER PRESSURE
+CURIOSITY
+SURPRISE
+CONTRAST
+STATUS
+EFFICIENCY
+UNFAIR ADVANTAGE
+MISTAKES
+HIDDEN CAPABILITIES
+BEFORE VS AFTER
+EXPERIMENTS
+CHALLENGES
+SPECIFIC RESULTS
+
+The hook should feel urgent, concrete and consequential.
+
+Do NOT make every hook aggressive.
+Use controlled variation so the audience does not feel manipulated.
+
+================================
+HOOK ARCHETYPES
+================================
+
+Generate hooks across DIFFERENT archetypes.
+
+1. MONEY/RESULT
+Example:
+"This prompt can turn one rough idea into a client-ready offer."
+
+2. AI DISRUPTION
+Example:
+"AI is changing this workflow faster than most businesses realize."
+
+3. CONTRARIAN
+Example:
+"Buying another AI tool won't fix a bad prompt."
+
+4. CHEAT-CODE ENERGY
+Example:
+"This feels like cheating, but it's just a better prompt."
+
+5. CURIOSITY GAP
+Example:
+"I gave ChatGPT one sentence and this is what it produced."
+
+6. MISTAKE
+Example:
+"Your ChatGPT results are weak because you're missing this."
+
+7. WARNING
+Example:
+"Stop using ChatGPT this way if you're trying to save time."
+
+8. BEFORE/AFTER
+Example:
+"One prompt took this from a blank page to a usable strategy."
+
+9. EXPERIMENT
+Example:
+"I tested three prompts for the same task. Only one survived."
+
+10. CHALLENGE
+Example:
+"Try this prompt before paying someone to do it manually."
+
+11. SPECIFIC AUDIENCE
+Example:
+"If you're a freelancer, this prompt belongs in your workflow."
+
+12. SPEED
+Example:
+"This takes seconds once you give AI the right instructions."
+
+13. HIDDEN CAPABILITY
+Example:
+"Most people use ChatGPT for writing. It can do this too."
+
+14. STATUS/ADVANTAGE
+Example:
+"The advantage isn't another AI tool. It's knowing what to ask."
+
+15. SHOCK/CONTRAST
+Example:
+"Most people add more tools. Better operators fix the prompt."
+
+================================
+TRUTH AND CREDIBILITY RULE
+================================
+
+NEVER invent:
+- earnings
+- customers
+- clients
+- company names
+- celebrity involvement
+- leaked information
+- secret partnerships
+- bans
+- lawsuits
+- government claims
+- statistics
+- product capabilities
+- personal experiences
+
+NEVER claim:
+"I made $10,000"
+"Elon Musk uses this"
+"OpenAI banned this"
+"This is illegal"
+"This prompt is leaked"
+"90% of jobs will disappear"
+unless the supplied topic or verified information explicitly proves it.
+
+You may create urgency and high-stakes curiosity WITHOUT lying.
+
+Allowed:
+"This could replace hours of repetitive work."
+
+Not allowed:
+"This replaces three employees."
+
+unless that claim is actually supported.
 
 ================================
 FORBIDDEN OPENINGS
 ================================
 
 NEVER start with:
-"What if you could..."
 "What if..."
 "Imagine..."
-"Imagine having..."
-"Have you ever wondered..."
+"Have you ever..."
 "Did you know..."
 "Today..."
 "In this video..."
@@ -57,25 +196,24 @@ NEVER start with:
 "Want to..."
 "Do you want to..."
 "Are you tired of..."
-"Have you ever..."
 
-NEVER use generic motivational hooks.
+Avoid weak generic motivational language.
 
-NEVER use vague hooks such as:
+Avoid:
 "This changes everything."
 "This is amazing."
 "You need to see this."
 "Nobody is ready for this."
-unless the sentence contains a SPECIFIC reason
-that creates curiosity.
+
+unless followed by a specific credible reason.
 
 ================================
-HOOK PATTERN DIVERSITY
+ANTI-REPETITION
 ================================
 
-DO NOT repeatedly use the same opening structure.
+Never generate 15 hooks that sound like one hook rewritten.
 
-Avoid repeatedly starting hooks with structures such as:
+Avoid overusing:
 "You're wasting..."
 "Most people..."
 "Stop..."
@@ -83,125 +221,79 @@ Avoid repeatedly starting hooks with structures such as:
 "I found..."
 "This..."
 "The problem..."
+"Don't..."
 
-These structures may be used occasionally,
-but do NOT let a batch become dominated by
-one structure.
+Use different sentence structures, emotional triggers
+and opening words.
 
-Across the 15 hooks, deliberately mix:
-- pain
-- curiosity
-- contrast
-- experiment
-- mistake
-- warning
-- result
-- specific audience
-- challenge
-- unexpected discovery
-- practical shortcut
-- hidden capability
-- before/after
-- specific time-saving
-- specific business outcome
-
-The hooks must feel like DIFFERENT ideas,
-not the same sentence rewritten 15 times.
-
-================================
-STRONG HOOK PATTERNS
-================================
-
-Prefer hooks like:
-"Watch me turn 10 hours of work into minutes."
-"Most freelancers are using ChatGPT completely wrong."
-"I tested this AI workflow so you don't have to."
-"This ChatGPT prompt can save hours of repetitive work."
-"I replaced an entire afternoon of work with one AI workflow."
-"Stop writing these prompts from scratch."
-"You're probably using ChatGPT backwards."
-"I found the prompt that turns a blank page into a finished draft."
-"This is how creators are cutting hours of work down to minutes."
-"Most business owners don't know ChatGPT can do this."
-"I tested 20 AI prompts. Only a few were actually useful."
-"One prompt can turn your messy idea into a complete plan."
-"The problem isn't ChatGPT. It's the way you're prompting it."
-
-================================
-IMPORTANT
-================================
-
-DO NOT invent fake achievements.
-
-Never claim:
-"I made $100,000"
-"I made $1 million"
-"I got 10,000 customers"
-unless the topic or provided information actually proves it.
-
-Use believable curiosity without making false claims.
-
-================================
-HOOK QUALITY
-================================
-
-Every hook should have at least ONE of:
-- specific time saving
-- money-saving angle
-- productivity improvement
-- surprising discovery
-- common mistake
-- hidden feature
-- strong contrast
-- specific problem
-- curiosity gap
-- unexpected result
-- practical benefit
-
-Whenever possible, make the benefit concrete.
-
-Weak:
-"AI is changing business."
-
-Strong:
-"Most business owners are still doing this manually."
+The hook must sound fresh even when the topic is similar.
 
 ================================
 LENGTH
 ================================
 
-Keep each hook between approximately
-8 and 18 words.
+Target:
+8-18 spoken words.
 
-Make it sound natural when spoken.
+Prefer short, punchy language.
 
-Do not write long explanations.
+Avoid long explanations.
 
-Generate 15 DIFFERENT hooks.
+Avoid unnecessary adjectives.
 
-Then score each hook from 1-100 for:
-- scroll_stopping_power
-- curiosity
-- specificity
-- relevance
-- benefit
-- natural_sounding
+Every word should earn its place.
+
+================================
+PLATFORM NEUTRALITY
+================================
+
+Hooks must work naturally on:
+TikTok
+Instagram Reels
+YouTube Shorts
+LinkedIn
+
+Do not use platform-specific slang unless it improves
+the actual hook.
+
+================================
+SCORING
+================================
+
+Score every hook from 1-100:
+
+scroll_stopping_power
+curiosity
+specificity
+benefit
+emotional_tension
+credibility
+natural_sounding
+novelty
+
+The best hook is NOT simply the loudest hook.
+
+A strong hook must combine:
+attention + curiosity + believable payoff.
 
 Return ONLY valid JSON.
 
 Format:
 {
-    "hooks": [
-        {
-            "hook": "Watch me turn 10 hours of work into minutes.",
-            "scroll_stopping_power": 95,
-            "curiosity": 92,
-            "specificity": 94,
-            "relevance": 96,
-            "benefit": 95,
-            "natural_sounding": 94
-        }
-    ]
+  "hooks": [
+    {
+      "hook": "I gave ChatGPT one sentence and watched it build the strategy.",
+      "archetype": "curiosity_gap",
+      "scroll_stopping_power": 94,
+      "curiosity": 96,
+      "specificity": 91,
+      "benefit": 89,
+      "emotional_tension": 88,
+      "credibility": 98,
+      "natural_sounding": 95,
+      "novelty": 94
+    }
+  ]
 }
 """
 
@@ -231,9 +323,8 @@ def load_hook_history():
 def save_hook_history(history):
     ensure_history_directory()
     try:
-        history = history[-MAX_HISTORY:]
         with open(HISTORY_FILE, "w", encoding="utf-8") as file:
-            json.dump(history, file, indent=2, ensure_ascii=False)
+            json.dump(history[-MAX_HISTORY:], file, indent=2, ensure_ascii=False)
     except Exception as e:
         print("=" * 60)
         print("HOOK HISTORY SAVE ERROR")
@@ -251,17 +342,17 @@ def word_list(text):
     return normalize_text(text).split()
 
 def similarity_score(first, second):
-    first_normalized = normalize_text(first)
-    second_normalized = normalize_text(second)
-    if not first_normalized or not second_normalized:
+    first = normalize_text(first)
+    second = normalize_text(second)
+    if not first or not second:
         return 0.0
-    return SequenceMatcher(None, first_normalized, second_normalized).ratio()
+    return SequenceMatcher(None, first, second).ratio()
 
 def get_hook_pattern(hook):
     words = word_list(hook)
     if not words:
         return ""
-    return " ".join(words[:4])
+    return " ".join(words[:5])
 
 def same_opening_pattern(first, second):
     first_words = word_list(first)
@@ -274,9 +365,7 @@ def same_opening_pattern(first, second):
         return True
     first_stem = " ".join(first_words[:3])
     second_stem = " ".join(second_words[:3])
-    if similarity_score(first_stem, second_stem) >= 0.90:
-        return True
-    return False
+    return similarity_score(first_stem, second_stem) >= PATTERN_THRESHOLD
 
 def get_recent_hooks(history):
     return [
@@ -286,282 +375,25 @@ def get_recent_hooks(history):
     ]
 
 def is_recent_duplicate(hook, recent_hooks):
-    normalized_hook = normalize_text(hook)
     for old_hook in recent_hooks:
-        old_normalized = normalize_text(old_hook)
-        if normalized_hook == old_normalized:
+        if normalize_text(hook) == normalize_text(old_hook):
             return True
         if similarity_score(hook, old_hook) >= SIMILARITY_THRESHOLD:
             return True
     return False
 
 def has_recent_pattern_repeat(hook, recent_hooks):
-    for old_hook in recent_hooks:
-        if same_opening_pattern(hook, old_hook):
-            return True
-    return False
+    return any(
+        same_opening_pattern(hook, old_hook)
+        for old_hook in recent_hooks
+    )
 
-def record_hook_usage(history, hook, score):
-    import time
+def record_hook_usage(history, hook, score, archetype):
     history.append({
         "hook": hook,
         "score": round(float(score), 2),
+        "archetype": archetype,
         "pattern": get_hook_pattern(hook),
         "timestamp": time.time()
     })
     save_hook_history(history)
-def generate_hooks(topic, angle, curiosity):
-    history = load_hook_history()
-    recent_hooks = get_recent_hooks(history)
-    recent_examples = recent_hooks[-10:]
-    recent_text = "\n".join(
-        f"- {hook}"
-        for hook in recent_examples
-    )
-    prompt = f"""
-{SYSTEM_PROMPT}
-
-================================
-CURRENT TOPIC
-================================
-
-{topic}
-
-================================
-VIRAL ANGLE
-================================
-
-{angle}
-
-================================
-CURIOSITY
-================================
-
-{curiosity}
-
-================================
-RECENTLY USED HOOKS
-================================
-
-The following hooks were recently used.
-
-DO NOT copy them.
-DO NOT rewrite them with only minor wording changes.
-DO NOT repeat their opening structure.
-
-{recent_text}
-
-================================
-FINAL REQUIREMENT
-================================
-
-Create 15 highly specific hooks for this exact topic.
-
-The 15 hooks must use DIFFERENT psychological
-and linguistic patterns.
-
-Do NOT create 15 variations of the same opening.
-
-Prioritize concrete benefits and strong curiosity.
-
-Remember:
-
-NEVER use "What if you could..."
-NEVER use "Imagine..."
-NEVER use "Imagine having..."
-NEVER use generic motivational openings.
-"""
-    try:
-        response = ask_ai(prompt)
-        response = (
-            response
-            .replace("```json", "")
-            .replace("```", "")
-            .strip()
-        )
-        data = json.loads(response)
-        hooks = data.get("hooks", [])
-        if not hooks:
-            raise Exception("AI returned no hooks")
-        cleaned_hooks = []
-        for item in hooks:
-            if not isinstance(item, dict):
-                continue
-            hook = str(
-                item.get("hook", "")
-            ).strip()
-            if not hook:
-                continue
-            try:
-                scores = [
-                    float(item.get("scroll_stopping_power", 0)),
-                    float(item.get("curiosity", 0)),
-                    float(item.get("specificity", 0)),
-                    float(item.get("relevance", 0)),
-                    float(item.get("benefit", 0)),
-                    float(item.get("natural_sounding", 0))
-                ]
-            except (TypeError, ValueError):
-                continue
-            average_score = sum(scores) / len(scores)
-            cleaned_hooks.append(
-                (
-                    average_score,
-                    hook
-                )
-            )
-        if not cleaned_hooks:
-            raise Exception(
-                "No valid hooks remained after AI response parsing."
-            )
-        cleaned_hooks.sort(
-            reverse=True,
-            key=lambda item: item[0]
-        )
-        print("=" * 60)
-        print("VIRAL HOOK ENGINE")
-        print("=" * 60)
-        print(
-            f"Generated: {len(cleaned_hooks)} hooks"
-        )
-        print(
-            f"Recently used hooks: {len(recent_hooks)}"
-        )
-        print("=" * 60)
-        return cleaned_hooks
-    except Exception as e:
-        print("=" * 60)
-        print("HOOK ENGINE ERROR")
-        print("=" * 60)
-        print(e)
-        print("=" * 60)
-    return [
-        (
-            95,
-            f"Most people are using {topic} the wrong way."
-        ),
-        (
-            94,
-            f"I found a faster way to handle {topic}."
-        ),
-        (
-            93,
-            f"This {topic} mistake can waste hours."
-        ),
-        (
-            92,
-            f"One simple change can make {topic} much easier."
-        ),
-        (
-            91,
-            f"I tested a better workflow for {topic}."
-        ),
-        (
-            90,
-            f"Stop doing {topic} manually."
-        ),
-        (
-            89,
-            f"This is why {topic} takes longer than it should."
-        ),
-        (
-            88,
-            f"The shortcut for {topic} is simpler than you think."
-        )
-    ]
-
-def choose_hook(topic, angle, curiosity):
-    hooks = generate_hooks(
-        topic,
-        angle,
-        curiosity
-    )
-    if not hooks:
-        return (
-            f"Most people are using "
-            f"{topic} the wrong way."
-        )
-    history = load_hook_history()
-    recent_hooks = get_recent_hooks(history)
-    fresh_hooks = []
-    blocked_hooks = []
-    for score, hook in hooks:
-        if is_recent_duplicate(
-            hook,
-            recent_hooks
-        ):
-            blocked_hooks.append(
-                (
-                    score,
-                    hook,
-                    "near_duplicate"
-                )
-            )
-            continue
-        if has_recent_pattern_repeat(
-            hook,
-            recent_hooks
-        ):
-            blocked_hooks.append(
-                (
-                    score,
-                    hook,
-                    "repeated_pattern"
-                )
-            )
-            continue
-        fresh_hooks.append(
-            (
-                score,
-                hook
-            )
-        )
-    if fresh_hooks:
-        best_score, best_hook = fresh_hooks[0]
-    else:
-        recent_normalized = {
-            normalize_text(old_hook)
-            for old_hook in recent_hooks
-        }
-        non_exact = [
-            (
-                score,
-                hook
-            )
-            for score, hook in hooks
-            if normalize_text(hook)
-            not in recent_normalized
-        ]
-        if non_exact:
-            best_score, best_hook = non_exact[0]
-        else:
-            best_score, best_hook = hooks[0]
-            print(
-                "WARNING: All generated hooks were recently used. "
-                "Using highest-scoring fallback."
-            )
-    record_hook_usage(
-        history,
-        best_hook,
-        best_score
-    )
-    print("=" * 60)
-    print("SELECTED VIRAL HOOK")
-    print("=" * 60)
-    print(
-        f"Score: {best_score:.1f}/100"
-    )
-    print(
-        "Hook:",
-        best_hook
-    )
-    print(
-        "Hook cooldown:",
-        f"{HOOK_COOLDOWN} videos"
-    )
-    print(
-        "Blocked candidates:",
-        len(blocked_hooks)
-    )
-    print("=" * 60)
-    return best_hook
