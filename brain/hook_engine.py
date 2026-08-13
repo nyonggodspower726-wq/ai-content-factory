@@ -310,3 +310,258 @@ def record_hook_usage(history, hook, score):
         "timestamp": time.time()
     })
     save_hook_history(history)
+def generate_hooks(topic, angle, curiosity):
+    history = load_hook_history()
+    recent_hooks = get_recent_hooks(history)
+    recent_examples = recent_hooks[-10:]
+    recent_text = "\n".join(
+        f"- {hook}"
+        for hook in recent_examples
+    )
+    prompt = f"""
+{SYSTEM_PROMPT}
+
+================================
+CURRENT TOPIC
+================================
+
+{topic}
+
+================================
+VIRAL ANGLE
+================================
+
+{angle}
+
+================================
+CURIOSITY
+================================
+
+{curiosity}
+
+================================
+RECENTLY USED HOOKS
+================================
+
+The following hooks were recently used.
+
+DO NOT copy them.
+DO NOT rewrite them with only minor wording changes.
+DO NOT repeat their opening structure.
+
+{recent_text}
+
+================================
+FINAL REQUIREMENT
+================================
+
+Create 15 highly specific hooks for this exact topic.
+
+The 15 hooks must use DIFFERENT psychological
+and linguistic patterns.
+
+Do NOT create 15 variations of the same opening.
+
+Prioritize concrete benefits and strong curiosity.
+
+Remember:
+
+NEVER use "What if you could..."
+NEVER use "Imagine..."
+NEVER use "Imagine having..."
+NEVER use generic motivational openings.
+"""
+    try:
+        response = ask_ai(prompt)
+        response = (
+            response
+            .replace("```json", "")
+            .replace("```", "")
+            .strip()
+        )
+        data = json.loads(response)
+        hooks = data.get("hooks", [])
+        if not hooks:
+            raise Exception("AI returned no hooks")
+        cleaned_hooks = []
+        for item in hooks:
+            if not isinstance(item, dict):
+                continue
+            hook = str(
+                item.get("hook", "")
+            ).strip()
+            if not hook:
+                continue
+            try:
+                scores = [
+                    float(item.get("scroll_stopping_power", 0)),
+                    float(item.get("curiosity", 0)),
+                    float(item.get("specificity", 0)),
+                    float(item.get("relevance", 0)),
+                    float(item.get("benefit", 0)),
+                    float(item.get("natural_sounding", 0))
+                ]
+            except (TypeError, ValueError):
+                continue
+            average_score = sum(scores) / len(scores)
+            cleaned_hooks.append(
+                (
+                    average_score,
+                    hook
+                )
+            )
+        if not cleaned_hooks:
+            raise Exception(
+                "No valid hooks remained after AI response parsing."
+            )
+        cleaned_hooks.sort(
+            reverse=True,
+            key=lambda item: item[0]
+        )
+        print("=" * 60)
+        print("VIRAL HOOK ENGINE")
+        print("=" * 60)
+        print(
+            f"Generated: {len(cleaned_hooks)} hooks"
+        )
+        print(
+            f"Recently used hooks: {len(recent_hooks)}"
+        )
+        print("=" * 60)
+        return cleaned_hooks
+    except Exception as e:
+        print("=" * 60)
+        print("HOOK ENGINE ERROR")
+        print("=" * 60)
+        print(e)
+        print("=" * 60)
+    return [
+        (
+            95,
+            f"Most people are using {topic} the wrong way."
+        ),
+        (
+            94,
+            f"I found a faster way to handle {topic}."
+        ),
+        (
+            93,
+            f"This {topic} mistake can waste hours."
+        ),
+        (
+            92,
+            f"One simple change can make {topic} much easier."
+        ),
+        (
+            91,
+            f"I tested a better workflow for {topic}."
+        ),
+        (
+            90,
+            f"Stop doing {topic} manually."
+        ),
+        (
+            89,
+            f"This is why {topic} takes longer than it should."
+        ),
+        (
+            88,
+            f"The shortcut for {topic} is simpler than you think."
+        )
+    ]
+
+def choose_hook(topic, angle, curiosity):
+    hooks = generate_hooks(
+        topic,
+        angle,
+        curiosity
+    )
+    if not hooks:
+        return (
+            f"Most people are using "
+            f"{topic} the wrong way."
+        )
+    history = load_hook_history()
+    recent_hooks = get_recent_hooks(history)
+    fresh_hooks = []
+    blocked_hooks = []
+    for score, hook in hooks:
+        if is_recent_duplicate(
+            hook,
+            recent_hooks
+        ):
+            blocked_hooks.append(
+                (
+                    score,
+                    hook,
+                    "near_duplicate"
+                )
+            )
+            continue
+        if has_recent_pattern_repeat(
+            hook,
+            recent_hooks
+        ):
+            blocked_hooks.append(
+                (
+                    score,
+                    hook,
+                    "repeated_pattern"
+                )
+            )
+            continue
+        fresh_hooks.append(
+            (
+                score,
+                hook
+            )
+        )
+    if fresh_hooks:
+        best_score, best_hook = fresh_hooks[0]
+    else:
+        recent_normalized = {
+            normalize_text(old_hook)
+            for old_hook in recent_hooks
+        }
+        non_exact = [
+            (
+                score,
+                hook
+            )
+            for score, hook in hooks
+            if normalize_text(hook)
+            not in recent_normalized
+        ]
+        if non_exact:
+            best_score, best_hook = non_exact[0]
+        else:
+            best_score, best_hook = hooks[0]
+            print(
+                "WARNING: All generated hooks were recently used. "
+                "Using highest-scoring fallback."
+            )
+    record_hook_usage(
+        history,
+        best_hook,
+        best_score
+    )
+    print("=" * 60)
+    print("SELECTED VIRAL HOOK")
+    print("=" * 60)
+    print(
+        f"Score: {best_score:.1f}/100"
+    )
+    print(
+        "Hook:",
+        best_hook
+    )
+    print(
+        "Hook cooldown:",
+        f"{HOOK_COOLDOWN} videos"
+    )
+    print(
+        "Blocked candidates:",
+        len(blocked_hooks)
+    )
+    print("=" * 60)
+    return best_hook
