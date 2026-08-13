@@ -381,3 +381,184 @@ def record_cta_usage(history, cta, score, archetype, topic):
         "timestamp": time.time()
     })
     save_cta_history(history)
+def generate_cta(topic):
+    history = load_cta_history()
+    recent_ctas = get_recent_ctas(history)
+    recent_archetypes = get_recent_archetypes(history)
+    recent_text = "\n".join(
+        f"- {cta}"
+        for cta in recent_ctas[-10:]
+    )
+    prompt = f"""
+{SYSTEM_PROMPT}
+================================
+CURRENT VIDEO TOPIC
+================================
+{topic}
+================================
+RECENTLY USED CTAs
+================================
+Do NOT copy, lightly rewrite, or repeat the structure of these:
+{recent_text}
+================================
+FINAL GENERATION RULE
+================================
+Generate exactly 15 genuinely different CTAs for this topic.
+Mix psychological archetypes.
+Do not make all CTAs mention the same benefit.
+Do not make every CTA begin with "Click", "Check", "Get", or "Want".
+Keep the CTA natural when spoken by an AI voice.
+Remember: never invent earnings, scarcity, deadlines, customers,
+celebrity claims, bans, leaks, or guaranteed results.
+Return ONLY valid JSON.
+"""
+    try:
+        response = ask_ai(prompt)
+        response = response.replace("```json","").replace("```","").strip()
+        data = json.loads(response)
+        ideas = data.get("ctas",[])
+        if not ideas:
+            raise Exception("AI returned no CTAs")
+        cleaned = []
+        for item in ideas:
+            if not isinstance(item,dict):
+                continue
+            cta = str(item.get("cta","")).strip()
+            if not cta:
+                continue
+            try:
+                scores = {
+                    "conversion":float(item.get("conversion_potential",0)),
+                    "relevance":float(item.get("relevance",0)),
+                    "clarity":float(item.get("clarity",0)),
+                    "curiosity":float(item.get("curiosity",0)),
+                    "urgency":float(item.get("urgency",0)),
+                    "natural":float(item.get("natural_sounding",0)),
+                    "novelty":float(item.get("novelty",0)),
+                    "credibility":float(item.get("credibility",0))
+                }
+            except (TypeError,ValueError):
+                continue
+            weighted_score=(
+                scores["conversion"]*0.24+
+                scores["relevance"]*0.16+
+                scores["clarity"]*0.13+
+                scores["curiosity"]*0.10+
+                scores["urgency"]*0.08+
+                scores["natural"]*0.11+
+                scores["novelty"]*0.10+
+                scores["credibility"]*0.08
+            )
+            archetype=str(item.get("archetype","unknown")).strip().lower()
+            cleaned.append({
+                "score":weighted_score,
+                "cta":cta,
+                "archetype":archetype
+            })
+        if not cleaned:
+            raise Exception("No valid CTAs remained after parsing.")
+        cleaned.sort(
+            reverse=True,
+            key=lambda item:item["score"]
+        )
+        print("="*60)
+        print("PROMPTPROHUB ELITE CTA ENGINE")
+        print("="*60)
+        print(f"Generated: {len(cleaned)}")
+        print(f"Recent CTAs: {len(recent_ctas)}")
+        print("="*60)
+        return cleaned
+    except Exception as e:
+        print("="*60)
+        print("CTA ENGINE FAILED")
+        print("="*60)
+        print(type(e).__name__)
+        print(str(e))
+        print("="*60)
+        return [
+            {
+                "score":95,
+                "cta":"Get the full prompt library through the link in my bio, and follow for more.",
+                "archetype":"prompt_library"
+            },
+            {
+                "score":94,
+                "cta":"The complete PromptProHub resource is in my bio. Follow for more practical AI workflows.",
+                "archetype":"resource"
+            },
+            {
+                "score":93,
+                "cta":"Want the full version? Check my bio, then follow for the next AI strategy.",
+                "archetype":"full_version"
+            },
+            {
+                "score":92,
+                "cta":"Grab the templates from my bio and follow for more ways to build faster with AI.",
+                "archetype":"templates"
+            },
+            {
+                "score":91,
+                "cta":"If this helped, the complete toolkit is in my bio. Follow for more useful AI ideas.",
+                "archetype":"benefit"
+            },
+            {
+                "score":90,
+                "cta":"Take the shortcut from my bio, and follow for more practical AI systems.",
+                "archetype":"shortcut"
+            }
+        ]
+
+def choose_cta(topic):
+    candidates=generate_cta(topic)
+    history=load_cta_history()
+    recent_ctas=get_recent_ctas(history)
+    recent_archetypes=get_recent_archetypes(history)
+    fresh=[]
+    blocked=[]
+    for item in candidates:
+        cta=item["cta"]
+        if is_recent_duplicate(cta,recent_ctas):
+            blocked.append((cta,"duplicate"))
+            continue
+        if has_recent_pattern_repeat(cta,recent_ctas):
+            blocked.append((cta,"pattern"))
+            continue
+        fresh.append(item)
+    if not fresh:
+        non_exact=[
+            item
+            for item in candidates
+            if normalize_text(item["cta"]) not in {
+                normalize_text(old)
+                for old in recent_ctas
+            }
+        ]
+        fresh=non_exact if non_exact else candidates
+    def final_score(item):
+        bonus=4 if item.get("archetype","") not in recent_archetypes else 0
+        return item["score"]+bonus
+    fresh.sort(
+        reverse=True,
+        key=final_score
+    )
+    selected=fresh[0]
+    selected_cta=selected["cta"]
+    selected_score=selected["score"]
+    selected_archetype=selected.get("archetype","unknown")
+    record_cta_usage(
+        history,
+        selected_cta,
+        selected_score,
+        selected_archetype,
+        topic
+    )
+    print("="*60)
+    print("SELECTED CTA")
+    print("="*60)
+    print(f"Score: {selected_score:.1f}/100")
+    print("Archetype:",selected_archetype)
+    print("CTA:",selected_cta)
+    print("Cooldown:",f"{CTA_COOLDOWN} videos")
+    print("Blocked:",len(blocked))
+    print("="*60)
+    return selected_cta
