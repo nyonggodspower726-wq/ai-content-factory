@@ -16,255 +16,257 @@ from brain.cta_engine import choose_cta
 from brain.viral_engine import evaluate_video
 from brain.decision_engine import final_decision
 
+
 class BrainController:
 
-def __init__(self):  
+    def __init__(self):
 
-    print("=" * 60)  
-    print("PROMPTPROHUB AI BRAIN ONLINE")  
-    print("=" * 60)  
+        print("=" * 60)
+        print("PROMPTPROHUB AI BRAIN ONLINE")
+        print("=" * 60)
 
-def safe_run(  
-    self,  
-    name,  
-    function,  
-    *args  
-):  
+    def safe_run(
+        self,
+        name,
+        function,
+        *args
+    ):
 
-    try:  
+        try:
 
-        print("=" * 60)  
-        print(name)  
-        print("=" * 60)  
+            print("=" * 60)
+            print(name)
+            print("=" * 60)
 
-        return function(*args)  
+            return function(*args)
 
-    except Exception as e:  
+        except Exception as e:
 
-        print(  
-            f"{name} FAILED:",  
-            e  
-        )  
+            print(
+                f"{name} FAILED:",
+                e
+            )
 
-        return {}  
+            return {}
 
-def build(  
-    self,  
-    topic  
-):  
+    def build(
+        self,
+        topic
+    ):
 
-    print("=" * 60)  
-    print("BUILDING AI CAMPAIGN")  
-    print("=" * 60)  
+        print("=" * 60)
+        print("BUILDING AI CAMPAIGN")
+        print("=" * 60)
 
-    project = {  
-        "topic": topic  
-    }  
+        project = {
+            "topic": topic
+        }
 
-    print(  
-        "FINAL CREATIVE TOPIC:",  
-        topic  
-    )  
+        print(
+            "FINAL CREATIVE TOPIC:",
+            topic
+        )
 
-    # =====================================  
-    # PRODUCT  
-    # =====================================  
+        # =====================================
+        # PRODUCT
+        # =====================================
 
-    project["product"] = self.safe_run(  
-        "Product Engine",  
-        recommend_product,  
-        topic  
-    )  
+        project["product"] = self.safe_run(
+            "Product Engine",
+            recommend_product,
+            topic
+        )
 
-    # =====================================  
-    # CEO  
-    # =====================================  
+        # =====================================
+        # CEO
+        # =====================================
 
-    project["ceo"] = self.safe_run(  
-        "CEO Engine",  
-        ceo.review,  
-        topic,  
-        project["product"]  
-    )  
+        project["ceo"] = self.safe_run(
+            "CEO Engine",
+            ceo.review,
+            topic,
+            project["product"]
+        )
 
-    # =====================================  
-    # BRAND  
-    # =====================================  
+        # =====================================
+        # BRAND
+        # =====================================
 
-    project["brand"] = self.safe_run(  
-        "Brand Engine",  
-        brand.get_brand  
-    )  
+        project["brand"] = self.safe_run(
+            "Brand Engine",
+            brand.get_brand
+        )
 
-    # =====================================  
-    # TREND  
-    # =====================================  
+        # =====================================
+        # TREND
+        # =====================================
 
-    project["trend"] = self.safe_run(  
-        "Market Trend Engine",  
-        discover_trends,  
-        topic  
-    )  
+        project["trend"] = self.safe_run(
+            "Market Trend Engine",
+            discover_trends,
+            topic
+        )
 
-    # =====================================  
-    # AUDIENCE  
-    # =====================================  
+        # =====================================
+        # AUDIENCE
+        # =====================================
 
-    project["audience"] = self.safe_run(  
-        "Audience Engine",  
-        audience_plan,  
-        topic  
-    )  
+        project["audience"] = self.safe_run(
+            "Audience Engine",
+            audience_plan,
+            topic
+        )
 
-    # =====================================  
-    # OFFER  
-    # =====================================  
+        # =====================================
+        # OFFER
+        # =====================================
 
-    project["offer"] = self.safe_run(  
-        "Offer Engine",  
-        create_offer,  
-        project["product"],  
-        project["audience"]  
-    )  
+        project["offer"] = self.safe_run(
+            "Offer Engine",
+            create_offer,
+            project["product"],
+            project["audience"]
+        )
 
-    # =====================================  
-    # THINKING  
-    # =====================================  
+        # =====================================
+        # THINKING
+        # =====================================
 
-    project["thinking"] = self.safe_run(  
-        "Thinking Engine",  
-        think,  
-        project["product"],  
-        topic  
-    )  
+        project["thinking"] = self.safe_run(
+            "Thinking Engine",
+            think,
+            project["product"],
+            topic
+        )
 
-    # =====================================  
-    # MARKETING  
-    # =====================================  
+        # =====================================
+        # MARKETING
+        # =====================================
 
-    project["marketing"] = self.safe_run(  
-        "Marketing Engine",  
-        marketing_plan,  
-        project  
-    )  
+        project["marketing"] = self.safe_run(
+            "Marketing Engine",
+            marketing_plan,
+            project
+        )
 
-    # =====================================  
-    # PSYCHOLOGY  
-    # =====================================  
+        # =====================================
+        # PSYCHOLOGY
+        # =====================================
 
-    project["psychology"] = self.safe_run(  
-        "Psychology Engine",  
-        psychology_plan,  
-        project["marketing"]  
-    )  
+        project["psychology"] = self.safe_run(
+            "Psychology Engine",
+            psychology_plan,
+            project["marketing"]
+        )
 
-    # =====================================  
-    # DIRECTOR  
-    # =====================================  
+        # =====================================
+        # DIRECTOR
+        # =====================================
 
-    project["director"] = self.safe_run(  
-        "Director Engine",  
-        create_director_plan,  
-        project  
-    )  
+        project["director"] = self.safe_run(
+            "Director Engine",
+            create_director_plan,
+            project
+        )
 
-    # =====================================  
-    # STORYBOARD  
-    # =====================================  
+        # =====================================
+        # STORYBOARD
+        # =====================================
 
-    project["storyboard"] = self.safe_run(  
-        "Storyboard Engine",  
-        create_storyboard,  
-        project["director"]  
-    )  
+        project["storyboard"] = self.safe_run(
+            "Storyboard Engine",
+            create_storyboard,
+            project["director"]
+        )
 
-    # =====================================  
-    # SCENE PROMPTS  
-    # =====================================  
+        # =====================================
+        # SCENE PROMPTS
+        # =====================================
 
-    project["scene_prompts"] = self.safe_run(  
-        "Scene Prompt Engine",  
-        generate_scene_prompts,  
-        project["storyboard"]  
-    )  
+        project["scene_prompts"] = self.safe_run(
+            "Scene Prompt Engine",
+            generate_scene_prompts,
+            project["storyboard"]
+        )
 
-    # =====================================  
-    # CTA  
-    # =====================================  
+        # =====================================
+        # CTA
+        # =====================================
 
-    print("=" * 60)  
-    print("GENERATING CTA BEFORE SCRIPT")  
-    print("=" * 60)  
+        print("=" * 60)
+        print("GENERATING CTA BEFORE SCRIPT")
+        print("=" * 60)
 
-    project["cta"] = self.safe_run(  
-        "CTA Engine",  
-        choose_cta,  
-        topic  
-    )  
+        project["cta"] = self.safe_run(
+            "CTA Engine",
+            choose_cta,
+            topic
+        )
 
-    # =====================================  
-    # SCRIPT  
-    # =====================================  
+        # =====================================
+        # SCRIPT
+        # =====================================
 
-    print("=" * 60)  
-    print("GENERATING SCRIPT WITH CTA")  
-    print("=" * 60)  
+        print("=" * 60)
+        print("GENERATING SCRIPT WITH CTA")
+        print("=" * 60)
 
-    project["script"] = self.safe_run(  
-        "Script Engine",  
-        generate_script,  
-        project,  
-        project["cta"]  
-    )  
+        project["script"] = self.safe_run(
+            "Script Engine",
+            generate_script,
+            project,
+            project["cta"]
+        )
 
-    # =====================================  
-    # WATCH TIME OPTIMIZATION  
-    # =====================================  
+        # =====================================
+        # WATCH TIME OPTIMIZATION
+        # =====================================
 
-    project["retention"] = self.safe_run(  
-        "Retention Engine",  
-        choose_retention,  
-        topic  
-    )  
+        project["retention"] = self.safe_run(
+            "Retention Engine",
+            choose_retention,
+            topic
+        )
 
-    # =====================================  
-    # VIRAL CHECK  
-    # =====================================  
+        # =====================================
+        # VIRAL CHECK
+        # =====================================
 
-    project["viral"] = self.safe_run(  
-        "Viral Analysis Engine",  
-        evaluate_video,  
-        project["storyboard"]  
-    )  
+        project["viral"] = self.safe_run(
+            "Viral Analysis Engine",
+            evaluate_video,
+            project["storyboard"]
+        )
 
-    # =====================================  
-    # FINAL DECISION  
-    # =====================================  
+        # =====================================
+        # FINAL DECISION
+        # =====================================
 
-    project["decision"] = self.safe_run(  
-        "Final Decision Engine",  
-        final_decision,  
-        project  
-    )  
+        project["decision"] = self.safe_run(
+            "Final Decision Engine",
+            final_decision,
+            project
+        )
 
-    # =====================================  
-    # COMPLETE  
-    # =====================================  
+        # =====================================
+        # COMPLETE
+        # =====================================
 
-    print("=" * 60)  
-    print("BRAIN CAMPAIGN COMPLETE")  
-    print("=" * 60)  
+        print("=" * 60)
+        print("BRAIN CAMPAIGN COMPLETE")
+        print("=" * 60)
 
-    print(  
-        "CTA:",  
-        project.get("cta", "")  
-    )  
+        print(
+            "CTA:",
+            project.get("cta", "")
+        )
 
-    print(  
-        "SCRIPT GENERATED:",  
-        bool(project.get("script"))  
-    )  
+        print(
+            "SCRIPT GENERATED:",
+            bool(project.get("script"))
+        )
 
-    return project
+        return project
+
 
 brain = BrainController()
