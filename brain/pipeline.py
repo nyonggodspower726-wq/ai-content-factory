@@ -3,105 +3,90 @@ from production_controller import controller
 from brain.monitor import monitor
 from brain.credit_manager import credits
 
+
 class Pipeline:
 
-def __init__(self):  
+    def __init__(self):
 
-    print("=" * 60)  
-    print("PROMPTPROHUB AI STUDIO PIPELINE ONLINE")  
-    print("=" * 60)  
+        print("=" * 60)
+        print("PROMPTPROHUB AI STUDIO PIPELINE ONLINE")
+        print("=" * 60)
 
+    def run(self, topic):
 
+        monitor.reset()
 
-def run(self, topic):  
+        monitor.start(
+            "Pipeline"
+        )
 
+        try:
 
-    monitor.reset()  
+            print(
+                "Checking AI credits..."
+            )
 
-    monitor.start(  
-        "Pipeline"  
-    )  
+            credits.use_groq()
 
+            print(
+                "Starting Production Controller..."
+            )
 
-    try:  
+            project = controller.produce(
+                topic
+            )
 
+            if not project:
 
-        print(  
-            "Checking AI credits..."  
-        )  
+                print(
+                    "Controller returned no project."
+                )
 
+                monitor.fail(
+                    "No production project created"
+                )
 
-        credits.use_groq()  
+                monitor.summary()
 
+                return None
 
+            monitor.finish(
+                "Groq"
+            )
 
-        print(  
-            "Starting Production Controller..."  
-        )  
+            monitor.finish(
+                "Production"
+            )
 
+            monitor.summary()
 
-        project = controller.produce(  
-            topic  
-        )  
+            return project
 
+        except Exception as e:
 
+            print("=" * 60)
+            print("PIPELINE FAILED")
+            print("=" * 60)
 
-        if not project:  
+            print(
+                "ERROR TYPE:",
+                type(e).__name__
+            )
 
+            print(
+                "ERROR:",
+                str(e)
+            )
 
-            print(  
-                "Controller returned no project."  
-            )  
+            print("=" * 60)
 
+            monitor.fail(
+                e
+            )
 
-            monitor.fail(  
-                "No production project created"  
-            )  
+            monitor.summary()
 
+            return None
 
-            monitor.summary()  
-
-
-            return None  
-
-
-
-        monitor.finish(  
-            "Groq"  
-        )  
-
-
-        monitor.finish(  
-            "Production"  
-        )  
-
-
-        monitor.summary()  
-
-
-        return project  
-
-
-
-    except Exception as e:  
-
-
-        print("=" * 60)  
-        print("PIPELINE FAILED")  
-        print("=" * 60)  
-
-
-        print(e)  
-
-
-        monitor.fail(  
-            e  
-        )  
-
-
-        monitor.summary()  
-
-
-        return None
 
 pipeline = Pipeline()
