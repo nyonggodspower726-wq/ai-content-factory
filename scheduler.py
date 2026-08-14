@@ -1,130 +1,129 @@
 import time
 from datetime import datetime
-from importmport ZoneInfo
+from zoneinfo import ZoneInfo
 
 from bot import main
 
-============================================================
-
-DAILY POSTING SCHEDULE — NIGERIA TIME
-
-============================================================
+# ============================================================
+# DAILY POSTING SCHEDULE — NIGERIA TIME
+# ============================================================
 
 SCHEDULE_TIMES = [
-"08:00",
-"12:00",
-"16:00",
-"20:00",
+    "01:00",
 ]
 
-============================================================
-
-RUN BOT
-
-============================================================
+# ============================================================
+# RUN BOT
+# ============================================================
 
 def run_bot():
 
-print("=" * 60)  
-print("SCHEDULE TRIGGERED")  
-print("=" * 60)  
-
-try:  
-
-    print("Calling bot.py...")  
-
-    main()  
-
-    print("=" * 60)  
-    print("VIDEO TASK COMPLETED SUCCESSFULLY")  
-    print("=" * 60)  
-
-except Exception as e:  
-
-    print("=" * 60)  
-    print("BOT ERROR")  
-    print("=" * 60)  
-
-    print(f"ERROR: {e}")  
-
+    print("=" * 60)
+    print("SCHEDULE TRIGGERED")
     print("=" * 60)
 
-============================================================
+    try:
 
-SCHEDULER
+        print("Calling bot.py...")
 
-============================================================
+        main()
+
+        print("=" * 60)
+        print("VIDEO TASK COMPLETED SUCCESSFULLY")
+        print("=" * 60)
+
+    except Exception as e:
+
+        print("=" * 60)
+        print("BOT ERROR")
+        print("=" * 60)
+
+        print(f"ERROR: {e}")
+
+        print("=" * 60)
+
+# ============================================================
+# SCHEDULER
+# ============================================================
 
 def start_scheduler():
 
-print("=" * 60)  
-print("AI CONTENT FACTORY SCHEDULER STARTED")  
-print("=" * 60)  
+    print("=" * 60)
+    print("AI CONTENT FACTORY SCHEDULER STARTED")
+    print("=" * 60)
 
-print("Timezone: Africa/Lagos")  
+    print("Timezone: Africa/Lagos")
 
-print(  
-    "Daily posting times:",  
-    ", ".join(SCHEDULE_TIMES)  
-)  
+    print(
+        "Daily posting time:",
+        ", ".join(SCHEDULE_TIMES)
+    )
 
-print("Posts per day: 4")  
+    print("Posts per day: 1")
 
-print("=" * 60)  
+    print("=" * 60)
 
-# Prevent duplicate execution during the same minute  
-last_run_date = None  
-last_run_time = None  
+    # Prevent duplicate execution during the same minute
+    last_run_date = None
+    last_run_time = None
 
-while True:  
+    while True:
 
-    nigeria_now = datetime.now(  
-        ZoneInfo("Africa/Lagos")  
-    )  
+        nigeria_now = datetime.now(
+            ZoneInfo("Africa/Lagos")
+        )
 
-    current_date = nigeria_now.strftime(  
-        "%Y-%m-%d"  
-    )  
+        current_date = nigeria_now.strftime(
+            "%Y-%m-%d"
+        )
 
-    current_time = nigeria_now.strftime(  
-        "%H:%M"  
-    )  
+        current_time = nigeria_now.strftime(
+            "%H:%M"
+        )
 
-    current_seconds = nigeria_now.strftime(  
-        "%H:%M:%S"  
-    )  
+        current_seconds = nigeria_now.strftime(
+            "%H:%M:%S"
+        )
 
-    print(  
-        f"Scheduler running | "  
-        f"Nigeria time: {current_date} "  
-        f"{current_seconds}"  
-    )  
+        print(
+            f"Scheduler running | "
+            f"Nigeria time: {current_date} "
+            f"{current_seconds}"
+        )
 
-    # ====================================================  
-    # CHECK ALL FOUR DAILY TIMES  
-    # ====================================================  
+        # ====================================================
+        # CHECK SCHEDULED TIME
+        # ====================================================
 
-    if current_time in SCHEDULE_TIMES:  
+        if current_time in SCHEDULE_TIMES:
 
-        # Make sure this exact scheduled time  
-        # only runs once.  
-        if (  
-            last_run_date != current_date  
-            or last_run_time != current_time  
-        ):  
+            # Make sure this exact scheduled time
+            # only runs once.
+            if (
+                last_run_date != current_date
+                or last_run_time != current_time
+            ):
 
-            print("=" * 60)  
+                print("=" * 60)
 
-            print(  
-                f"POSTING TIME REACHED: "  
-                f"{current_time}"  
-            )  
+                print(
+                    f"POSTING TIME REACHED: "
+                    f"{current_time}"
+                )
 
-            print("=" * 60)  
+                print("=" * 60)
 
-            run_bot()  
+                run_bot()
 
-            last_run_date = current_date  
-            last_run_time = current_time  
+                last_run_date = current_date
+                last_run_time = current_time
 
-    time.sleep(1)
+        time.sleep(1)
+
+# ============================================================
+# START
+# ============================================================
+
+if __name__ == "__main__":
+
+    start_scheduler()
