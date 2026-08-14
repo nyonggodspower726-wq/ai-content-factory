@@ -26,9 +26,7 @@ class ProductionController:
 
         project = recovery.execute(
             brain.build,
-            topic,
-            platform,
-            video_number
+            topic
         )
 
         if not project:
