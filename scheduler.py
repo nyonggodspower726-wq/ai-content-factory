@@ -4,13 +4,18 @@ from zoneinfo import ZoneInfo
 
 from bot import main
 
+
 # ============================================================
 # DAILY POSTING SCHEDULE — NIGERIA TIME
 # ============================================================
 
 SCHEDULE_TIMES = [
-    "12:54",
+    "08:00",
+    "14:00",
+    "19:00",
+    "23:00",
 ]
+
 
 # ============================================================
 # RUN BOT
@@ -42,6 +47,7 @@ def run_bot():
 
         print("=" * 60)
 
+
 # ============================================================
 # SCHEDULER
 # ============================================================
@@ -55,11 +61,11 @@ def start_scheduler():
     print("Timezone: Africa/Lagos")
 
     print(
-        "Daily posting time:",
+        "Daily posting times:",
         ", ".join(SCHEDULE_TIMES)
     )
 
-    print("Posts per day: 1")
+    print("Posts per day: 4")
 
     print("=" * 60)
 
@@ -97,8 +103,8 @@ def start_scheduler():
 
         if current_time in SCHEDULE_TIMES:
 
-            # Make sure this exact scheduled time
-            # only runs once.
+            # Make sure this scheduled time
+            # only runs once per day.
             if (
                 last_run_date != current_date
                 or last_run_time != current_time
@@ -119,6 +125,7 @@ def start_scheduler():
                 last_run_time = current_time
 
         time.sleep(1)
+
 
 # ============================================================
 # START
