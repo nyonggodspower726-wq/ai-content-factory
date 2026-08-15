@@ -62,20 +62,6 @@ def get_railway_public_url():
 # ============================================================
 # PINTEREST BOARD
 # ============================================================
-#
-# IMPORTANT:
-# Account 4 requires a Pinterest board ID.
-#
-# Railway variable:
-#
-# STATUS200_PINTEREST_BOARD_ID
-#
-# Example:
-# STATUS200_PINTEREST_BOARD_ID = your_board_id
-#
-# Do NOT put the pin.it link here.
-#
-# ============================================================
 
 PINTEREST_BOARD_ID = os.getenv(
     "STATUS200_PINTEREST_BOARD_ID"
@@ -84,6 +70,18 @@ PINTEREST_BOARD_ID = os.getenv(
 
 # ============================================================
 # STATUS 200 ACCOUNTS
+# ============================================================
+#
+# ACCOUNT 1 = TIKTOK
+# ACCOUNT 2 = YOUTUBE
+# ACCOUNT 3 = TIKTOK 2
+# ACCOUNT 4 = PINTEREST
+#
+# IMPORTANT:
+# Account 2 was previously LinkedIn.
+# It is now YouTube because YouTube is connected
+# to that Status 200 account.
+#
 # ============================================================
 
 ACCOUNTS = [
@@ -114,13 +112,9 @@ ACCOUNTS = [
             "STATUS200_ACCOUNT_2"
         ),
 
-        "platform": "linkedin"
+        "platform": "youtube"
     },
 
-
-    # ========================================================
-    # ACCOUNT 3 = TIKTOK 2
-    # ========================================================
 
     {
         "number": 3,
@@ -409,15 +403,31 @@ def _publish_one_account(
 
 
     # ========================================================
-    # PINTEREST SETTINGS
+    # YOUTUBE SETTINGS
     # ========================================================
     #
-    # Status 200 returned:
+    # Status 200 handles the YouTube connection.
     #
-    # {"error":{"message":"board_id is required"}}
+    # We intentionally do NOT use the old direct YouTube
+    # OAuth uploader here.
     #
-    # Therefore Account 4 now sends the required board_id.
+    # The video is sent to Status 200 using the same
+    # mediaID system as the other connected accounts.
     #
+    # ========================================================
+
+    if platform.lower() == "youtube":
+
+        post_data["youtube"] = {
+
+            "privacyStatus":
+                "public"
+
+        }
+
+
+    # ========================================================
+    # PINTEREST SETTINGS
     # ========================================================
 
     if platform.lower() == "pinterest":
@@ -428,15 +438,6 @@ def _publish_one_account(
                 PINTEREST_BOARD_ID
 
         }
-
-
-    # ========================================================
-    # LINKEDIN
-    # ========================================================
-    #
-    # No special options required for the current setup.
-    #
-    # ========================================================
 
 
     # ========================================================
@@ -573,7 +574,10 @@ def publish_to_status200(
 
     print()
     print("=" * 60)
-    print("PROMPTPROHUB STATUS 200 MULTI-ACCOUNT PUBLISHER")
+    print(
+        "PROMPTPROHUB STATUS 200 "
+        "MULTI-ACCOUNT PUBLISHER"
+    )
     print("=" * 60)
 
 
@@ -685,8 +689,9 @@ def publish_to_status200(
 
             print()
             print(
-                f"Status 200 Account {account_number} "
-                f"→ {platform} completed."
+                f"Status 200 Account "
+                f"{account_number} → "
+                f"{platform} completed."
             )
 
 
@@ -717,13 +722,13 @@ def publish_to_status200(
 
 
             # =================================================
-            # IMPORTANT:
-            # DO NOT STOP THE OTHER ACCOUNTS
+            # DO NOT STOP OTHER ACCOUNTS
             # =================================================
 
             print()
             print(
-                f"FAILED — ACCOUNT {account_number}"
+                f"FAILED — ACCOUNT "
+                f"{account_number}"
             )
 
             print(
@@ -742,7 +747,8 @@ def publish_to_status200(
             )
 
             print(
-                "Continuing to next Status 200 account..."
+                "Continuing to next "
+                "Status 200 account..."
             )
 
 
@@ -786,7 +792,8 @@ def publish_to_status200(
 
             print(
 
-                f"  Account {item['account_number']} "
+                f"  Account "
+                f"{item['account_number']} "
                 f"→ {item['platform']} "
                 f"→ {item['account']}"
 
@@ -807,7 +814,8 @@ def publish_to_status200(
 
             print(
 
-                f"  Account {item['account_number']} "
+                f"  Account "
+                f"{item['account_number']} "
                 f"→ {item['platform']} "
                 f"→ {item['account']} "
                 f"→ {item['error']}"
@@ -826,13 +834,15 @@ def publish_to_status200(
     if successful:
 
         print(
-            "STATUS 200 MULTI-ACCOUNT PUBLISH COMPLETED"
+            "STATUS 200 MULTI-ACCOUNT "
+            "PUBLISH COMPLETED"
         )
 
     else:
 
         print(
-            "STATUS 200 MULTI-ACCOUNT PUBLISH FAILED"
+            "STATUS 200 MULTI-ACCOUNT "
+            "PUBLISH FAILED"
         )
 
 
