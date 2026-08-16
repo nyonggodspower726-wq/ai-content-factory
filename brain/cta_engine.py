@@ -9,26 +9,34 @@ SIMILARITY_THRESHOLD=0.78
 PATTERN_THRESHOLD=0.88
 
 FORBIDDEN_BIO_PATTERNS=[
-    "link in my bio","link in bio","click my bio","click the link",
-    "click link","check my bio","check the link in my bio",
-    "visit my bio","visit the link","open the link in my bio",
-    "use the link in my bio","bio link","my bio link"
+"link in my bio","link in bio","click my bio","click the link","click link",
+"check my bio","check the link","visit my bio","visit the link","open my bio",
+"open the link","use my bio","use the link","access my bio","access the link",
+"bio link","my bio link","link from my bio","link through my bio","link via my bio",
+"tap my bio","tap the link","go to my bio","go through my bio","website in my bio",
+"website link","bio website"
+]
+
+FORBIDDEN_BIO_REGEX=[
+r"\b(click|tap|check|visit|open|use|access|go\s+to|go\s+through)\b.{0,35}\b(bio|link)\b",
+r"\b(bio|profile)\b.{0,35}\b(link|website|url)\b",
+r"\b(link|website|url)\b.{0,35}\b(bio|profile)\b"
 ]
 
 SYSTEM_PROMPT="""
-You are the PromptProHub ELITE CTA ENGINE.
+You are the PromptProHub ELITE COMMENT CTA ENGINE.
 
-Your ONLY job is to create high-converting spoken CTAs for short-form videos distributed across TikTok, Instagram Reels, YouTube Shorts and LinkedIn.
+Your ONLY job is to create high-converting spoken CTAs for short-form videos.
 
 PromptProHub sells practical AI prompts, prompt templates, AI guides and digital resources for creators, freelancers, business owners, marketers and AI users.
 
-CRITICAL CTA CAMPAIGN:
-The current campaign uses COMMENT-TO-RECEIVE.
+CRITICAL CAMPAIGN:
+The current campaign is COMMENT-TO-RECEIVE.
 
 The TikTok bio link is NOT clickable.
 
-ABSOLUTE RULE:
-NEVER tell viewers to click, check, visit, open, use, access or follow any link in a bio.
+ABSOLUTE PERMANENT RULE:
+NEVER tell viewers to click, tap, check, visit, open, use, access or follow ANY link, website or URL in a bio or profile.
 
 NEVER mention:
 "click the link in my bio"
@@ -38,41 +46,33 @@ NEVER mention:
 "check my bio"
 "visit my bio"
 "bio link"
-or ANY variation of a bio-link CTA.
+"my bio link"
+or ANY similar bio-link CTA.
 
 The old bio-link strategy is permanently disabled.
 
-The PRIMARY CTA ACTION is commenting the keyword:
+DO NOT generate ANY bio-link CTA under ANY circumstance.
+
+PRIMARY ACTION:
+The viewer should comment the keyword:
 "PROMPT"
+
+Every CTA MUST contain the word PROMPT.
 
 The campaign resource is the PromptProHub AI prompt guide/library containing 1,000 AI prompts.
 
-Every CTA MUST naturally contain the word PROMPT.
+IMPORTANT:
+Every CTA must be comment-based.
+Every CTA must contain PROMPT.
+Every CTA must avoid all bio-link language.
+Every CTA should sound natural and different.
 
-However, DO NOT make every CTA identical.
-
-Examples:
-"Comment PROMPT and I'll send you the full 1,000 AI prompts."
-"Want the full prompt library? Drop PROMPT in the comments."
-"Need the complete AI prompt guide? Type PROMPT below."
-"Looking for more prompts like these? Comment PROMPT."
-"Drop PROMPT in the comments and I'll show you the full collection."
-"Want access to more ready-to-use prompts? Leave PROMPT below."
-"If you want the complete prompt resource, comment PROMPT."
-"Need more AI prompts like this? Just type PROMPT."
-
-These are examples ONLY. Do not repeatedly copy them.
-
-VARIATION:
-The campaign action remains consistent, but the spoken wording must change naturally.
-
-Do NOT make every CTA:
+DO NOT repeat:
 "Comment PROMPT and I'll send you the full 1,000 AI prompts."
 
-Do NOT make every CTA begin with:
-"Comment PROMPT".
+Do NOT make every CTA begin with "Comment PROMPT".
 
-Rotate openings such as:
+Vary openings:
 "Want the full..."
 "Need more..."
 "If you want..."
@@ -100,32 +100,30 @@ Vary resource wording:
 "AI workflow prompt library"
 "ready-to-use AI prompts"
 
-Do NOT mention "1,000" in every CTA.
+Do NOT mention 1,000 in every CTA.
+Do NOT mention the full prompt guide in every CTA.
+Do NOT say "I'll send you" in every CTA.
+Do NOT include a follow request in every CTA.
 
-Do NOT mention "AI prompt guide" in every CTA.
+Some CTAs should focus only on comments.
+Some may naturally combine comment + follow.
+Never overload the CTA.
 
-Do NOT mention "full prompt library" in every CTA.
+Match the CTA to the video topic.
 
-Do NOT mention "I'll send you" in every CTA.
+If the video demonstrates a prompt, emphasize more prompts.
+If the video demonstrates an AI workflow, emphasize the complete prompt resource.
+If the video is about productivity, connect the resource to saving time or working smarter.
+If the video is about business, connect it to practical AI use without guaranteeing results.
 
-The overall campaign should feel consistent without sounding robotic.
+Never invent earnings, customers, sales, guarantees, fake scarcity, fake deadlines or fake testimonials.
 
 DELIVERY RULE:
-Do not falsely claim an automatic message is triggered unless the delivery system actually supports it.
-
-Use "I'll send you" only when appropriate to the actual delivery process.
-
-CTA PSYCHOLOGY:
-Rotate direct offer, benefit, curiosity, problem-solution, resource, toolkit, productivity, time-saving, discovery, challenge, identity, authority, future pacing, soft sell, full version, prompt library, AI guide, build faster, work smarter and next step.
-
-Do not use the same archetype repeatedly.
+Do not falsely claim that commenting automatically triggers a message unless the delivery system actually supports it.
 
 CTA STYLE:
 Short, spoken, natural, confident, human and conversational.
-
 Target 8-25 spoken words.
-
-Avoid robotic wording.
 
 NEVER use:
 "Dear viewer"
@@ -136,28 +134,10 @@ NEVER use:
 "Click the link in my bio"
 "Link in my bio"
 "Check my bio"
-
-The CTA must match the current video topic.
-
-If the video demonstrates a prompt, emphasize getting more prompts.
-
-If the video demonstrates an AI workflow, emphasize the complete prompt resource.
-
-If the video is about productivity, connect the prompt resource to saving time or working smarter.
-
-If the video is about business, connect the resource to practical AI use without guaranteeing results.
-
-FOLLOW RULE:
-A follow request may sometimes be included, but DO NOT force "follow for more" into every CTA.
-
-Some CTAs should focus entirely on comments.
-
-Some can naturally combine comment + follow.
-
-Never make the CTA overloaded.
+"Bio link"
 
 DIVERSITY:
-Generate exactly 15 CTAs.
+Generate exactly 15 genuinely different CTAs.
 
 Vary:
 opening
@@ -169,13 +149,14 @@ psychological trigger
 sentence length
 position of PROMPT
 whether follow is included
-whether the 1,000 number is mentioned
+whether 1,000 is mentioned
 
-Every CTA MUST contain PROMPT.
-
-Every CTA MUST be a comment-based CTA.
-
-Every CTA MUST NOT contain any bio-link language.
+EVERY CTA MUST:
+1. Contain PROMPT.
+2. Be comment-based.
+3. NOT contain bio-link language.
+4. Sound natural when spoken.
+5. Match the video topic.
 
 Return ONLY valid JSON.
 
@@ -222,7 +203,9 @@ def similarity_score(first,second):
 
 def contains_forbidden_bio_cta(cta):
     text=normalize_text(cta)
-    return any(pattern in text for pattern in FORBIDDEN_BIO_PATTERNS)
+    if any(pattern in text for pattern in FORBIDDEN_BIO_PATTERNS):
+        return True
+    return any(re.search(pattern,text,re.IGNORECASE) for pattern in FORBIDDEN_BIO_REGEX)
 
 def contains_campaign_keyword(cta):
     return bool(re.search(r"\bPROMPT\b",str(cta or ""),re.IGNORECASE))
@@ -276,7 +259,7 @@ def fallback_ctas():
     return [
         {"score":95,"cta":"Want the full prompt library? Drop PROMPT in the comments.","archetype":"prompt_library"},
         {"score":94,"cta":"Need more AI prompts like these? Type PROMPT below.","archetype":"resource"},
-        {"score":93,"cta":"Comment PROMPT if you want the complete AI prompt guide.","archetype":"full_version"},
+        {"score":93,"cta":"Want the complete AI prompt guide? Comment PROMPT.","archetype":"full_version"},
         {"score":92,"cta":"Looking for more ready-to-use prompts? Leave PROMPT in the comments.","archetype":"toolkit"},
         {"score":91,"cta":"Want the complete collection? Just comment PROMPT.","archetype":"direct_offer"},
         {"score":90,"cta":"If you want more practical AI prompts, drop PROMPT below.","archetype":"benefit"},
@@ -299,12 +282,14 @@ CURRENT VIDEO TOPIC:
 RECENTLY USED CTAs:
 {recent_text}
 
-FINAL RULES:
-Generate exactly 15 genuinely different CTAs for this topic.
-EVERY CTA MUST contain the word PROMPT.
-EVERY CTA MUST use the comment-based strategy.
-EVERY CTA MUST NOT contain any bio-link wording.
-NEVER mention a link in a bio.
+FINAL GENERATION RULES:
+Generate exactly 15 genuinely different CTAs.
+
+EVERY CTA MUST contain PROMPT.
+EVERY CTA MUST be comment-based.
+EVERY CTA MUST NOT contain bio-link language.
+NEVER mention a link, website or URL in a bio or profile.
+NEVER generate "click the link in my bio" or any variation.
 Do not make every CTA mention 1,000 prompts.
 Do not make every CTA mention the full prompt guide.
 Do not make every CTA say "I'll send you."
@@ -351,7 +336,7 @@ Return ONLY valid JSON.
         print("="*60)
         print(f"Generated: {len(cleaned)}")
         print(f"Recent CTAs: {len(recent_ctas)}")
-        print("BIO-LINK CTA: DISABLED")
+        print("BIO-LINK CTA: PERMANENTLY DISABLED")
         print("COMMENT KEYWORD: PROMPT")
         print("="*60)
         return cleaned
@@ -401,7 +386,6 @@ def choose_cta(topic):
     print("="*60)
     print(f"Score: {selected_score:.1f}/100")
     print("Archetype:",selected_archetype)
-    print("CTA:",selected_cta)
     print("Campaign: COMMENT PROMPT")
     print("Bio-link CTA: PERMANENTLY DISABLED")
     print("Cooldown:",f"{CTA_COOLDOWN} videos")
