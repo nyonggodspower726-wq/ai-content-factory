@@ -1,21 +1,18 @@
 import os,json,time,requests
-from config import PEXELS_API_KEY
 
+PEXELS_API_KEY=os.getenv("PEXELS_API_KEY")
 PEXELS_URL="https://api.pexels.com/v1/search"
 HISTORY_FILE="data/pexels_image_history.json"
 
-# ============================================================
-# 300-ITEM ANTI-REPEAT SYSTEM
-# ============================================================
 IMAGE_COOLDOWN=300
 HISTORY_LIMIT=1000
-SEARCH_RESULTS_PER_PAGE=20
-MAX_SEARCH_PAGES=20
+RESULTS_PER_PAGE=80
+MAX_SEARCH_PAGES=10
 
 def ensure_history_directory():
-    directory=os.path.dirname(HISTORY_FILE)
-    if directory:
-        os.makedirs(directory,exist_ok=True)
+    d=os.path.dirname(HISTORY_FILE)
+    if d:
+        os.makedirs(d,exist_ok=True)
 
 def load_history():
     ensure_history_directory()
@@ -24,15 +21,9 @@ def load_history():
     try:
         with open(HISTORY_FILE,"r",encoding="utf-8") as f:
             data=json.load(f)
-        if not isinstance(data,list):
-            return []
-        return data
+        return data if isinstance(data,list) else []
     except Exception as e:
-        print("="*60)
-        print("PEXELS HISTORY LOAD ERROR")
-        print("="*60)
-        print(e)
-        print("="*60)
+        print("IMAGE HISTORY LOAD ERROR:",e)
         return []
 
 def save_history(history):
@@ -41,185 +32,229 @@ def save_history(history):
         with open(HISTORY_FILE,"w",encoding="utf-8") as f:
             json.dump(history[-HISTORY_LIMIT:],f,indent=2,ensure_ascii=False)
     except Exception as e:
-        print("="*60)
-        print("PEXELS HISTORY SAVE ERROR")
-        print("="*60)
-        print(e)
-        print("="*60)
+        print("IMAGE HISTORY SAVE ERROR:",e)
 
 def normalize_history(history):
-    cleaned=[]
+    clean=[]
     seen=set()
     for item in history:
         if not isinstance(item,dict):
             continue
-        photo_id=item.get("id")
-        if photo_id is None:
+        pid=str(item.get("id"))
+        if pid in seen:
             continue
-        photo_id=str(photo_id)
-        if photo_id in seen:
-            continue
-        seen.add(photo_id)
-        cleaned.append(item)
-    return cleaned[-HISTORY_LIMIT:]
+        seen.add(pid)
+        clean.append(item)
+    return clean[-HISTORY_LIMIT:]
 
 def get_recent_ids(history):
-    recent=history[-IMAGE_COOLDOWN:]
-    return {str(item.get("id")) for item in recent if item.get("id") is not None}
-
-def record_image_usage(history,photo):
-    item={
-        "id":str(photo.get("id")),
-        "photographer":photo.get("photographer",""),
-        "source":"pexels",
-        "timestamp":int(time.time())
+    return {
+        str(x.get("id"))
+        for x in history[-IMAGE_COOLDOWN:]
+        if isinstance(x,dict)
     }
-    history.append(item)
+
+def record_image(history,photo):
+    history.append({
+        "id":str(photo.get("id")),
+        "source":"pexels",
+        "time":time.time()
+    })
     history=normalize_history(history)
     save_history(history)
     return history
 
-def download_image(url,output_path):
-    response=requests.get(url,timeout=60)
-    response.raise_for_status()
-    with open(output_path,"wb") as f:
-        f.write(response.content)
-    return output_path
+def search_images(prompt,page):
+    headers={
+        "Authorization":PEXELS_API_KEY
+    }
 
-def build_filename(prompt,photo_id):
-    safe_prompt="".join(c if c.isalnum() else "_" for c in prompt[:60]).strip("_").lower()
-    if not safe_prompt:
-        safe_prompt="pexels"
-    return f"{safe_prompt}_{photo_id}.jpg"
-
-def search_pexels(prompt,page):
-    headers={"Authorization":PEXELS_API_KEY}
     params={
         "query":prompt,
-        "per_page":SEARCH_RESULTS_PER_PAGE,
+        "per_page":RESULTS_PER_PAGE,
         "page":page,
         "orientation":"portrait"
     }
-    response=requests.get(PEXELS_URL,headers=headers,params=params,timeout=60)
-    response.raise_for_status()
-    return response.json()
+
+    r=requests.get(
+        PEXELS_URL,
+        headers=headers,
+        params=params,
+        timeout=60
+    )
+
+    print("="*50)
+    print("PEXELS IMAGE STATUS:",r.status_code)
+
+    if r.status_code!=200:
+        print(r.text[:500])
+
+    print("="*50)
+
+    r.raise_for_status()
+
+    return r.json()
 
 def choose_fresh_photo(prompt,history):
-    recent_ids=get_recent_ids(history)
-    print("="*60)
-    print("PEXELS IMAGE SEARCH")
-    print("="*60)
-    print("Searching:",prompt)
-    print("Anti-repeat cooldown:",IMAGE_COOLDOWN)
-    print("Search pages:",MAX_SEARCH_PAGES)
-    print("Results per page:",SEARCH_RESULTS_PER_PAGE)
-    print("Protected recent IDs:",len(recent_ids))
-    print("="*60)
+
+    used=get_recent_ids(history)
+
+    photos=[]
 
     for page in range(1,MAX_SEARCH_PAGES+1):
+
         try:
-            print(f"Searching Pexels page {page}/{MAX_SEARCH_PAGES}...")
-            data=search_pexels(prompt,page)
-            photos=data.get("photos",[])
-            if not photos:
-                print("No results on page:",page)
-                continue
 
-            fresh_photos=[
-                photo for photo in photos
-                if str(photo.get("id")) not in recent_ids
-            ]
+            print("PEXELS IMAGE PAGE:",page)
 
-            print("Results:",len(photos))
-            print("Fresh results:",len(fresh_photos))
+            data=search_images(
+                prompt,
+                page
+            )
 
-            if fresh_photos:
-                selected=fresh_photos[0]
-                print("Fresh Pexels photo selected:",selected.get("id"))
-                return selected
+            results=data.get("photos",[])
+
+            for photo in results:
+
+                pid=str(photo.get("id"))
+
+                if pid in used:
+                    continue
+
+                photos.append(photo)
 
         except Exception as e:
-            print("PEXELS SEARCH PAGE ERROR:",page,e)
-            continue
 
-    print("="*60)
-    print("NO FRESH PEXELS IMAGE FOUND")
-    print("="*60)
-    print(f"Pexels could not provide an unused image outside the last {IMAGE_COOLDOWN} images.")
-    print("IMPORTANT: No old image will be intentionally reused.")
-    print("="*60)
-    return None
+            print("PEXELS PAGE ERROR:",e)
+
+    if not photos:
+        return None
+
+    return photos[0]
+
+def download_image(url,path):
+
+    r=requests.get(
+        url,
+        timeout=60
+    )
+
+    r.raise_for_status()
+
+    with open(path,"wb") as f:
+        f.write(r.content)
+
+    return path
+
+def build_filename(prompt,pid):
+
+    name="".join(
+        c if c.isalnum() else "_"
+        for c in prompt[:50]
+    )
+
+    return f"{name}_{pid}.jpg"
 
 def generate_ai_image(prompt,output_folder="assets/images"):
-    os.makedirs(output_folder,exist_ok=True)
-    history=normalize_history(load_history())
+
+    if not PEXELS_API_KEY:
+        print("PEXELS KEY MISSING")
+        return None
 
     try:
-        photo=choose_fresh_photo(prompt,history)
+
+        os.makedirs(
+            output_folder,
+            exist_ok=True
+        )
+
+        history=normalize_history(
+            load_history()
+        )
+
+        photo=choose_fresh_photo(
+            prompt,
+            history
+        )
 
         if not photo:
-            print("No fresh Pexels image available.")
-            print("Video generation stopped instead of reusing a recent image.")
+
+            print("NO FRESH IMAGE AVAILABLE")
+
             return None
 
-        photo_id=str(photo.get("id"))
 
-        image_url=photo.get("src",{}).get("large2x")
-        if not image_url:
-            image_url=photo.get("src",{}).get("large")
+        pid=str(photo.get("id"))
 
-        if not image_url:
-            print("Pexels photo has no usable image URL.")
+        url=photo.get(
+            "src",
+            {}
+        ).get(
+            "large2x"
+        )
+
+        if not url:
+
+            url=photo.get(
+                "src",
+                {}
+            ).get(
+                "large"
+            )
+
+        if not url:
+
+            print("NO IMAGE URL")
+
             return None
 
-        photographer=photo.get("photographer","")
 
-        print("="*60)
-        print("SELECTED PEXELS PHOTO")
-        print("="*60)
-        print("Photo ID:",photo_id)
-        print("Photographer:",photographer)
-        print("="*60)
+        filename=build_filename(
+            prompt,
+            pid
+        )
 
-        filename=build_filename(prompt,photo_id)
-        image_path=os.path.join(output_folder,filename)
+        path=os.path.join(
+            output_folder,
+            filename
+        )
 
-        if os.path.exists(image_path):
-            print("Using existing downloaded image:",image_path)
-        else:
-            print("Downloading:",image_url)
-            download_image(image_url,image_path)
-            print("Downloaded:",image_path)
 
-        if not os.path.exists(image_path):
-            print("Downloaded image is missing.")
+        if not os.path.exists(path):
+
+            download_image(
+                url,
+                path
+            )
+
+
+        if os.path.getsize(path)<=0:
+
             return None
 
-        file_size=os.path.getsize(image_path)
 
-        if file_size<=0:
-            print("Downloaded image is empty.")
-            return None
+        record_image(
+            history,
+            photo
+        )
 
-        history=record_image_usage(history,photo)
 
-        print("="*60)
+        print("="*50)
         print("PEXELS IMAGE READY")
-        print("="*60)
-        print("Photo ID:",photo_id)
-        print("File:",image_path)
-        print("Cooldown:",f"{IMAGE_COOLDOWN} videos")
-        print("History size:",len(history))
-        print("Status: FRESH IMAGE")
-        print("="*60)
+        print("ID:",pid)
+        print("COOLDOWN:",IMAGE_COOLDOWN)
+        print("="*50)
 
-        return image_path
+
+        return path
+
 
     except Exception as e:
-        print("="*60)
-        print("PEXELS FAILED")
-        print("="*60)
+
+        print("="*50)
+        print("PEXELS IMAGE FAILED")
         print(type(e).__name__)
         print(e)
-        print("="*60)
+        print("="*50)
+
         return None
