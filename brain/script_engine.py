@@ -1,301 +1,83 @@
 from brain.ai_router import ask_ai
-
-
-CTA = (
-    "Click the link in my bio to download premium "
-    "AI prompt templates that save you hours of work."
-)
-
-
-def generate_script(project, selected_cta=None):
-
-    topic = project.get(
-        "topic",
-        ""
-    )
-
-    product = project.get(
-        "product",
-        {}
-    )
-
-    angle = project.get(
-        "marketing",
-        {}
-    )
-
+FORBIDDEN=["click the link in my bio","link in my bio","click link","link in bio","check my bio","visit my bio","bio link","my bio link"]
+def bad_cta(x):
+    x=str(x or "").lower()
+    return any(p in x for p in FORBIDDEN)
+def generate_script(project,selected_cta=None):
+    topic=project.get("topic","")
+    product=project.get("product",{})
+    angle=project.get("marketing",{})
     if selected_cta:
-        selected_cta = str(
-            selected_cta
-        ).strip()
-
-    # =====================================
-    # FORCE OUR SOCIAL CTA
-    # =====================================
-
-    final_cta = CTA
-
-    prompt = f"""
-You are PromptProHub's professional
-short-form video scriptwriter.
-
-Create ONE highly engaging 30-45 second
-spoken script for:
-
-TikTok
-YouTube Shorts
-Instagram Reels
-Facebook Reels
-
-================================
-TOPIC
-================================
-
+        final_cta=str(selected_cta).strip()
+    else:
+        final_cta="Comment PROMPT and I'll send you the full AI prompt guide."
+    if bad_cta(final_cta) or "prompt" not in final_cta.lower():
+        final_cta="Comment PROMPT and I'll send you the full AI prompt guide."
+    prompt=f"""You are PromptProHub's professional short-form video scriptwriter.
+Create ONE highly engaging 30-45 second spoken script for TikTok, YouTube Shorts, Instagram Reels and Facebook Reels.
+TOPIC:
 {topic}
-
-================================
-PRODUCT
-================================
-
+PRODUCT:
 {product}
-
-================================
-MARKETING INFORMATION
-================================
-
+MARKETING:
 {angle}
-
-================================
-HOOK
-================================
-
-Start immediately with a powerful,
-specific, curiosity-driven hook.
-
-NEVER start with:
-
-"What if you could..."
-"What if..."
-"Imagine..."
-"Imagine having..."
-"Have you ever..."
-"Did you know..."
-"Today..."
-"In this video..."
-"Welcome..."
-"Let's talk about..."
-
-Avoid generic motivational openings.
-
-The first sentence must make someone
-want to keep watching.
-
-Examples of the style:
-
-"Watch me turn 10 hours of work into minutes."
-
-"Most freelancers are using ChatGPT completely wrong."
-
-"You're wasting hours doing this manually."
-
-"I tested this AI workflow so you don't have to."
-
-================================
-STRUCTURE
-================================
-
-Use this structure:
-
+CTA:
+{final_cta}
+IMPORTANT CTA RULES:
+The final spoken words MUST be exactly the CTA above.
+Never change the CTA.
+Never add anything after it.
+Never mention a bio link.
+Never say click the link in my bio.
+Never say link in bio.
+Never say click link.
+Never say check my bio.
+Never say visit my bio.
+The CTA must be comment-based and contain PROMPT.
+STRUCTURE:
 1. HARD HOOK
 2. PROBLEM
 3. DISCOVERY
 4. PRACTICAL SOLUTION
 5. BENEFIT
 6. CTA
-
-Keep the pacing fast.
-
+Start immediately with a specific curiosity-driven hook.
+Never start with What if, Imagine, Have you ever, Did you know, Today, In this video, Welcome or Let's talk about.
 Use simple conversational English.
-
-Every sentence must move the story forward.
-
-================================
-CTA
-================================
-
-The CTA is extremely important.
-
-The FINAL spoken words of the script
-MUST be EXACTLY:
-
-{final_cta}
-
-Nothing may appear after the CTA.
-
-Do NOT modify the CTA.
-
-Do NOT shorten it.
-
-Do NOT put anything after it.
-
-Do NOT create another ending.
-
-The script must finish with:
-
-{final_cta}
-
-================================
-LENGTH
-================================
-
-Target approximately 75-95 spoken words.
-
-The CTA must have enough space to be spoken
-clearly.
-
-================================
-RULES
-================================
-
-- No emojis.
-- No hashtags.
-- No stage directions.
-- No titles.
-- No bullet points.
-- No quotation marks around the script.
-- Do not invent fake income.
-- Do not invent fake achievements.
-- Do not claim results that were not provided.
-- Output ONLY the spoken script.
-"""
-
+Target 75-95 spoken words.
+No emojis.
+No hashtags.
+No stage directions.
+No titles.
+No bullet points.
+No quotation marks.
+Do not invent income, customers, achievements or guaranteed results.
+Output ONLY the spoken script."""
     try:
-
-        script = ask_ai(prompt)
-
+        script=ask_ai(prompt)
         if not script:
-
-            raise Exception(
-                "AI returned empty script"
-            )
-
-        script = str(
-            script
-        ).strip()
-
-        # =====================================
-        # REMOVE MARKDOWN
-        # =====================================
-
-        script = (
-            script
-            .replace("```", "")
-            .strip()
-        )
-
-        # =====================================
-        # REMOVE POSSIBLE OLD CTA
-        # =====================================
-
-        old_cta_phrases = [
-
-            "Visit PromptProHub.com",
-            "Visit promptprohub.com",
-            "Explore PromptProHub.com",
-            "Explore PromptProHub",
-            "Visit PromptProHub",
-            "Check out PromptProHub.com"
-        ]
-
-        for phrase in old_cta_phrases:
-
-            if phrase in script:
-
-                script = script.replace(
-                    phrase,
-                    ""
-                ).strip()
-
-        # =====================================
-        # GUARANTEE CTA
-        # =====================================
-
-        if final_cta.lower() not in script.lower():
-
-            script = (
-                script.rstrip()
-                + " "
-                + final_cta
-            )
-
+            raise Exception("AI returned empty script")
+        script=str(script).replace("```","").strip()
+        for phrase in ["Click the link in my bio","click the link in my bio","Link in my bio","link in bio","Click link","Check my bio","Visit my bio","Bio link"]:
+            script=script.replace(phrase,"").strip()
+        pos=script.lower().find(final_cta.lower())
+        if pos>=0:
+            script=script[:pos].rstrip()+" "+final_cta
         else:
-
-            # Remove everything after the CTA
-            position = script.lower().find(
-                final_cta.lower()
-            )
-
-            script = script[
-                :position
-            ].rstrip()
-
-            script = (
-                script
-                + " "
-                + final_cta
-            )
-
-        # =====================================
-        # DEBUG
-        # =====================================
-
-        print("=" * 60)
+            script=script.rstrip()+" "+final_cta
+        if bad_cta(script):
+            raise Exception("Forbidden bio-link CTA detected")
+        print("="*60)
         print("SCRIPT ENGINE")
-        print("=" * 60)
-
-        print(
-            "Topic:",
-            topic
-        )
-
-        print(
-            "CTA PRESENT:",
-            final_cta.lower() in script.lower()
-        )
-
-        print(
-            "FINAL SCRIPT:"
-        )
-
-        print(script)
-
-        print("=" * 60)
-
+        print("="*60)
+        print("Topic:",topic)
+        print("CTA:",final_cta)
+        print("BIO-LINK CTA: BLOCKED")
+        print("="*60)
         return script
-
     except Exception as e:
-
-        print("=" * 60)
+        print("="*60)
         print("SCRIPT ENGINE FAILED")
-        print("=" * 60)
-
-        print(e)
-
-        print("=" * 60)
-
-        # =====================================
-        # SAFE FALLBACK
-        # =====================================
-
-        fallback = (
-            f"You're probably using {topic} "
-            f"the hard way. "
-            f"Here's a simpler AI workflow "
-            f"that can save you hours of repetitive work. "
-            f"Instead of doing everything manually, "
-            f"use the right prompts and let AI handle "
-            f"the repetitive parts. "
-            f"{final_cta}"
-        )
-
-        return fallback
+        print(type(e).__name__,e)
+        print("="*60)
+        return f"You're probably using {topic} the hard way. Here's a practical AI workflow that can help reduce repetitive work and make the process easier. Instead of doing everything manually, use the right prompts to speed up the repetitive parts. {final_cta}"
