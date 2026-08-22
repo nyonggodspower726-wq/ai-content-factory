@@ -3,11 +3,59 @@ import requests
 
 
 # ============================================================
-# STATUS 200 CONFIGURATION
+# PROMPTPROHUB ZERNIO MULTI-PLATFORM PUBLISHER
+#
+# One finished video
+#       ↓
+# Railway public video URL
+#       ↓
+# Instagram Zernio account
+# TikTok Zernio account
+# YouTube Zernio account
+#
+# Each platform uses its own Zernio API key/account.
 # ============================================================
 
-STATUS200_BASE_URL = (
-    "https://app.status200uploads.com/functions/v1"
+
+ZERNIO_BASE_URL = "https://zernio.com/api/v1"
+
+
+# ============================================================
+# INSTAGRAM
+# ============================================================
+
+ZERNIO_INSTAGRAM_API_KEY = os.getenv(
+    "ZERNIO_API_KEY"
+)
+
+ZERNIO_INSTAGRAM_ACCOUNT_ID = os.getenv(
+    "ZERNIO_INSTAGRAM_ACCOUNT_ID"
+)
+
+
+# ============================================================
+# TIKTOK
+# ============================================================
+
+ZERNIO_TIKTOK_API_KEY = os.getenv(
+    "ZERNIO_TIKTOK_API_KEY"
+)
+
+ZERNIO_TIKTOK_ACCOUNT_ID = os.getenv(
+    "ZERNIO_TIKTOK_ACCOUNT_ID"
+)
+
+
+# ============================================================
+# YOUTUBE
+# ============================================================
+
+ZERNIO_YOUTUBE_API_KEY = os.getenv(
+    "ZERNIO_YOUTUBE_API_KEY"
+)
+
+ZERNIO_YOUTUBE_ACCOUNT_ID = os.getenv(
+    "ZERNIO_YOUTUBE_ACCOUNT_ID"
 )
 
 
@@ -53,537 +101,17 @@ def get_railway_public_url():
 
 
     raise RuntimeError(
-        "Railway public domain is not available. "
+        "Railway public URL is missing. "
         "Set RAILWAY_PUBLIC_DOMAIN or "
-        "RAILWAY_PUBLIC_URL in Railway Variables."
+        "RAILWAY_PUBLIC_URL."
     )
 
 
 # ============================================================
-# PINTEREST BOARD
+# BUILD PUBLIC VIDEO URL
 # ============================================================
 
-PINTEREST_BOARD_ID = os.getenv(
-    "STATUS200_PINTEREST_BOARD_ID"
-)
-
-
-# ============================================================
-# STATUS 200 ACCOUNTS
-# ============================================================
-#
-# ACCOUNT 1 = TIKTOK
-# ACCOUNT 2 = YOUTUBE
-# ACCOUNT 3 = TIKTOK 2
-# ACCOUNT 4 = PINTEREST
-#
-# IMPORTANT:
-# Account 2 was previously LinkedIn.
-# It is now YouTube because YouTube is connected
-# to that Status 200 account.
-#
-# ============================================================
-
-ACCOUNTS = [
-
-    {
-        "number": 1,
-
-        "api_key": os.getenv(
-            "STATUS200_API_KEY_1"
-        ),
-
-        "account": os.getenv(
-            "STATUS200_ACCOUNT_1"
-        ),
-
-        "platform": "tiktok"
-    },
-
-
-    {
-        "number": 2,
-
-        "api_key": os.getenv(
-            "STATUS200_API_KEY_2"
-        ),
-
-        "account": os.getenv(
-            "STATUS200_ACCOUNT_2"
-        ),
-
-        "platform": "youtube"
-    },
-
-
-    {
-        "number": 3,
-
-        "api_key": os.getenv(
-            "STATUS200_API_KEY_3"
-        ),
-
-        "account": os.getenv(
-            "STATUS200_ACCOUNT_3"
-        ),
-
-        "platform": "tiktok"
-    },
-
-
-    {
-        "number": 4,
-
-        "api_key": os.getenv(
-            "STATUS200_API_KEY_4"
-        ),
-
-        "account": os.getenv(
-            "STATUS200_ACCOUNT_4"
-        ),
-
-        "platform": "pinterest"
-    }
-
-]
-
-
-# ============================================================
-# PUBLISH TO ONE STATUS 200 ACCOUNT
-# ============================================================
-
-def _publish_one_account(
-    video_url,
-    caption,
-    account
-):
-
-    account_number = account["number"]
-
-    api_key = account["api_key"]
-
-    account_name = account["account"]
-
-    platform = account["platform"]
-
-
-    print()
-    print("=" * 60)
-
-    print(
-        f"STATUS 200 ACCOUNT {account_number}"
-    )
-
-    print("=" * 60)
-
-
-    print(
-        "Account:",
-        account_name
-    )
-
-    print(
-        "Platform:",
-        platform
-    )
-
-
-    # ========================================================
-    # CHECK API KEY
-    # ========================================================
-
-    if not api_key:
-
-        raise RuntimeError(
-            f"STATUS200_API_KEY_{account_number} "
-            "is not configured in Railway."
-        )
-
-
-    # ========================================================
-    # CHECK ACCOUNT
-    # ========================================================
-
-    if not account_name:
-
-        raise RuntimeError(
-            f"STATUS200_ACCOUNT_{account_number} "
-            "is not configured in Railway."
-        )
-
-
-    # ========================================================
-    # PINTEREST BOARD CHECK
-    # ========================================================
-
-    if platform.lower() == "pinterest":
-
-        if not PINTEREST_BOARD_ID:
-
-            raise RuntimeError(
-                "STATUS200_PINTEREST_BOARD_ID "
-                "is not configured in Railway."
-            )
-
-        print(
-            "Pinterest Board ID:",
-            PINTEREST_BOARD_ID
-        )
-
-
-    # ========================================================
-    # HEADERS
-    # ========================================================
-
-    headers = {
-
-        "Authorization":
-            f"Bearer {api_key}",
-
-        "Content-Type":
-            "application/json"
-
-    }
-
-
-    # ========================================================
-    # STEP 1 — MEDIA UPLOAD
-    # ========================================================
-
-    print()
-    print(
-        f"[Account {account_number}] "
-        "Uploading media to Status 200..."
-    )
-
-
-    upload_response = requests.post(
-
-        f"{STATUS200_BASE_URL}"
-        "/api-media-upload",
-
-        headers=headers,
-
-        json={
-            "url": video_url
-        },
-
-        timeout=120
-
-    )
-
-
-    print(
-        f"[Account {account_number}] "
-        "Media HTTP status:",
-        upload_response.status_code
-    )
-
-
-    print(
-        f"[Account {account_number}] "
-        "Media response:",
-        upload_response.text
-    )
-
-
-    if not upload_response.ok:
-
-        raise RuntimeError(
-
-            "Status 200 media upload failed: "
-            + upload_response.text
-
-        )
-
-
-    # ========================================================
-    # PARSE MEDIA RESPONSE
-    # ========================================================
-
-    try:
-
-        upload_data = (
-            upload_response.json()
-        )
-
-    except Exception as e:
-
-        raise RuntimeError(
-            "Status 200 returned invalid "
-            f"media JSON: {e}"
-        )
-
-
-    # ========================================================
-    # GET MEDIA ID
-    # ========================================================
-
-    file_id = (
-
-        upload_data.get(
-            "file_id"
-        )
-
-        or upload_data.get(
-            "mediaID"
-        )
-
-        or upload_data.get(
-            "mediaId"
-        )
-
-    )
-
-
-    if not file_id:
-
-        raise RuntimeError(
-
-            "Status 200 did not return "
-            f"a media/file ID: {upload_data}"
-
-        )
-
-
-    print(
-        f"[Account {account_number}] "
-        "Media ID:",
-        file_id
-    )
-
-
-    # ========================================================
-    # STEP 2 — BUILD PLATFORM POST
-    # ========================================================
-
-    print()
-    print(
-        f"[Account {account_number}] "
-        f"Preparing {platform.upper()} post..."
-    )
-
-
-    post_data = {
-
-        "accountId":
-            account_name,
-
-        "platform":
-            platform,
-
-        "content": {
-
-            "text":
-                caption,
-
-            "mediaID": [
-
-                file_id
-
-            ]
-
-        }
-
-    }
-
-
-    # ========================================================
-    # TIKTOK SETTINGS
-    # ========================================================
-
-    if platform.lower() == "tiktok":
-
-        post_data["tiktok"] = {
-
-            "privacyLevel":
-                "PUBLIC_TO_EVERYONE"
-
-        }
-
-
-    # ========================================================
-    # YOUTUBE SETTINGS
-    # ========================================================
-    #
-    # Status 200 handles the YouTube connection.
-    #
-    # We intentionally do NOT use the old direct YouTube
-    # OAuth uploader here.
-    #
-    # The video is sent to Status 200 using the same
-    # mediaID system as the other connected accounts.
-    #
-    # ========================================================
-
-    if platform.lower() == "youtube":
-
-        post_data["youtube"] = {
-
-            "privacyStatus":
-                "public"
-
-        }
-
-
-    # ========================================================
-    # PINTEREST SETTINGS
-    # ========================================================
-
-    if platform.lower() == "pinterest":
-
-        post_data["pinterest"] = {
-
-            "board_id":
-                PINTEREST_BOARD_ID
-
-        }
-
-
-    # ========================================================
-    # FINAL PUBLISH PAYLOAD
-    # ========================================================
-
-    publish_payload = {
-
-        "post":
-            post_data
-
-    }
-
-
-    print()
-    print(
-        f"[Account {account_number}] "
-        f"Publishing to {platform.upper()}..."
-    )
-
-
-    # ========================================================
-    # STEP 3 — PUBLISH
-    # ========================================================
-
-    publish_response = requests.post(
-
-        f"{STATUS200_BASE_URL}"
-        "/api-posts",
-
-        headers=headers,
-
-        json=publish_payload,
-
-        timeout=120
-
-    )
-
-
-    print(
-        f"[Account {account_number}] "
-        "Publish HTTP status:",
-        publish_response.status_code
-    )
-
-
-    print(
-        f"[Account {account_number}] "
-        "Publish response:",
-        publish_response.text
-    )
-
-
-    if not publish_response.ok:
-
-        raise RuntimeError(
-
-            "Status 200 publish failed: "
-            + publish_response.text
-
-        )
-
-
-    # ========================================================
-    # PARSE RESULT
-    # ========================================================
-
-    try:
-
-        result = (
-            publish_response.json()
-        )
-
-    except Exception as e:
-
-        raise RuntimeError(
-            "Status 200 returned invalid "
-            f"publish JSON: {e}"
-        )
-
-
-    # ========================================================
-    # SUCCESS
-    # ========================================================
-
-    print()
-    print(
-        f"SUCCESS — ACCOUNT {account_number}"
-    )
-
-    print(
-        "Platform:",
-        platform
-    )
-
-    print(
-        "Account:",
-        account_name
-    )
-
-    print(
-        "Result:",
-        result
-    )
-
-
-    return {
-
-        "success": True,
-
-        "account_number":
-            account_number,
-
-        "account":
-            account_name,
-
-        "platform":
-            platform,
-
-        "result":
-            result
-
-    }
-
-
-# ============================================================
-# PUBLISH ONE VIDEO TO ALL STATUS 200 ACCOUNTS
-# ============================================================
-
-def publish_to_status200(
-    video_path,
-    caption
-):
-
-    print()
-    print("=" * 60)
-    print(
-        "PROMPTPROHUB STATUS 200 "
-        "MULTI-ACCOUNT PUBLISHER"
-    )
-    print("=" * 60)
-
-
-    # ========================================================
-    # CHECK VIDEO
-    # ========================================================
+def get_public_video_url(video_path):
 
     if not video_path:
 
@@ -599,36 +127,514 @@ def publish_to_status200(
         )
 
 
-    # ========================================================
-    # GET RAILWAY PUBLIC URL
-    # ========================================================
-
-    base_url = get_railway_public_url()
-
-
-    # ========================================================
-    # CREATE PUBLIC VIDEO URL
-    # ========================================================
-
     filename = os.path.basename(
         video_path
     )
 
 
-    video_url = (
+    base_url = get_railway_public_url()
+
+
+    return (
         f"{base_url}/videos/{filename}"
     )
 
 
+# ============================================================
+# COMMON HEADERS
+# ============================================================
+
+def get_headers(api_key):
+
+    return {
+
+        "Authorization":
+            f"Bearer {api_key}",
+
+        "Accept":
+            "application/json",
+
+        "Content-Type":
+            "application/json"
+
+    }
+
+
+# ============================================================
+# YOUTUBE TITLE
+# ============================================================
+
+def make_youtube_title(caption):
+
+    if not caption:
+
+        return "AI Automation Tips"
+
+
+    # Use first meaningful line as title
+
+    title = str(
+        caption
+    ).split("\n")[0].strip()
+
+
+    if not title:
+
+        title = "AI Automation Tips"
+
+
+    # YouTube title maximum is much larger,
+    # but keeping this concise is better.
+
+    if len(title) > 100:
+
+        title = title[:97].rstrip() + "..."
+
+
+    return title
+
+
+# ============================================================
+# PUBLISH TO INSTAGRAM
+# ============================================================
+
+def publish_instagram(
+    video_url,
+    caption
+):
+
     print()
+    print("=" * 60)
+    print("ZERNIO → INSTAGRAM")
+    print("=" * 60)
+
+
+    if not ZERNIO_INSTAGRAM_API_KEY:
+
+        raise RuntimeError(
+            "ZERNIO_API_KEY is missing."
+        )
+
+
+    if not ZERNIO_INSTAGRAM_ACCOUNT_ID:
+
+        raise RuntimeError(
+            "ZERNIO_INSTAGRAM_ACCOUNT_ID "
+            "is missing."
+        )
+
+
+    payload = {
+
+        "content":
+            caption,
+
+        "mediaItems": [
+
+            {
+
+                "type":
+                    "video",
+
+                "url":
+                    video_url
+
+            }
+
+        ],
+
+        "platforms": [
+
+            {
+
+                "platform":
+                    "instagram",
+
+                "accountId":
+                    ZERNIO_INSTAGRAM_ACCOUNT_ID,
+
+                "platformSpecificData": {
+
+                    "shareToFeed":
+                        True,
+
+                    "isAiGenerated":
+                        True
+
+                }
+
+            }
+
+        ],
+
+        "publishNow":
+            True
+
+    }
+
+
     print(
-        "Local video:",
-        video_path
+        "Account:",
+        ZERNIO_INSTAGRAM_ACCOUNT_ID
     )
 
     print(
-        "Railway URL:",
-        base_url
+        "Publishing Instagram Reel..."
+    )
+
+
+    response = requests.post(
+
+        f"{ZERNIO_BASE_URL}/posts",
+
+        headers=get_headers(
+            ZERNIO_INSTAGRAM_API_KEY
+        ),
+
+        json=payload,
+
+        timeout=300
+
+    )
+
+
+    print(
+        "Instagram HTTP:",
+        response.status_code
+    )
+
+    print(
+        "Instagram response:",
+        response.text
+    )
+
+
+    if not response.ok:
+
+        raise RuntimeError(
+            "Zernio Instagram publishing failed: "
+            + response.text
+        )
+
+
+    return response.json()
+
+
+# ============================================================
+# PUBLISH TO TIKTOK
+# ============================================================
+
+def publish_tiktok(
+    video_url,
+    caption
+):
+
+    print()
+    print("=" * 60)
+    print("ZERNIO → TIKTOK")
+    print("=" * 60)
+
+
+    if not ZERNIO_TIKTOK_API_KEY:
+
+        raise RuntimeError(
+            "ZERNIO_TIKTOK_API_KEY is missing."
+        )
+
+
+    if not ZERNIO_TIKTOK_ACCOUNT_ID:
+
+        raise RuntimeError(
+            "ZERNIO_TIKTOK_ACCOUNT_ID "
+            "is missing."
+        )
+
+
+    payload = {
+
+        "content":
+            caption,
+
+        "mediaItems": [
+
+            {
+
+                "type":
+                    "video",
+
+                "url":
+                    video_url
+
+            }
+
+        ],
+
+        "platforms": [
+
+            {
+
+                "platform":
+                    "tiktok",
+
+                "accountId":
+                    ZERNIO_TIKTOK_ACCOUNT_ID
+
+            }
+
+        ],
+
+        "tiktokSettings": {
+
+            "privacy_level":
+                "PUBLIC_TO_EVERYONE",
+
+            "allow_comment":
+                True,
+
+            "allow_duet":
+                True,
+
+            "allow_stitch":
+                True,
+
+            "content_preview_confirmed":
+                True,
+
+            "express_consent_given":
+                True
+
+        },
+
+        "publishNow":
+            True
+
+    }
+
+
+    print(
+        "Account:",
+        ZERNIO_TIKTOK_ACCOUNT_ID
+    )
+
+    print(
+        "Publishing TikTok video..."
+    )
+
+
+    response = requests.post(
+
+        f"{ZERNIO_BASE_URL}/posts",
+
+        headers=get_headers(
+            ZERNIO_TIKTOK_API_KEY
+        ),
+
+        json=payload,
+
+        timeout=300
+
+    )
+
+
+    print(
+        "TikTok HTTP:",
+        response.status_code
+    )
+
+    print(
+        "TikTok response:",
+        response.text
+    )
+
+
+    if not response.ok:
+
+        raise RuntimeError(
+            "Zernio TikTok publishing failed: "
+            + response.text
+        )
+
+
+    return response.json()
+
+
+# ============================================================
+# PUBLISH TO YOUTUBE
+# ============================================================
+
+def publish_youtube(
+    video_url,
+    caption
+):
+
+    print()
+    print("=" * 60)
+    print("ZERNIO → YOUTUBE")
+    print("=" * 60)
+
+
+    if not ZERNIO_YOUTUBE_API_KEY:
+
+        raise RuntimeError(
+            "ZERNIO_YOUTUBE_API_KEY is missing."
+        )
+
+
+    if not ZERNIO_YOUTUBE_ACCOUNT_ID:
+
+        raise RuntimeError(
+            "ZERNIO_YOUTUBE_ACCOUNT_ID "
+            "is missing."
+        )
+
+
+    title = make_youtube_title(
+        caption
+    )
+
+
+    payload = {
+
+        "content":
+            caption,
+
+        "mediaItems": [
+
+            {
+
+                "type":
+                    "video",
+
+                "url":
+                    video_url
+
+            }
+
+        ],
+
+        "platforms": [
+
+            {
+
+                "platform":
+                    "youtube",
+
+                "accountId":
+                    ZERNIO_YOUTUBE_ACCOUNT_ID,
+
+                "platformSpecificData": {
+
+                    "title":
+                        title,
+
+                    "visibility":
+                        "public"
+
+                }
+
+            }
+
+        ],
+
+        "publishNow":
+            True
+
+    }
+
+
+    print(
+        "Account:",
+        ZERNIO_YOUTUBE_ACCOUNT_ID
+    )
+
+    print(
+        "YouTube title:",
+        title
+    )
+
+    print(
+        "Publishing YouTube video..."
+    )
+
+
+    response = requests.post(
+
+        f"{ZERNIO_BASE_URL}/posts",
+
+        headers=get_headers(
+            ZERNIO_YOUTUBE_API_KEY
+        ),
+
+        json=payload,
+
+        timeout=300
+
+    )
+
+
+    print(
+        "YouTube HTTP:",
+        response.status_code
+    )
+
+    print(
+        "YouTube response:",
+        response.text
+    )
+
+
+    if not response.ok:
+
+        raise RuntimeError(
+            "Zernio YouTube publishing failed: "
+            + response.text
+        )
+
+
+    return response.json()
+
+
+# ============================================================
+# MAIN MULTI-PLATFORM PUBLISHER
+# ============================================================
+
+def publish_to_zernio(
+    video_path,
+    caption
+):
+
+    print()
+    print("=" * 60)
+    print("PROMPTPROHUB ZERNIO MULTI-PLATFORM PUBLISHER")
+    print("=" * 60)
+
+
+    if not video_path:
+
+        raise ValueError(
+            "No video path provided."
+        )
+
+
+    if not os.path.exists(video_path):
+
+        raise FileNotFoundError(
+            f"Video not found: {video_path}"
+        )
+
+
+    # --------------------------------------------------------
+    # BUILD PUBLIC VIDEO URL
+    # --------------------------------------------------------
+
+    video_url = get_public_video_url(
+        video_path
+    )
+
+
+    print(
+        "Local video:",
+        video_path
     )
 
     print(
@@ -637,119 +643,141 @@ def publish_to_status200(
     )
 
 
-    # ========================================================
-    # RESULTS
-    # ========================================================
-
     successful = []
 
     failed = []
 
 
     # ========================================================
-    # SEND TO EACH ACCOUNT
+    # INSTAGRAM
     # ========================================================
 
-    for account in ACCOUNTS:
+    try:
 
-        account_number = account["number"]
-
-        platform = account["platform"]
-
-        account_name = account["account"]
-
-
-        print()
-        print("=" * 60)
-
-        print(
-            f"STARTING ACCOUNT {account_number}/4"
+        result = publish_instagram(
+            video_url,
+            caption
         )
 
-        print("=" * 60)
+        successful.append({
 
+            "platform":
+                "instagram",
 
-        try:
-
-            result = _publish_one_account(
-
-                video_url,
-
-                caption,
-
-                account
-
-            )
-
-
-            successful.append(
+            "result":
                 result
-            )
+
+        })
+
+        print(
+            "INSTAGRAM → SUCCESS"
+        )
 
 
-            print()
-            print(
-                f"Status 200 Account "
-                f"{account_number} → "
-                f"{platform} completed."
-            )
+    except Exception as e:
 
+        failed.append({
 
-        except Exception as e:
+            "platform":
+                "instagram",
 
-            error = {
-
-                "success": False,
-
-                "account_number":
-                    account_number,
-
-                "account":
-                    account_name,
-
-                "platform":
-                    platform,
-
-                "error":
-                    str(e)
-
-            }
-
-
-            failed.append(
-                error
-            )
-
-
-            # =================================================
-            # DO NOT STOP OTHER ACCOUNTS
-            # =================================================
-
-            print()
-            print(
-                f"FAILED — ACCOUNT "
-                f"{account_number}"
-            )
-
-            print(
-                "Platform:",
-                platform
-            )
-
-            print(
-                "Account:",
-                account_name
-            )
-
-            print(
-                "Error:",
+            "error":
                 str(e)
-            )
 
-            print(
-                "Continuing to next "
-                "Status 200 account..."
-            )
+        })
+
+        print(
+            "INSTAGRAM → FAILED:",
+            str(e)
+        )
+
+
+    # ========================================================
+    # TIKTOK
+    # ========================================================
+
+    try:
+
+        result = publish_tiktok(
+            video_url,
+            caption
+        )
+
+        successful.append({
+
+            "platform":
+                "tiktok",
+
+            "result":
+                result
+
+        })
+
+        print(
+            "TIKTOK → SUCCESS"
+        )
+
+
+    except Exception as e:
+
+        failed.append({
+
+            "platform":
+                "tiktok",
+
+            "error":
+                str(e)
+
+        })
+
+        print(
+            "TIKTOK → FAILED:",
+            str(e)
+        )
+
+
+    # ========================================================
+    # YOUTUBE
+    # ========================================================
+
+    try:
+
+        result = publish_youtube(
+            video_url,
+            caption
+        )
+
+        successful.append({
+
+            "platform":
+                "youtube",
+
+            "result":
+                result
+
+        })
+
+        print(
+            "YOUTUBE → SUCCESS"
+        )
+
+
+    except Exception as e:
+
+        failed.append({
+
+            "platform":
+                "youtube",
+
+            "error":
+                str(e)
+
+        })
+
+        print(
+            "YOUTUBE → FAILED:",
+            str(e)
+        )
 
 
     # ========================================================
@@ -758,13 +786,12 @@ def publish_to_status200(
 
     print()
     print("=" * 60)
-    print("STATUS 200 MULTI-ACCOUNT SUMMARY")
+    print("ZERNIO PUBLISH SUMMARY")
     print("=" * 60)
 
-
     print(
-        "Total accounts:",
-        len(ACCOUNTS)
+        "Total platforms:",
+        3
     )
 
     print(
@@ -778,80 +805,40 @@ def publish_to_status200(
     )
 
 
-    # ========================================================
-    # SUCCESS LIST
-    # ========================================================
-
     if successful:
 
         print()
-        print("SUCCESSFUL ACCOUNTS:")
-
+        print(
+            "SUCCESSFUL PLATFORMS:"
+        )
 
         for item in successful:
 
             print(
-
-                f"  Account "
-                f"{item['account_number']} "
-                f"→ {item['platform']} "
-                f"→ {item['account']}"
-
+                "  →",
+                item["platform"]
             )
 
-
-    # ========================================================
-    # FAILED LIST
-    # ========================================================
 
     if failed:
 
         print()
-        print("FAILED ACCOUNTS:")
-
+        print(
+            "FAILED PLATFORMS:"
+        )
 
         for item in failed:
 
             print(
-
-                f"  Account "
-                f"{item['account_number']} "
-                f"→ {item['platform']} "
-                f"→ {item['account']} "
-                f"→ {item['error']}"
-
+                "  →",
+                item["platform"],
+                ":",
+                item["error"]
             )
 
 
-    # ========================================================
-    # FINAL STATUS
-    # ========================================================
-
-    print()
     print("=" * 60)
 
-
-    if successful:
-
-        print(
-            "STATUS 200 MULTI-ACCOUNT "
-            "PUBLISH COMPLETED"
-        )
-
-    else:
-
-        print(
-            "STATUS 200 MULTI-ACCOUNT "
-            "PUBLISH FAILED"
-        )
-
-
-    print("=" * 60)
-
-
-    # ========================================================
-    # RETURN EVERYTHING TO BOT.PY
-    # ========================================================
 
     return {
 
@@ -859,7 +846,7 @@ def publish_to_status200(
             len(successful) > 0,
 
         "total":
-            len(ACCOUNTS),
+            3,
 
         "successful":
             successful,
@@ -868,3 +855,111 @@ def publish_to_status200(
             failed
 
     }
+
+
+# ============================================================
+# COMPATIBILITY FUNCTION
+# ============================================================
+#
+# IMPORTANT:
+#
+# If your existing bot.py calls:
+#
+# publish_to_status200(video, caption)
+#
+# we keep that function name so you do NOT have to modify
+# bot.py immediately.
+#
+# ============================================================
+
+def publish_to_status200(
+    video_path,
+    caption
+):
+
+    return publish_to_zernio(
+        video_path,
+        caption
+    )
+
+
+# ============================================================
+# ALSO PROVIDE A CLEAN NAME
+# ============================================================
+
+def publish_to_socials(
+    video_path,
+    caption
+):
+
+    return publish_to_zernio(
+        video_path,
+        caption
+    )
+
+
+# ============================================================
+# TEST
+# ============================================================
+
+if __name__ == "__main__":
+
+    print("=" * 60)
+    print(
+        "PROMPTPROHUB ZERNIO PUBLISHER"
+    )
+    print("=" * 60)
+
+    print(
+        "Instagram API:",
+        "SET"
+        if ZERNIO_INSTAGRAM_API_KEY
+        else "MISSING"
+    )
+
+    print(
+        "Instagram Account:",
+        ZERNIO_INSTAGRAM_ACCOUNT_ID
+        if ZERNIO_INSTAGRAM_ACCOUNT_ID
+        else "MISSING"
+    )
+
+    print(
+        "TikTok API:",
+        "SET"
+        if ZERNIO_TIKTOK_API_KEY
+        else "MISSING"
+    )
+
+    print(
+        "TikTok Account:",
+        ZERNIO_TIKTOK_ACCOUNT_ID
+        if ZERNIO_TIKTOK_ACCOUNT_ID
+        else "MISSING"
+    )
+
+    print(
+        "YouTube API:",
+        "SET"
+        if ZERNIO_YOUTUBE_API_KEY
+        else "MISSING"
+    )
+
+    print(
+        "YouTube Account:",
+        ZERNIO_YOUTUBE_ACCOUNT_ID
+        if ZERNIO_YOUTUBE_ACCOUNT_ID
+        else "MISSING"
+    )
+
+    print(
+        "Railway URL:",
+        "SET"
+        if (
+            RAILWAY_PUBLIC_DOMAIN
+            or RAILWAY_PUBLIC_URL
+        )
+        else "MISSING"
+    )
+
+    print("=" * 60)
