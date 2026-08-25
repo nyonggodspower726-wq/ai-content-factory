@@ -72,6 +72,10 @@ RAILWAY_PUBLIC_URL = os.getenv(
 )
 
 
+# ============================================================
+# RAILWAY URL
+# ============================================================
+
 def get_railway_public_url():
 
     if RAILWAY_PUBLIC_DOMAIN:
@@ -101,9 +105,7 @@ def get_railway_public_url():
 
 
     raise RuntimeError(
-        "Railway public URL is missing. "
-        "Set RAILWAY_PUBLIC_DOMAIN or "
-        "RAILWAY_PUBLIC_URL."
+        "Railway public URL is missing."
     )
 
 
@@ -132,16 +134,13 @@ def get_public_video_url(video_path):
     )
 
 
-    base_url = get_railway_public_url()
-
-
     return (
-        f"{base_url}/videos/{filename}"
+        f"{get_railway_public_url()}/videos/{filename}"
     )
 
 
 # ============================================================
-# COMMON HEADERS
+# HEADERS
 # ============================================================
 
 def get_headers(api_key):
@@ -171,8 +170,6 @@ def make_youtube_title(caption):
         return "AI Automation Tips"
 
 
-    # Use first meaningful line as title
-
     title = str(
         caption
     ).split("\n")[0].strip()
@@ -183,19 +180,19 @@ def make_youtube_title(caption):
         title = "AI Automation Tips"
 
 
-    # YouTube title maximum is much larger,
-    # but keeping this concise is better.
-
     if len(title) > 100:
 
-        title = title[:97].rstrip() + "..."
+        title = (
+            title[:97].rstrip()
+            + "..."
+        )
 
 
     return title
 
 
 # ============================================================
-# PUBLISH TO INSTAGRAM
+# INSTAGRAM
 # ============================================================
 
 def publish_instagram(
@@ -219,8 +216,7 @@ def publish_instagram(
     if not ZERNIO_INSTAGRAM_ACCOUNT_ID:
 
         raise RuntimeError(
-            "ZERNIO_INSTAGRAM_ACCOUNT_ID "
-            "is missing."
+            "ZERNIO_INSTAGRAM_ACCOUNT_ID is missing."
         )
 
 
@@ -232,13 +228,11 @@ def publish_instagram(
         "mediaItems": [
 
             {
-
                 "type":
                     "video",
 
                 "url":
                     video_url
-
             }
 
         ],
@@ -246,7 +240,6 @@ def publish_instagram(
         "platforms": [
 
             {
-
                 "platform":
                     "instagram",
 
@@ -254,9 +247,6 @@ def publish_instagram(
                     ZERNIO_INSTAGRAM_ACCOUNT_ID,
 
                 "platformSpecificData": {
-
-                    "shareToFeed":
-                        True,
 
                     "isAiGenerated":
                         True
@@ -274,12 +264,8 @@ def publish_instagram(
 
 
     print(
-        "Account:",
+        "Instagram account:",
         ZERNIO_INSTAGRAM_ACCOUNT_ID
-    )
-
-    print(
-        "Publishing Instagram Reel..."
     )
 
 
@@ -312,7 +298,7 @@ def publish_instagram(
     if not response.ok:
 
         raise RuntimeError(
-            "Zernio Instagram publishing failed: "
+            "Instagram publishing failed: "
             + response.text
         )
 
@@ -321,7 +307,7 @@ def publish_instagram(
 
 
 # ============================================================
-# PUBLISH TO TIKTOK
+# TIKTOK
 # ============================================================
 
 def publish_tiktok(
@@ -345,10 +331,17 @@ def publish_tiktok(
     if not ZERNIO_TIKTOK_ACCOUNT_ID:
 
         raise RuntimeError(
-            "ZERNIO_TIKTOK_ACCOUNT_ID "
-            "is missing."
+            "ZERNIO_TIKTOK_ACCOUNT_ID is missing."
         )
 
+
+    # IMPORTANT:
+    #
+    # TikTok settings MUST be inside
+    # platformSpecificData.tiktokSettings.
+    #
+    # This is the structure documented by Zernio.
+    #
 
     payload = {
 
@@ -358,13 +351,11 @@ def publish_tiktok(
         "mediaItems": [
 
             {
-
                 "type":
                     "video",
 
                 "url":
                     video_url
-
             }
 
         ],
@@ -377,33 +368,40 @@ def publish_tiktok(
                     "tiktok",
 
                 "accountId":
-                    ZERNIO_TIKTOK_ACCOUNT_ID
+                    ZERNIO_TIKTOK_ACCOUNT_ID,
+
+                "platformSpecificData": {
+
+                    "tiktokSettings": {
+
+                        "privacy_level":
+                            "PUBLIC_TO_EVERYONE",
+
+                        "allow_comment":
+                            True,
+
+                        "allow_duet":
+                            True,
+
+                        "allow_stitch":
+                            True,
+
+                        "content_preview_confirmed":
+                            True,
+
+                        "express_consent_given":
+                            True,
+
+                        "video_made_with_ai":
+                            True
+
+                    }
+
+                }
 
             }
 
         ],
-
-        "tiktokSettings": {
-
-            "privacy_level":
-                "PUBLIC_TO_EVERYONE",
-
-            "allow_comment":
-                True,
-
-            "allow_duet":
-                True,
-
-            "allow_stitch":
-                True,
-
-            "content_preview_confirmed":
-                True,
-
-            "express_consent_given":
-                True
-
-        },
 
         "publishNow":
             True
@@ -412,7 +410,7 @@ def publish_tiktok(
 
 
     print(
-        "Account:",
+        "TikTok account:",
         ZERNIO_TIKTOK_ACCOUNT_ID
     )
 
@@ -450,7 +448,7 @@ def publish_tiktok(
     if not response.ok:
 
         raise RuntimeError(
-            "Zernio TikTok publishing failed: "
+            "TikTok publishing failed: "
             + response.text
         )
 
@@ -459,7 +457,7 @@ def publish_tiktok(
 
 
 # ============================================================
-# PUBLISH TO YOUTUBE
+# YOUTUBE
 # ============================================================
 
 def publish_youtube(
@@ -483,8 +481,7 @@ def publish_youtube(
     if not ZERNIO_YOUTUBE_ACCOUNT_ID:
 
         raise RuntimeError(
-            "ZERNIO_YOUTUBE_ACCOUNT_ID "
-            "is missing."
+            "ZERNIO_YOUTUBE_ACCOUNT_ID is missing."
         )
 
 
@@ -501,13 +498,11 @@ def publish_youtube(
         "mediaItems": [
 
             {
-
                 "type":
                     "video",
 
                 "url":
                     video_url
-
             }
 
         ],
@@ -543,7 +538,7 @@ def publish_youtube(
 
 
     print(
-        "Account:",
+        "YouTube account:",
         ZERNIO_YOUTUBE_ACCOUNT_ID
     )
 
@@ -586,7 +581,7 @@ def publish_youtube(
     if not response.ok:
 
         raise RuntimeError(
-            "Zernio YouTube publishing failed: "
+            "YouTube publishing failed: "
             + response.text
         )
 
@@ -595,7 +590,7 @@ def publish_youtube(
 
 
 # ============================================================
-# MAIN MULTI-PLATFORM PUBLISHER
+# MAIN PUBLISHER
 # ============================================================
 
 def publish_to_zernio(
@@ -605,27 +600,11 @@ def publish_to_zernio(
 
     print()
     print("=" * 60)
-    print("PROMPTPROHUB ZERNIO MULTI-PLATFORM PUBLISHER")
+    print(
+        "PROMPTPROHUB ZERNIO MULTI-PLATFORM PUBLISHER"
+    )
     print("=" * 60)
 
-
-    if not video_path:
-
-        raise ValueError(
-            "No video path provided."
-        )
-
-
-    if not os.path.exists(video_path):
-
-        raise FileNotFoundError(
-            f"Video not found: {video_path}"
-        )
-
-
-    # --------------------------------------------------------
-    # BUILD PUBLIC VIDEO URL
-    # --------------------------------------------------------
 
     video_url = get_public_video_url(
         video_path
@@ -633,12 +612,7 @@ def publish_to_zernio(
 
 
     print(
-        "Local video:",
-        video_path
-    )
-
-    print(
-        "Public video URL:",
+        "Video URL:",
         video_url
     )
 
@@ -659,36 +633,35 @@ def publish_to_zernio(
             caption
         )
 
-        successful.append({
+        successful.append(
+            {
+                "platform":
+                    "instagram",
 
-            "platform":
-                "instagram",
-
-            "result":
-                result
-
-        })
+                "result":
+                    result
+            }
+        )
 
         print(
             "INSTAGRAM → SUCCESS"
         )
 
-
     except Exception as e:
 
-        failed.append({
+        failed.append(
+            {
+                "platform":
+                    "instagram",
 
-            "platform":
-                "instagram",
-
-            "error":
-                str(e)
-
-        })
+                "error":
+                    str(e)
+            }
+        )
 
         print(
             "INSTAGRAM → FAILED:",
-            str(e)
+            e
         )
 
 
@@ -703,36 +676,35 @@ def publish_to_zernio(
             caption
         )
 
-        successful.append({
+        successful.append(
+            {
+                "platform":
+                    "tiktok",
 
-            "platform":
-                "tiktok",
-
-            "result":
-                result
-
-        })
+                "result":
+                    result
+            }
+        )
 
         print(
             "TIKTOK → SUCCESS"
         )
 
-
     except Exception as e:
 
-        failed.append({
+        failed.append(
+            {
+                "platform":
+                    "tiktok",
 
-            "platform":
-                "tiktok",
-
-            "error":
-                str(e)
-
-        })
+                "error":
+                    str(e)
+            }
+        )
 
         print(
             "TIKTOK → FAILED:",
-            str(e)
+            e
         )
 
 
@@ -747,52 +719,46 @@ def publish_to_zernio(
             caption
         )
 
-        successful.append({
+        successful.append(
+            {
+                "platform":
+                    "youtube",
 
-            "platform":
-                "youtube",
-
-            "result":
-                result
-
-        })
+                "result":
+                    result
+            }
+        )
 
         print(
             "YOUTUBE → SUCCESS"
         )
 
-
     except Exception as e:
 
-        failed.append({
+        failed.append(
+            {
+                "platform":
+                    "youtube",
 
-            "platform":
-                "youtube",
-
-            "error":
-                str(e)
-
-        })
+                "error":
+                    str(e)
+            }
+        )
 
         print(
             "YOUTUBE → FAILED:",
-            str(e)
+            e
         )
 
 
     # ========================================================
-    # FINAL SUMMARY
+    # SUMMARY
     # ========================================================
 
     print()
     print("=" * 60)
     print("ZERNIO PUBLISH SUMMARY")
     print("=" * 60)
-
-    print(
-        "Total platforms:",
-        3
-    )
 
     print(
         "Successful:",
@@ -805,36 +771,22 @@ def publish_to_zernio(
     )
 
 
-    if successful:
+    for item in successful:
 
-        print()
         print(
-            "SUCCESSFUL PLATFORMS:"
+            "SUCCESS:",
+            item["platform"]
         )
 
-        for item in successful:
 
-            print(
-                "  →",
-                item["platform"]
-            )
+    for item in failed:
 
-
-    if failed:
-
-        print()
         print(
-            "FAILED PLATFORMS:"
+            "FAILED:",
+            item["platform"],
+            "→",
+            item["error"]
         )
-
-        for item in failed:
-
-            print(
-                "  →",
-                item["platform"],
-                ":",
-                item["error"]
-            )
 
 
     print("=" * 60)
@@ -858,18 +810,7 @@ def publish_to_zernio(
 
 
 # ============================================================
-# COMPATIBILITY FUNCTION
-# ============================================================
-#
-# IMPORTANT:
-#
-# If your existing bot.py calls:
-#
-# publish_to_status200(video, caption)
-#
-# we keep that function name so you do NOT have to modify
-# bot.py immediately.
-#
+# COMPATIBILITY
 # ============================================================
 
 def publish_to_status200(
@@ -883,10 +824,6 @@ def publish_to_status200(
     )
 
 
-# ============================================================
-# ALSO PROVIDE A CLEAN NAME
-# ============================================================
-
 def publish_to_socials(
     video_path,
     caption
@@ -899,15 +836,13 @@ def publish_to_socials(
 
 
 # ============================================================
-# TEST
+# CONFIGURATION TEST
 # ============================================================
 
 if __name__ == "__main__":
 
     print("=" * 60)
-    print(
-        "PROMPTPROHUB ZERNIO PUBLISHER"
-    )
+    print("PROMPTPROHUB ZERNIO CONFIGURATION")
     print("=" * 60)
 
     print(
@@ -920,8 +855,7 @@ if __name__ == "__main__":
     print(
         "Instagram Account:",
         ZERNIO_INSTAGRAM_ACCOUNT_ID
-        if ZERNIO_INSTAGRAM_ACCOUNT_ID
-        else "MISSING"
+        or "MISSING"
     )
 
     print(
@@ -934,8 +868,7 @@ if __name__ == "__main__":
     print(
         "TikTok Account:",
         ZERNIO_TIKTOK_ACCOUNT_ID
-        if ZERNIO_TIKTOK_ACCOUNT_ID
-        else "MISSING"
+        or "MISSING"
     )
 
     print(
@@ -948,18 +881,7 @@ if __name__ == "__main__":
     print(
         "YouTube Account:",
         ZERNIO_YOUTUBE_ACCOUNT_ID
-        if ZERNIO_YOUTUBE_ACCOUNT_ID
-        else "MISSING"
-    )
-
-    print(
-        "Railway URL:",
-        "SET"
-        if (
-            RAILWAY_PUBLIC_DOMAIN
-            or RAILWAY_PUBLIC_URL
-        )
-        else "MISSING"
+        or "MISSING"
     )
 
     print("=" * 60)
