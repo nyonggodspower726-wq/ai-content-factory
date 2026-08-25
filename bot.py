@@ -345,3 +345,45 @@ def main(topic=None):
         )
 
         print("=" * 60)
+return {
+            "success": True,
+            "topic": topic,
+            "video": video,
+            "seo": seo
+        }
+
+    except Exception as e:
+
+        print("=" * 60)
+        print("BOT FAILED")
+        print("=" * 60)
+
+        print(
+            "ERROR TYPE:",
+            type(e).__name__
+        )
+
+        print(
+            "ERROR:",
+            repr(e)
+        )
+
+        print("=" * 60)
+
+        traceback.print_exc()
+
+        log(
+            f"BOT FAILED: "
+            f"{type(e).__name__}: {e}"
+        )
+
+        return None
+
+
+# ============================================================
+# DIRECT EXECUTION
+# ============================================================
+
+if __name__ == "__main__":
+
+    main()
