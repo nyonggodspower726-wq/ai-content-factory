@@ -7,7 +7,7 @@ from openai import OpenAI
 # Automatic API Key Rotation
 # =====================================================
 
-MODEL = "meta/llama-3.3-70b-instruct"
+MODEL = "nvidia/llama-3.3-nemotron-super-49b-v1.5"
 
 API_KEYS = [
     os.getenv("NVIDIA_API_KEY_1"),
@@ -156,4 +156,4 @@ def ask(prompt):
     raise Exception(
         "All NVIDIA API keys failed.\n"
         f"Last error: {last_error}"
-)
+        )
