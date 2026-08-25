@@ -431,3 +431,48 @@ def main(topic=None):
             "video": video,
             "seo": seo
     }
+    # ========================================================
+    # MAIN BOT ERROR HANDLER
+    # ========================================================
+
+    except Exception as e:
+
+        print("=" * 60)
+        print("PROMPTPROHUB AI STUDIO FAILED")
+        print("=" * 60)
+
+        print(
+            "ERROR TYPE:",
+            type(e).__name__
+        )
+
+        print(
+            "ERROR:",
+            repr(e)
+        )
+
+        print("=" * 60)
+
+        traceback.print_exc()
+
+        try:
+
+            log(
+                f"BOT FAILED: "
+                f"{type(e).__name__}: {e}"
+            )
+
+        except Exception:
+
+            pass
+
+        return None
+
+
+# ============================================================
+# DIRECT EXECUTION
+# ============================================================
+
+if __name__ == "__main__":
+
+    main()
