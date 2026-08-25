@@ -247,3 +247,187 @@ def main(topic=None):
         print("VIDEO CREATED SUCCESSFULLY")
         print(video)
         print("=" * 60)
+        # ====================================================
+        # CAPTION
+        # ====================================================
+
+        caption = topic
+
+        if isinstance(
+            script,
+            dict
+        ):
+
+            caption = script.get(
+                "hook",
+                topic
+            )
+
+        if not caption:
+
+            caption = topic
+
+        caption = str(
+            caption
+        ).strip()
+
+        # ====================================================
+        # ZERNIO THREE-ACCOUNT PUBLISHER
+        # ====================================================
+        #
+        # This single function handles:
+        #
+        # Instagram
+        # TikTok
+        # YouTube
+        #
+        # Each platform uses its own Zernio API key.
+        #
+        # The publisher also discovers/verifies the connected
+        # account through:
+        #
+        # GET /accounts
+        #
+        # ====================================================
+
+        try:
+
+            log(
+                "Publishing video through Zernio..."
+            )
+
+            result = publish_to_status200(
+                video,
+                caption
+            )
+
+            print("=" * 60)
+            print("ZERNIO PUBLISHING RESULT")
+            print("=" * 60)
+
+            print(
+                result
+            )
+
+            print("=" * 60)
+
+            # ----------------------------------------------
+            # DISPLAY SUMMARY
+            # ----------------------------------------------
+
+            if isinstance(
+                result,
+                dict
+            ):
+
+                successful = result.get(
+                    "successful",
+                    []
+                )
+
+                failed = result.get(
+                    "failed",
+                    []
+                )
+
+                print(
+                    "Successful platforms:",
+                    len(successful)
+                )
+
+                print(
+                    "Failed platforms:",
+                    len(failed)
+                )
+
+                for item in successful:
+
+                    if isinstance(
+                        item,
+                        dict
+                    ):
+
+                        print(
+                            "SUCCESS:",
+                            item.get(
+                                "platform"
+                            )
+                        )
+
+                for item in failed:
+
+                    if isinstance(
+                        item,
+                        dict
+                    ):
+
+                        print(
+                            "FAILED:",
+                            item.get(
+                                "platform"
+                            ),
+                            "→",
+                            item.get(
+                                "error"
+                            )
+                        )
+
+            log(
+                "Zernio publishing process completed."
+            )
+
+        except Exception as e:
+
+            log(
+                f"Zernio publishing failed: {e}"
+            )
+
+            print("=" * 60)
+            print("ZERNIO PUBLISHING FAILED")
+            print("=" * 60)
+
+            print(
+                "ERROR TYPE:",
+                type(e).__name__
+            )
+
+            print(
+                "ERROR:",
+                str(e)
+            )
+
+            print("=" * 60)
+
+            traceback.print_exc()
+
+        # ====================================================
+        # COMPLETE
+        # ====================================================
+
+        print("=" * 60)
+        print("PROMPTPROHUB AI STUDIO COMPLETED")
+        print("=" * 60)
+
+        print(
+            "Topic:",
+            topic
+        )
+
+        print(
+            "Video:",
+            video
+        )
+
+        print(
+            "Social publishing attempted:"
+            " Instagram + TikTok + YouTube"
+        )
+
+        print("=" * 60)
+
+        return {
+            "success": True,
+            "topic": topic,
+            "video": video,
+            "seo": seo
+    }
