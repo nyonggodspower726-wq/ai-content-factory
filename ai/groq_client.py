@@ -1,6 +1,7 @@
 import os
 from groq import Groq
 
+
 # =====================================================
 # PROMPTPROHUB GROQ CLIENT
 # Automatic API Key Rotation
@@ -14,67 +15,161 @@ GROQ_KEYS = [
 
 ]
 
-# Remove empty keys
-GROQ_KEYS = [key for key in GROQ_KEYS if key]
+
+# =====================================================
+# REMOVE EMPTY KEYS
+# =====================================================
+
+GROQ_KEYS = [
+    key for key in GROQ_KEYS
+    if key
+]
+
+
+# =====================================================
+# CONFIGURATION
+# =====================================================
+
+MODEL = "openai/gpt-oss-120b"
+
+
+# =====================================================
+# STARTUP INFORMATION
+# =====================================================
 
 print("=" * 60)
 print("PROMPTPROHUB GROQ CLIENT")
 print("=" * 60)
-print(f"Groq Keys Loaded: {len(GROQ_KEYS)}")
+
+print(
+    f"Groq Keys Loaded: {len(GROQ_KEYS)}"
+)
+
+print(
+    f"Groq Model: {MODEL}"
+)
+
 print("=" * 60)
 
 
-MODEL = "llama-3.3-70b-versatile"
-
+# =====================================================
+# ASK GROQ
+# =====================================================
 
 def ask(prompt):
 
+    # -------------------------------------------------
+    # CHECK KEYS
+    # -------------------------------------------------
+
     if not GROQ_KEYS:
 
-        raise Exception("No Groq API keys found.")
+        raise Exception(
+            "No Groq API keys found."
+        )
+
 
     last_error = None
 
-    for index, api_key in enumerate(GROQ_KEYS, start=1):
+
+    # -------------------------------------------------
+    # ROTATE THROUGH API KEYS
+    # -------------------------------------------------
+
+    for index, api_key in enumerate(
+        GROQ_KEYS,
+        start=1
+    ):
 
         try:
 
             print("=" * 60)
-            print(f"Trying Groq Key {index}")
+            print(
+                f"Trying Groq Key {index}"
+            )
             print("=" * 60)
+
+
+            # -----------------------------------------
+            # CREATE CLIENT
+            # -----------------------------------------
 
             client = Groq(
                 api_key=api_key
             )
 
-            response = client.chat.completions.create(
 
-                model=MODEL,
+            # -----------------------------------------
+            # SEND REQUEST
+            # -----------------------------------------
 
-                messages=[
+            response = (
+                client.chat.completions.create(
 
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
+                    model=MODEL,
 
-                ]
+                    messages=[
 
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+
+                    ]
+
+                )
             )
 
-            print(f"Groq Key {index} Success")
 
-            return response.choices[0].message.content
+            # -----------------------------------------
+            # SUCCESS
+            # -----------------------------------------
+
+            print(
+                f"Groq Key {index} Success"
+            )
+
+
+            return (
+                response
+                .choices[0]
+                .message
+                .content
+            )
+
 
         except Exception as e:
 
-            print(f"Groq Key {index} Failed")
-            print(e)
+            # -----------------------------------------
+            # KEY FAILED
+            # -----------------------------------------
+
+            print(
+                f"Groq Key {index} Failed"
+            )
+
+            print(
+                str(e)
+            )
+
 
             last_error = e
 
+
+            # -----------------------------------------
+            # TRY NEXT KEY
+            # -----------------------------------------
+
             continue
 
+
+    # =================================================
+    # ALL KEYS FAILED
+    # =================================================
+
     raise Exception(
-        f"All Groq API keys failed.\n{last_error}"
-        )
+
+        "All Groq API keys failed.\n"
+        f"Last error: {last_error}"
+
+)
