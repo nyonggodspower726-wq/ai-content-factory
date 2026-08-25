@@ -3,17 +3,14 @@ import requests
 
 
 # ============================================================
-# PROMPTPROHUB ZERNIO MULTI-PLATFORM PUBLISHER
+# PROMPTPROHUB ZERNIO THREE-ACCOUNT PUBLISHER
 #
-# One finished video
-#       ↓
-# Railway public video URL
-#       ↓
-# Instagram Zernio account
-# TikTok Zernio account
-# YouTube Zernio account
+# API KEY 1 → Instagram
+# API KEY 2 → TikTok
+# API KEY 3 → YouTube
 #
-# Each platform uses its own Zernio API key/account.
+# Each key independently discovers its own connected account
+# from GET /accounts before publishing.
 # ============================================================
 
 
@@ -21,37 +18,27 @@ ZERNIO_BASE_URL = "https://zernio.com/api/v1"
 
 
 # ============================================================
-# INSTAGRAM
+# THREE ZERNIO API KEYS
 # ============================================================
 
-ZERNIO_INSTAGRAM_API_KEY = os.getenv(
-    "ZERNIO_API_KEY"
-)
+ZERNIO_INSTAGRAM_API_KEY = os.getenv("ZERNIO_API_KEY")
+ZERNIO_TIKTOK_API_KEY = os.getenv("ZERNIO_TIKTOK_API_KEY")
+ZERNIO_YOUTUBE_API_KEY = os.getenv("ZERNIO_YOUTUBE_API_KEY")
+
+
+# ============================================================
+# OPTIONAL ACCOUNT IDs
+#
+# We keep these variables for compatibility, but the publisher
+# will verify the real account through /accounts first.
+# ============================================================
 
 ZERNIO_INSTAGRAM_ACCOUNT_ID = os.getenv(
     "ZERNIO_INSTAGRAM_ACCOUNT_ID"
 )
 
-
-# ============================================================
-# TIKTOK
-# ============================================================
-
-ZERNIO_TIKTOK_API_KEY = os.getenv(
-    "ZERNIO_TIKTOK_API_KEY"
-)
-
 ZERNIO_TIKTOK_ACCOUNT_ID = os.getenv(
     "ZERNIO_TIKTOK_ACCOUNT_ID"
-)
-
-
-# ============================================================
-# YOUTUBE
-# ============================================================
-
-ZERNIO_YOUTUBE_API_KEY = os.getenv(
-    "ZERNIO_YOUTUBE_API_KEY"
 )
 
 ZERNIO_YOUTUBE_ACCOUNT_ID = os.getenv(
@@ -73,7 +60,20 @@ RAILWAY_PUBLIC_URL = os.getenv(
 
 
 # ============================================================
-# RAILWAY URL
+# HEADERS
+# ============================================================
+
+def get_headers(api_key):
+
+    return {
+        "Authorization": f"Bearer {api_key}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+    }
+
+
+# ============================================================
+# GET RAILWAY URL
 # ============================================================
 
 def get_railway_public_url():
@@ -110,7 +110,7 @@ def get_railway_public_url():
 
 
 # ============================================================
-# BUILD PUBLIC VIDEO URL
+# BUILD VIDEO URL
 # ============================================================
 
 def get_public_video_url(video_path):
@@ -140,23 +140,178 @@ def get_public_video_url(video_path):
 
 
 # ============================================================
-# HEADERS
+# DISCOVER ACCOUNT FROM API KEY
 # ============================================================
 
-def get_headers(api_key):
+def get_connected_account(
+    api_key,
+    platform,
+    configured_id=None
+):
 
-    return {
+    if not api_key:
 
-        "Authorization":
-            f"Bearer {api_key}",
+        raise RuntimeError(
+            f"No Zernio API key configured for {platform}."
+        )
 
-        "Accept":
-            "application/json",
 
-        "Content-Type":
-            "application/json"
+    print()
+    print("-" * 60)
+    print(
+        f"CHECKING ZERNIO ACCOUNT → {platform.upper()}"
+    )
+    print("-" * 60)
 
-    }
+
+    response = requests.get(
+
+        f"{ZERNIO_BASE_URL}/accounts",
+
+        headers=get_headers(api_key),
+
+        timeout=30
+
+    )
+
+
+    print(
+        f"{platform.upper()} /accounts HTTP:",
+        response.status_code
+    )
+
+
+    if not response.ok:
+
+        raise RuntimeError(
+            f"{platform} account lookup failed: "
+            + response.text
+        )
+
+
+    data = response.json()
+
+    accounts = data.get(
+        "accounts",
+        []
+    )
+
+
+    print(
+        f"{platform.upper()} accounts returned:",
+        len(accounts)
+    )
+
+
+    # --------------------------------------------------------
+    # FIRST: find the configured ID if it exists
+    # --------------------------------------------------------
+
+    if configured_id:
+
+        configured_id = str(
+            configured_id
+        ).strip()
+
+
+        for account in accounts:
+
+            if str(
+                account.get("_id", "")
+            ).strip() == configured_id:
+
+                if account.get(
+                    "platform"
+                ) == platform:
+
+                    if account.get(
+                        "isActive",
+                        True
+                    ):
+
+                        print(
+                            "Verified account:",
+                            account["_id"]
+                        )
+
+                        print(
+                            "Username:",
+                            account.get(
+                                "username"
+                            )
+                            or account.get(
+                                "displayName"
+                            )
+                            or "N/A"
+                        )
+
+                        return account["_id"]
+
+
+    # --------------------------------------------------------
+    # SECOND: automatically find platform
+    # --------------------------------------------------------
+
+    matching_accounts = [
+
+        account
+
+        for account in accounts
+
+        if account.get(
+            "platform"
+        ) == platform
+
+        and account.get(
+            "isActive",
+            True
+        )
+
+    ]
+
+
+    if not matching_accounts:
+
+        raise RuntimeError(
+            f"No active {platform} account "
+            f"was found for this API key."
+        )
+
+
+    account = matching_accounts[0]
+
+
+    account_id = account.get(
+        "_id"
+    )
+
+
+    if not account_id:
+
+        raise RuntimeError(
+            f"{platform} account has no _id."
+        )
+
+
+    print(
+        "Auto-selected account:",
+        account_id
+    )
+
+
+    print(
+        "Username:",
+        account.get(
+            "username"
+        )
+        or account.get(
+            "displayName"
+        )
+        or "N/A"
+    )
+
+
+    return account_id
 
 
 # ============================================================
@@ -206,33 +361,26 @@ def publish_instagram(
     print("=" * 60)
 
 
-    if not ZERNIO_INSTAGRAM_API_KEY:
+    account_id = get_connected_account(
 
-        raise RuntimeError(
-            "ZERNIO_API_KEY is missing."
-        )
+        ZERNIO_INSTAGRAM_API_KEY,
 
+        "instagram",
 
-    if not ZERNIO_INSTAGRAM_ACCOUNT_ID:
+        ZERNIO_INSTAGRAM_ACCOUNT_ID
 
-        raise RuntimeError(
-            "ZERNIO_INSTAGRAM_ACCOUNT_ID is missing."
-        )
+    )
 
 
     payload = {
 
-        "content":
-            caption,
+        "content": caption,
 
         "mediaItems": [
 
             {
-                "type":
-                    "video",
-
-                "url":
-                    video_url
+                "type": "video",
+                "url": video_url
             }
 
         ],
@@ -240,16 +388,13 @@ def publish_instagram(
         "platforms": [
 
             {
-                "platform":
-                    "instagram",
+                "platform": "instagram",
 
-                "accountId":
-                    ZERNIO_INSTAGRAM_ACCOUNT_ID,
+                "accountId": account_id,
 
                 "platformSpecificData": {
 
-                    "isAiGenerated":
-                        True
+                    "isAiGenerated": True
 
                 }
 
@@ -257,15 +402,13 @@ def publish_instagram(
 
         ],
 
-        "publishNow":
-            True
+        "publishNow": True
 
     }
 
 
     print(
-        "Instagram account:",
-        ZERNIO_INSTAGRAM_ACCOUNT_ID
+        "Publishing Instagram..."
     )
 
 
@@ -321,41 +464,26 @@ def publish_tiktok(
     print("=" * 60)
 
 
-    if not ZERNIO_TIKTOK_API_KEY:
+    account_id = get_connected_account(
 
-        raise RuntimeError(
-            "ZERNIO_TIKTOK_API_KEY is missing."
-        )
+        ZERNIO_TIKTOK_API_KEY,
 
+        "tiktok",
 
-    if not ZERNIO_TIKTOK_ACCOUNT_ID:
+        ZERNIO_TIKTOK_ACCOUNT_ID
 
-        raise RuntimeError(
-            "ZERNIO_TIKTOK_ACCOUNT_ID is missing."
-        )
+    )
 
-
-    # IMPORTANT:
-    #
-    # TikTok settings MUST be inside
-    # platformSpecificData.tiktokSettings.
-    #
-    # This is the structure documented by Zernio.
-    #
 
     payload = {
 
-        "content":
-            caption,
+        "content": caption,
 
         "mediaItems": [
 
             {
-                "type":
-                    "video",
-
-                "url":
-                    video_url
+                "type": "video",
+                "url": video_url
             }
 
         ],
@@ -363,12 +491,9 @@ def publish_tiktok(
         "platforms": [
 
             {
+                "platform": "tiktok",
 
-                "platform":
-                    "tiktok",
-
-                "accountId":
-                    ZERNIO_TIKTOK_ACCOUNT_ID,
+                "accountId": account_id,
 
                 "platformSpecificData": {
 
@@ -403,19 +528,18 @@ def publish_tiktok(
 
         ],
 
-        "publishNow":
-            True
+        "publishNow": True
 
     }
 
 
     print(
         "TikTok account:",
-        ZERNIO_TIKTOK_ACCOUNT_ID
+        account_id
     )
 
     print(
-        "Publishing TikTok video..."
+        "Publishing TikTok..."
     )
 
 
@@ -471,18 +595,15 @@ def publish_youtube(
     print("=" * 60)
 
 
-    if not ZERNIO_YOUTUBE_API_KEY:
+    account_id = get_connected_account(
 
-        raise RuntimeError(
-            "ZERNIO_YOUTUBE_API_KEY is missing."
-        )
+        ZERNIO_YOUTUBE_API_KEY,
 
+        "youtube",
 
-    if not ZERNIO_YOUTUBE_ACCOUNT_ID:
+        ZERNIO_YOUTUBE_ACCOUNT_ID
 
-        raise RuntimeError(
-            "ZERNIO_YOUTUBE_ACCOUNT_ID is missing."
-        )
+    )
 
 
     title = make_youtube_title(
@@ -492,17 +613,13 @@ def publish_youtube(
 
     payload = {
 
-        "content":
-            caption,
+        "content": caption,
 
         "mediaItems": [
 
             {
-                "type":
-                    "video",
-
-                "url":
-                    video_url
+                "type": "video",
+                "url": video_url
             }
 
         ],
@@ -510,20 +627,15 @@ def publish_youtube(
         "platforms": [
 
             {
+                "platform": "youtube",
 
-                "platform":
-                    "youtube",
-
-                "accountId":
-                    ZERNIO_YOUTUBE_ACCOUNT_ID,
+                "accountId": account_id,
 
                 "platformSpecificData": {
 
-                    "title":
-                        title,
+                    "title": title,
 
-                    "visibility":
-                        "public"
+                    "visibility": "public"
 
                 }
 
@@ -531,15 +643,14 @@ def publish_youtube(
 
         ],
 
-        "publishNow":
-            True
+        "publishNow": True
 
     }
 
 
     print(
         "YouTube account:",
-        ZERNIO_YOUTUBE_ACCOUNT_ID
+        account_id
     )
 
     print(
@@ -548,7 +659,7 @@ def publish_youtube(
     )
 
     print(
-        "Publishing YouTube video..."
+        "Publishing YouTube..."
     )
 
 
@@ -601,7 +712,7 @@ def publish_to_zernio(
     print()
     print("=" * 60)
     print(
-        "PROMPTPROHUB ZERNIO MULTI-PLATFORM PUBLISHER"
+        "PROMPTPROHUB ZERNIO THREE-KEY PUBLISHER"
     )
     print("=" * 60)
 
@@ -612,7 +723,7 @@ def publish_to_zernio(
 
 
     print(
-        "Video URL:",
+        "Public video URL:",
         video_url
     )
 
@@ -633,31 +744,32 @@ def publish_to_zernio(
             caption
         )
 
-        successful.append(
-            {
-                "platform":
-                    "instagram",
+        successful.append({
 
-                "result":
-                    result
-            }
-        )
+            "platform":
+                "instagram",
+
+            "result":
+                result
+
+        })
 
         print(
             "INSTAGRAM → SUCCESS"
         )
 
+
     except Exception as e:
 
-        failed.append(
-            {
-                "platform":
-                    "instagram",
+        failed.append({
 
-                "error":
-                    str(e)
-            }
-        )
+            "platform":
+                "instagram",
+
+            "error":
+                str(e)
+
+        })
 
         print(
             "INSTAGRAM → FAILED:",
@@ -676,31 +788,32 @@ def publish_to_zernio(
             caption
         )
 
-        successful.append(
-            {
-                "platform":
-                    "tiktok",
+        successful.append({
 
-                "result":
-                    result
-            }
-        )
+            "platform":
+                "tiktok",
+
+            "result":
+                result
+
+        })
 
         print(
             "TIKTOK → SUCCESS"
         )
 
+
     except Exception as e:
 
-        failed.append(
-            {
-                "platform":
-                    "tiktok",
+        failed.append({
 
-                "error":
-                    str(e)
-            }
-        )
+            "platform":
+                "tiktok",
+
+            "error":
+                str(e)
+
+        })
 
         print(
             "TIKTOK → FAILED:",
@@ -719,31 +832,32 @@ def publish_to_zernio(
             caption
         )
 
-        successful.append(
-            {
-                "platform":
-                    "youtube",
+        successful.append({
 
-                "result":
-                    result
-            }
-        )
+            "platform":
+                "youtube",
+
+            "result":
+                result
+
+        })
 
         print(
             "YOUTUBE → SUCCESS"
         )
 
+
     except Exception as e:
 
-        failed.append(
-            {
-                "platform":
-                    "youtube",
+        failed.append({
 
-                "error":
-                    str(e)
-            }
-        )
+            "platform":
+                "youtube",
+
+            "error":
+                str(e)
+
+        })
 
         print(
             "YOUTUBE → FAILED:",
@@ -752,7 +866,7 @@ def publish_to_zernio(
 
 
     # ========================================================
-    # SUMMARY
+    # FINAL SUMMARY
     # ========================================================
 
     print()
@@ -836,14 +950,17 @@ def publish_to_socials(
 
 
 # ============================================================
-# CONFIGURATION TEST
+# CONFIGURATION CHECK
 # ============================================================
 
 if __name__ == "__main__":
 
     print("=" * 60)
-    print("PROMPTPROHUB ZERNIO CONFIGURATION")
+    print(
+        "PROMPTPROHUB ZERNIO CONFIGURATION"
+    )
     print("=" * 60)
+
 
     print(
         "Instagram API:",
@@ -852,11 +969,6 @@ if __name__ == "__main__":
         else "MISSING"
     )
 
-    print(
-        "Instagram Account:",
-        ZERNIO_INSTAGRAM_ACCOUNT_ID
-        or "MISSING"
-    )
 
     print(
         "TikTok API:",
@@ -865,11 +977,6 @@ if __name__ == "__main__":
         else "MISSING"
     )
 
-    print(
-        "TikTok Account:",
-        ZERNIO_TIKTOK_ACCOUNT_ID
-        or "MISSING"
-    )
 
     print(
         "YouTube API:",
@@ -878,10 +985,5 @@ if __name__ == "__main__":
         else "MISSING"
     )
 
-    print(
-        "YouTube Account:",
-        ZERNIO_YOUTUBE_ACCOUNT_ID
-        or "MISSING"
-    )
 
     print("=" * 60)
