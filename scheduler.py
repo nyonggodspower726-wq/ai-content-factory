@@ -11,7 +11,7 @@ from bot import main
 
 SCHEDULE_TIMES = [
     "09:29",
-    "13:53",
+    "15:59",
     "18:00",
     "23:00",
 ]
