@@ -192,3 +192,156 @@ def main(topic=None):
         print("VIDEO CREATED SUCCESSFULLY")
         print(video)
         print("=" * 60)
+# =====================================================
+        # CAPTION
+        # =====================================================
+
+        caption = topic
+
+        if isinstance(
+            script,
+            dict
+        ):
+
+            caption = script.get(
+                "hook",
+                topic
+            )
+
+        # =====================================================
+        # ZERNIO — ALL THREE PLATFORMS
+        # =====================================================
+        #
+        # ONE publisher handles:
+        #
+        # Instagram
+        # TikTok
+        # YouTube
+        #
+        # Do NOT separately call:
+        #
+        # publish_to_instagram()
+        # upload_to_youtube()
+        #
+        # The three-account Zernio publisher handles
+        # everything.
+        # =====================================================
+
+        try:
+
+            log(
+                "Publishing video through Zernio..."
+            )
+
+            result = publish_to_status200(
+                video,
+                caption
+            )
+
+            print("=" * 60)
+            print("ZERNIO PUBLISH RESULT")
+            print("=" * 60)
+
+            print(
+                result
+            )
+
+            print("=" * 60)
+
+            # -------------------------------------------------
+            # REPORT RESULTS
+            # -------------------------------------------------
+
+            if isinstance(
+                result,
+                dict
+            ):
+
+                successful = result.get(
+                    "successful",
+                    []
+                )
+
+                failed = result.get(
+                    "failed",
+                    []
+                )
+
+                print(
+                    "Zernio successful platforms:",
+                    len(successful)
+                )
+
+                print(
+                    "Zernio failed platforms:",
+                    len(failed)
+                )
+
+                for item in successful:
+
+                    print(
+                        "SUCCESS:",
+                        item.get(
+                            "platform",
+                            "unknown"
+                        )
+                    )
+
+                for item in failed:
+
+                    print(
+                        "FAILED:",
+                        item.get(
+                            "platform",
+                            "unknown"
+                        ),
+                        "→",
+                        item.get(
+                            "error",
+                            "Unknown error"
+                        )
+                    )
+
+        except Exception as e:
+
+            log(
+                f"Zernio publishing failed: {e}"
+            )
+
+            print("=" * 60)
+            print("ZERNIO PUBLISHING FAILED")
+            print("=" * 60)
+
+            print(
+                "ERROR TYPE:",
+                type(e).__name__
+            )
+
+            print(
+                "ERROR:",
+                str(e)
+            )
+
+            print("=" * 60)
+
+            traceback.print_exc()
+
+        # =====================================================
+        # COMPLETE
+        # =====================================================
+
+        print("=" * 60)
+        print("PROMPTPROHUB AI STUDIO COMPLETED")
+        print("=" * 60)
+
+        print(
+            "Topic:",
+            topic
+        )
+
+        print(
+            "Video:",
+            video
+        )
+
+        print("=" * 60)
